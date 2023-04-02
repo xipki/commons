@@ -34,6 +34,7 @@
     <pkcs11wrapper.version>1.0.4</pkcs11wrapper.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <gson.version>2.10.1</gson.version>
+    <karaf.version>4.4.3</karaf.version>
     <!-- Only for test purpose -->
     <junit.version>4.13.1</junit.version>
   </properties>
@@ -46,6 +47,8 @@
     <module>audit-extra</module>
     <module>datasource</module>
     <module>security</module>
+    <module>shell-base</module>
+    <module>security-shell</module>
   </modules>
   <scm>
     <connection>scm:git:git@github.com:xipki/commons.git</connection>
@@ -282,6 +285,11 @@
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
         <version>${hikaricp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.karaf.shell</groupId>
+        <artifactId>org.apache.karaf.shell.core</artifactId>
+        <version>${karaf.version}</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
