@@ -270,12 +270,13 @@ public class ScriptRunner {
     } catch (SQLException e) {
       final String errText = String.format("Error executing '%s' (line %d): %s",
           command, lineReader.getLineNumber(), e.getMessage());
-      printlnError(errText);
+
       if (outputErr) {
+        printlnError(errText);
         System.err.println(errText);
-      }
-      if (stopOnError) {
-        throw new SQLException(errText, e);
+        if (stopOnError) {
+          throw new SQLException(errText, e);
+        }
       }
     }
 
@@ -304,7 +305,7 @@ public class ScriptRunner {
     try {
       statement.close();
     } catch (Exception e) {
-      // Ignore to workaround a bug in Jakarta DBCP
+      // Ignore to work around a bug in Jakarta DBCP
     }
   }
 
