@@ -770,10 +770,10 @@ class NativeP11Slot extends P11Slot {
 
         for (long handle : handles) {
           i++;
-          String objectText = objectToString(handle);
 
           String text;
           try {
+            String objectText = objectToString(handle);
             text = formatNumber(i, 3) + ". " + objectText;
           } catch (Exception ex) {
             text = formatNumber(i, 3) + ". " + "Error reading object with handle " + handle;
@@ -797,7 +797,11 @@ class NativeP11Slot extends P11Slot {
 
   private String objectToString(long handle) throws TokenException {
     AttributeVector attrs = token.getAttrValues(handle, CKA_ID, CKA_LABEL, CKA_CLASS);
-    long objClass = attrs.class_();
+    Long objClass = attrs.class_();
+    if (objClass == null) {
+      throw new TokenException("CKA_CLASS is not present.");
+    }
+
     byte[] id = attrs.id();
     String label = attrs.label();
 
