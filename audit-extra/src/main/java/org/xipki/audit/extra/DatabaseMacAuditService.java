@@ -64,6 +64,10 @@ public class DatabaseMacAuditService extends MacAuditService {
 
   @Override
   protected void doClose() {
+    if (datasource != null) {
+      datasource.close();
+      datasource = null;
+    }
   }
 
   @Override
