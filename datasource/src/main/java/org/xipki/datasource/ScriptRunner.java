@@ -73,6 +73,15 @@ public class ScriptRunner {
   public static void runScript(DataSourceWrapper dataSource, String scriptFile)
       throws Exception {
     Connection conn = dataSource.getConnection();
+    try {
+      runScript(conn, scriptFile);
+    } finally {
+      dataSource.returnConnection(conn);
+    }
+  }
+
+  public static void runScript(Connection conn, String scriptFile)
+      throws Exception {
     conn.setAutoCommit(false);
     ScriptRunner runner = new ScriptRunner(conn, false, true);
     runner.runScript(IoUtil.expandFilepath(scriptFile));
