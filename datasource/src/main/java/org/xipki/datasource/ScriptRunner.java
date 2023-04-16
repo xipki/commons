@@ -66,11 +66,11 @@ public class ScriptRunner {
     props.setProperty("minimumIdle", "1");
     try (DataSourceWrapper dataSource =
              new DataSourceFactory().createDataSource("default", props, passwordResolver)) {
-      runScript(dataSource, scriptFile, passwordResolver);
+      runScript(dataSource, scriptFile);
     }
   }
 
-  public static void runScript(DataSourceWrapper dataSource, String scriptFile, PasswordResolver passwordResolver)
+  public static void runScript(DataSourceWrapper dataSource, String scriptFile)
       throws Exception {
     Connection conn = dataSource.getConnection();
     conn.setAutoCommit(false);
@@ -268,10 +268,10 @@ public class ScriptRunner {
     try {
       hasResults = statement.execute(command.toString());
     } catch (SQLException e) {
-      final String errText = String.format("Error executing '%s' (line %d): %s",
-          command, lineReader.getLineNumber(), e.getMessage());
-
       if (outputErr) {
+        final String errText = String.format("Error executing '%s' (line %d): %s",
+            command, lineReader.getLineNumber(), e.getMessage());
+
         printlnError(errText);
         System.err.println(errText);
         if (stopOnError) {
