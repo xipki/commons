@@ -815,14 +815,14 @@ public class X509Util {
     }
 
     StringBuilder sb = new StringBuilder(verbose ? 1000 : 100);
-    sb.append("  issuer:  ").append(x500NameText(cert.getIssuer())).append('\n');
+    sb.append("  issuer:       ").append(x500NameText(cert.getIssuer())).append('\n');
     sb.append("  serialNumber: ").append(LogUtil.formatCsn(cert.getSerialNumber())).append('\n');
-    sb.append("  subject: ").append(x500NameText(cert.getSubject())).append('\n');
-    sb.append("  notBefore: ").append(cert.getNotBefore()).append("\n");
-    sb.append("  notAfter:  ").append(cert.getNotAfter());
+    sb.append("  subject:      ").append(x500NameText(cert.getSubject())).append('\n');
+    sb.append("  notBefore:    ").append(cert.getNotBefore()).append("\n");
+    sb.append("  notAfter:     ").append(cert.getNotAfter());
 
     if (verbose) {
-      sb.append("\n  encoded: ").append(Base64.encodeToString(cert.getEncoded()));
+      sb.append("\n  encoded:      ").append(Base64.encodeToString(cert.getEncoded()));
     }
 
     return sb.toString();
