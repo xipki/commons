@@ -120,7 +120,7 @@ public abstract class P11Slot implements Closeable {
 
   private final SecureRandom random = new SecureRandom();
 
-  private final Map<Long, MechanismInfo> mechanisms = new HashMap<>();
+  protected final Map<Long, MechanismInfo> mechanisms = new HashMap<>();
 
   protected final List<Long> secretKeyTypes;
   protected final List<Long> keyPairTypes;
@@ -195,6 +195,10 @@ public abstract class P11Slot implements Closeable {
   public abstract int destroyObjectsByIdLabel(byte[] id, String label) throws TokenException;
 
   public abstract boolean objectExistsByIdLabel(byte[] id, String label) throws TokenException;
+
+  protected String mechanismCodeToName(long code) {
+    return ckmCodeToName(code);
+  }
 
   /**
    * Generates a secret key in the PKCS#11 token.
@@ -376,21 +380,19 @@ public abstract class P11Slot implements Closeable {
         sb.append("  NONE\n");
       } else {
         for (Long mech : ignoreMechs) {
-          sb.append("\n  ").append(ckmCodeToName(mech));
+          sb.append("\n  ").append(mechanismCodeToName(mech));
         }
       }
       LOG.info(sb.toString());
     }
   }
 
-  private static void printMechanisms(StringBuilder sb, Map<Long, MechanismInfo> mechanisms) {
+  private void printMechanisms(StringBuilder sb, Map<Long, MechanismInfo> mechanisms) {
     List<Long> sortedMechs = new ArrayList<>(mechanisms.keySet());
     Collections.sort(sortedMechs);
 
-    List<String> mechNames = new ArrayList<>(mechanisms.size());
-    int maxNameLen = 0;
     for (Long mech : sortedMechs) {
-      sb.append("  ").append(ckmCodeToName(mech)).append("\n")
+      sb.append("  ").append(mechanismCodeToName(mech)).append("\n")
           .append(mechanisms.get(mech).toString("  ")).append("\n");
     }
   }
@@ -406,7 +408,7 @@ public abstract class P11Slot implements Closeable {
 
   public void assertMechanismSupported(long mechanism, long flagBit) throws TokenException {
     if (!supportsMechanism(mechanism, flagBit)) {
-      throw new TokenException("mechanism " + ckmCodeToName(mechanism) + " for "
+      throw new TokenException("mechanism " + mechanismCodeToName(mechanism) + " for "
           + codeToName(Category.CKF_MECHANISM, flagBit) + " is not supported by PKCS11 slot " + slotId);
     }
   }
@@ -769,7 +771,7 @@ public abstract class P11Slot implements Closeable {
   private String buildOrMechanismsUnsupportedMessage(long... mechanisms) {
     StringBuilder sb = new StringBuilder("none of mechanisms [");
     for (long mechanism : mechanisms) {
-      sb.append(ckmCodeToName(mechanism)).append(", ");
+      sb.append(mechanismCodeToName(mechanism)).append(", ");
     }
     sb.deleteCharAt(sb.length() - 1);
     sb.append("] is supported by PKCS11 slot ").append(slotId);

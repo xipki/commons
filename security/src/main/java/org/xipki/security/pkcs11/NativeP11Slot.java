@@ -126,6 +126,23 @@ class NativeP11Slot extends P11Slot {
   } // method getSupportedMechanisms()
 
   @Override
+  protected String mechanismCodeToName(long code) {
+    return token.codeToName(Category.CKM, code);
+  }
+
+  @Override
+  public boolean supportsMechanism(long mechanism, long flagBit) {
+    MechanismInfo info = mechanisms.get(mechanism);
+    if (info == null) {
+      long genericCode = token.vendorToGenericCode(Category.CKM, mechanism);
+      if (genericCode != mechanism) {
+        info = mechanisms.get(mechanism);
+      }
+    }
+    return info != null && info.hasFlagBit(flagBit);
+  }
+
+  @Override
   public final void close() {
     token.closeAllSessions();
   }
