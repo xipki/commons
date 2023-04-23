@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
+import org.xipki.pkcs11.wrapper.PKCS11Constants;
+import org.xipki.pkcs11.wrapper.PKCS11Module;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.StringUtil;
 import org.xipki.util.exception.InvalidConfException;
@@ -59,9 +61,9 @@ public class P11ModuleConf {
 
     private final Set<P11SlotIdFilter> slots;
 
-    private final Collection<Long> mechanisms;
+    private final Collection<String> mechanisms;
 
-    private P11SingleMechanismFilter(Set<P11SlotIdFilter> slots, Collection<Long> mechanisms) {
+    private P11SingleMechanismFilter(Set<P11SlotIdFilter> slots, Collection<String> mechanisms) {
       this.slots = slots;
       this.mechanisms = CollectionUtil.isEmpty(mechanisms) ? null : mechanisms;
     }
@@ -79,12 +81,23 @@ public class P11ModuleConf {
       return false;
     }
 
-    public boolean isMechanismSupported(long mechanism) {
+    public boolean isMechanismSupported(long mechanism, PKCS11Module module) {
       if (mechanisms == null) {
         return true;
       }
 
-      return mechanisms.contains(mechanism);
+      for (String mechName : mechanisms) {
+        Long mechCode = (module != null)
+            ? module.nameToCode(Category.CKM, mechName)
+            : PKCS11Constants.nameToCode(Category.CKM, mechName);
+        if (mechCode != null) {
+          if (mechanism == mechCode) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     }
 
   } // class P11SingleMechanismFilter
@@ -97,7 +110,7 @@ public class P11ModuleConf {
       singleFilters = new LinkedList<>();
     }
 
-    void addEntry(Set<P11SlotIdFilter> slots, Collection<Long> mechanisms) {
+    void addEntry(Set<P11SlotIdFilter> slots, Collection<String> mechanisms) {
       notNull(mechanisms, "mechanisms");
       singleFilters.add(new P11SingleMechanismFilter(slots, mechanisms));
     }
@@ -106,7 +119,7 @@ public class P11ModuleConf {
       singleFilters.add(new P11SingleMechanismFilter(slots, null));
     }
 
-    public boolean isMechanismPermitted(P11SlotId slotId, long mechanism) {
+    public boolean isMechanismPermitted(P11SlotId slotId, long mechanism, PKCS11Module module) {
       notNull(slotId, "slotId");
       if (CollectionUtil.isEmpty(singleFilters)) {
         return true;
@@ -114,7 +127,7 @@ public class P11ModuleConf {
 
       for (P11SingleMechanismFilter sr : singleFilters) {
         if (sr.match(slotId)) {
-          return sr.isMechanismSupported(mechanism);
+          return sr.isMechanismSupported(mechanism, module);
         }
       }
 
@@ -261,7 +274,7 @@ public class P11ModuleConf {
 
   private final int maxMessageSize;
 
-  private final long userType;
+  private final String userType;
 
   private final char[] userName;
 
@@ -281,17 +294,7 @@ public class P11ModuleConf {
     this.name = moduleType.getName();
     this.readOnly = moduleType.isReadonly();
 
-    String userTypeStr = moduleType.getUser().toUpperCase();
-    Long userType = nameToCode(Category.CKU, userTypeStr);
-    if (userType == null) {
-      try {
-        userType = userTypeStr.startsWith("0X")
-            ? Long.parseLong(userTypeStr.substring(2), 16) : Long.parseLong(userTypeStr);
-      } catch (NumberFormatException ex) {
-        throw new InvalidConfException("invalid user " + userTypeStr);
-      }
-    }
-    this.userType = userType;
+    this.userType = moduleType.getUser().toUpperCase();
     this.userName = (moduleType.getUserName() == null) ? null : moduleType.getUserName().toCharArray();
 
     this.maxMessageSize = moduleType.getMaxMessageSize();
@@ -331,14 +334,14 @@ public class P11ModuleConf {
     }
 
     // parse mechanismSets
-    Map<String, Set<Long>> mechanismSetsMap = new HashMap<>(mechanismSets.size() * 3 / 2);
+    Map<String, Set<String>> mechanismSetsMap = new HashMap<>(mechanismSets.size() * 3 / 2);
     for (Pkcs11conf.MechanismSet m : mechanismSets) {
       String name = m.getName();
       if (mechanismSetsMap.containsKey(name)) {
         throw new InvalidConfException("Duplication mechanismSets named " + name);
       }
 
-      Set<Long> mechanisms = new HashSet<>();
+      Set<String> mechanisms = new HashSet<>();
       for (String mechStr : m.getMechanisms()) {
         mechStr = mechStr.trim().toUpperCase();
         if (mechStr.equals("ALL")) {
@@ -346,33 +349,7 @@ public class P11ModuleConf {
           break;
         }
 
-        Long mech = null;
-        if (mechStr.startsWith("CKM_")) {
-          mech = ckmNameToCode(mechStr);
-        } else {
-          int radix = 10;
-          if (mechStr.startsWith("0X")) {
-            radix = 16;
-            mechStr = mechStr.substring(2);
-          }
-
-          if (mechStr.endsWith("UL")) {
-            mechStr = mechStr.substring(0, mechStr.length() - 2);
-          } else if (mechStr.endsWith("L")) {
-            mechStr = mechStr.substring(0, mechStr.length() - 1);
-          }
-
-          try {
-            mech = Long.parseLong(mechStr, radix);
-          } catch (NumberFormatException ex) {
-          }
-        }
-
-        if (mech == null) {
-          LOG.warn("skipped unknown mechanism '" + mechStr + "'");
-        } else {
-          mechanisms.add(mech);
-        }
+        mechanisms.add(mechStr);
       }
 
       mechanismSetsMap.put(name, mechanisms);
@@ -391,7 +368,7 @@ public class P11ModuleConf {
           throw new InvalidConfException("MechanismSet '" +  mechanismSetName + "' is not defined");
         }
 
-        Set<Long> mechanisms = mechanismSetsMap.get(mechanismSetName);
+        Set<String> mechanisms = mechanismSetsMap.get(mechanismSetName);
         if (mechanisms == null) {
           mechanismFilter.addAcceptAllEntry(slots);
         } else {
@@ -463,7 +440,7 @@ public class P11ModuleConf {
     return readOnly;
   }
 
-  public long getUserType() {
+  public String getUserType() {
     return userType;
   }
 

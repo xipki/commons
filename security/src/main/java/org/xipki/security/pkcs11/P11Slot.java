@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.pkcs11.wrapper.MechanismInfo;
 import org.xipki.pkcs11.wrapper.PKCS11KeyId;
+import org.xipki.pkcs11.wrapper.PKCS11Module;
 import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
@@ -346,6 +347,8 @@ public abstract class P11Slot implements Closeable {
    */
   public abstract void showDetails(OutputStream stream, Long objectHandle, boolean verbose) throws IOException;
 
+  protected abstract PKCS11Module getPKCS11Module();
+
   @Override
   public abstract void close();
 
@@ -353,10 +356,11 @@ public abstract class P11Slot implements Closeable {
     mechanisms.clear();
 
     List<Long> ignoreMechs = new ArrayList<>();
+    PKCS11Module pkcs11Module = getPKCS11Module();
 
     for (Map.Entry<Long, MechanismInfo> entry : supportedMechanisms.entrySet()) {
       long mech = entry.getKey();
-      if (mechanismFilter.isMechanismPermitted(slotId, mech)) {
+      if (mechanismFilter.isMechanismPermitted(slotId, mech, pkcs11Module)) {
         mechanisms.put(mech, entry.getValue());
       } else {
         ignoreMechs.add(mech);

@@ -3,8 +3,6 @@
 
 package org.xipki.security.pkcs11;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xipki.pkcs11.wrapper.PKCS11Constants;
 import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.security.*;
@@ -23,8 +21,6 @@ import java.util.*;
  */
 
 public class P11SignerFactory implements SignerFactory {
-
-  private static final Logger LOG = LoggerFactory.getLogger(P11SignerFactory.class);
 
   private static final String TYPE = "pkcs11";
 
@@ -115,7 +111,7 @@ public class P11SignerFactory implements SignerFactory {
     }
 
     String str2 = (keyId != null) ? "id " + Hex.encode(keyId) : "label " + keyLabel;
-    P11Key key = null;
+    P11Key key;
     try {
       key = slot.getKey(keyId, keyLabel);
     } catch (TokenException e) {
@@ -127,13 +123,8 @@ public class P11SignerFactory implements SignerFactory {
     }
 
     try {
-      SignAlgo algo = null;
       String algoName = conf.getConfValue("algo");
-      if (algoName != null) {
-        algo = SignAlgo.getInstance(algoName);
-      } else {
-        algo = SignAlgo.getInstance(key, conf);
-      }
+      SignAlgo algo = (algoName != null) ? SignAlgo.getInstance(algoName) : SignAlgo.getInstance(key, conf);
 
       List<XiContentSigner> signers = new ArrayList<>(parallelism);
       PublicKey publicKey = null;

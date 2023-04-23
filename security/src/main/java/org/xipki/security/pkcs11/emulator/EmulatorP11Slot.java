@@ -19,10 +19,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.pkcs11.wrapper.Functions;
-import org.xipki.pkcs11.wrapper.MechanismInfo;
-import org.xipki.pkcs11.wrapper.PKCS11KeyId;
-import org.xipki.pkcs11.wrapper.TokenException;
+import org.xipki.pkcs11.wrapper.*;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.HashAlgo;
 import org.xipki.security.pkcs11.P11Key;
@@ -1159,6 +1156,11 @@ class EmulatorP11Slot extends P11Slot {
         }
       }
     }
+  }
+
+  @Override
+  protected PKCS11Module getPKCS11Module() {
+    return null;
   }
 
   private static File getInfoFileForHashCode(File dir, int hashCode) {

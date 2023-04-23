@@ -118,7 +118,11 @@ public class NativeP11Module extends P11Module {
         throw new TokenException("PasswordResolverException: " + ex.getMessage(), ex);
       }
 
-      PKCS11Token token = new PKCS11Token(slot.getToken(), moduleConf.isReadOnly(), moduleConf.getUserType(),
+      Long userType = slot.getModule().nameToCode(PKCS11Constants.Category.CKU, getConf().getUserType());
+      if (userType == null) {
+        throw new TokenException("Unknown user type " + getConf().getUserType());
+      }
+      PKCS11Token token = new PKCS11Token(slot.getToken(), moduleConf.isReadOnly(), userType,
           moduleConf.getUserName(), pwd, moduleConf.getNumSessions());
       token.setMaxMessageSize(moduleConf.getMaxMessageSize());
 
@@ -138,9 +142,13 @@ public class NativeP11Module extends P11Module {
   public static P11Module getInstance(P11ModuleConf moduleConf) throws TokenException {
     notNull(moduleConf, "moduleConf");
 
-    long userType = moduleConf.getUserType();
-    if (userType == PKCS11Constants.CKU_SO) {
-      throw new TokenException("CKU_SO is not allowed in P11Module, too dangerous.");
+    String userTypeStr = moduleConf.getUserType();
+    Long userType = PKCS11Constants.nameToCode(PKCS11Constants.Category.CKU, userTypeStr);
+
+    if (userType != null) {
+      if (userType == PKCS11Constants.CKU_SO) {
+        throw new TokenException("CKU_SO is not allowed in P11Module, too dangerous.");
+      }
     }
 
     String path = moduleConf.getNativeLibrary();
