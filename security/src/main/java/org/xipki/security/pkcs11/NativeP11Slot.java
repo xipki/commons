@@ -77,7 +77,7 @@ class NativeP11Slot extends P11Slot {
 
     this.token = notNull(token, "slot");
 
-    ModuleInfo moduleInfo = token.getToken().getSlot().getModule().getInfo();
+    ModuleInfo moduleInfo = token.getModule().getInfo();
     libDesc = moduleInfo.getLibraryDescription();
     if (libDesc == null) {
       libDesc = "";

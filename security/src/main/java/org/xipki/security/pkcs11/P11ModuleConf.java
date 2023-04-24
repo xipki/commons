@@ -57,15 +57,32 @@ public class P11ModuleConf {
 
   } // class P11SlotIdFilter
 
+  private static final class MechanismSet {
+    private Set<String> includeMechanisms;
+    private Set<String> excludeMechanisms;
+  }
+
   private static final class P11SingleMechanismFilter {
+
+    private static final Object NULL_MODULE = new Object();
 
     private final Set<P11SlotIdFilter> slots;
 
-    private final Collection<String> mechanisms;
+    private final Collection<String> includeMechanisms;
 
-    private P11SingleMechanismFilter(Set<P11SlotIdFilter> slots, Collection<String> mechanisms) {
+    private final Collection<String> excludeMechanisms;
+
+    private Object module;
+
+    private final Set<Long> mechanismCodes = new HashSet<>();
+
+    private final Set<Long> excludeMechanismCodes = new HashSet<>();
+
+    private P11SingleMechanismFilter(Set<P11SlotIdFilter> slots, Collection<String> includeMechanisms,
+                                     Collection<String> excludeMechanisms) {
       this.slots = slots;
-      this.mechanisms = CollectionUtil.isEmpty(mechanisms) ? null : mechanisms;
+      this.includeMechanisms = CollectionUtil.isEmpty(includeMechanisms) ? null : includeMechanisms;
+      this.excludeMechanisms = CollectionUtil.isEmpty(excludeMechanisms) ? null : excludeMechanisms;
     }
 
     public boolean match(P11SlotId slot) {
@@ -82,22 +99,41 @@ public class P11ModuleConf {
     }
 
     public boolean isMechanismSupported(long mechanism, PKCS11Module module) {
-      if (mechanisms == null) {
+      if (includeMechanisms == null && excludeMechanisms == null) {
         return true;
       }
 
-      for (String mechName : mechanisms) {
-        Long mechCode = (module != null)
-            ? module.nameToCode(Category.CKM, mechName)
-            : PKCS11Constants.nameToCode(Category.CKM, mechName);
-        if (mechCode != null) {
-          if (mechanism == mechCode) {
-            return true;
+      synchronized (this) {
+        boolean computeCodes = (module != null) ? (this.module != module) : (this.module != NULL_MODULE);
+        if (computeCodes) {
+          mechanismCodes.clear();
+          excludeMechanismCodes.clear();
+
+          if (includeMechanisms != null) {
+            for (String mechName : includeMechanisms) {
+              Long mechCode = (module != null) ? module.nameToCode(Category.CKM, mechName)
+                  : PKCS11Constants.nameToCode(Category.CKM, mechName);
+              if (mechCode != null) {
+                mechanismCodes.add(mechCode);
+              }
+            }
           }
+
+          if (excludeMechanisms != null) {
+            for (String mechName : excludeMechanisms) {
+              Long mechCode = (module != null) ? module.nameToCode(Category.CKM, mechName)
+                  : PKCS11Constants.nameToCode(Category.CKM, mechName);
+              if (mechCode != null) {
+                excludeMechanismCodes.add(mechCode);
+              }
+            }
+          }
+
+          this.module = (module != null) ? module : NULL_MODULE;
         }
       }
 
-      return false;
+      return (!excludeMechanismCodes.contains(mechanism)) && mechanismCodes.contains(mechanism);
     }
 
   } // class P11SingleMechanismFilter
@@ -110,13 +146,9 @@ public class P11ModuleConf {
       singleFilters = new LinkedList<>();
     }
 
-    void addEntry(Set<P11SlotIdFilter> slots, Collection<String> mechanisms) {
-      notNull(mechanisms, "mechanisms");
-      singleFilters.add(new P11SingleMechanismFilter(slots, mechanisms));
-    }
-
-    void addAcceptAllEntry(Set<P11SlotIdFilter> slots) {
-      singleFilters.add(new P11SingleMechanismFilter(slots, null));
+    void addEntry(Set<P11SlotIdFilter> slots, Collection<String> includeMechanisms, Collection<String> excludeMechanisms) {
+      notNull(includeMechanisms, "includeMechanisms");
+      singleFilters.add(new P11SingleMechanismFilter(slots, includeMechanisms, excludeMechanisms));
     }
 
     public boolean isMechanismPermitted(P11SlotId slotId, long mechanism, PKCS11Module module) {
@@ -334,25 +366,32 @@ public class P11ModuleConf {
     }
 
     // parse mechanismSets
-    Map<String, Set<String>> mechanismSetsMap = new HashMap<>(mechanismSets.size() * 3 / 2);
+    Map<String, MechanismSet> mechanismSetsMap = new HashMap<>(mechanismSets.size() * 3 / 2);
     for (Pkcs11conf.MechanismSet m : mechanismSets) {
       String name = m.getName();
       if (mechanismSetsMap.containsKey(name)) {
         throw new InvalidConfException("Duplication mechanismSets named " + name);
       }
 
-      Set<String> mechanisms = new HashSet<>();
+      MechanismSet mechanismSet = new MechanismSet();
+      mechanismSet.includeMechanisms = new HashSet<>();
+      mechanismSet.excludeMechanisms = new HashSet<>();
+
       for (String mechStr : m.getMechanisms()) {
         mechStr = mechStr.trim().toUpperCase();
         if (mechStr.equals("ALL")) {
-          mechanisms = null; // accept all mechanisms
+          mechanismSet.includeMechanisms = null; // accept all mechanisms
           break;
         }
 
-        mechanisms.add(mechStr);
+        mechanismSet.includeMechanisms.add(mechStr);
       }
 
-      mechanismSetsMap.put(name, mechanisms);
+      for (String mechStr : m.getExcludeMechanisms()) {
+        mechanismSet.excludeMechanisms.add(mechStr.trim().toUpperCase());
+      }
+
+      mechanismSetsMap.put(name, mechanismSet);
     }
 
     // Mechanism filter
@@ -364,15 +403,11 @@ public class P11ModuleConf {
         Set<P11SlotIdFilter> slots = getSlotIdFilters(filterType.getSlots());
         String mechanismSetName = filterType.getMechanismSet();
 
-        if (!mechanismSetsMap.containsKey(mechanismSetName)) {
+        MechanismSet mechanismSet = mechanismSetsMap.get(mechanismSetName);
+        if (mechanismSet == null) {
           throw new InvalidConfException("MechanismSet '" +  mechanismSetName + "' is not defined");
-        }
-
-        Set<String> mechanisms = mechanismSetsMap.get(mechanismSetName);
-        if (mechanisms == null) {
-          mechanismFilter.addAcceptAllEntry(slots);
         } else {
-          mechanismFilter.addEntry(slots, mechanisms);
+          mechanismFilter.addEntry(slots, mechanismSet.includeMechanisms, mechanismSet.excludeMechanisms);
         }
       }
     }

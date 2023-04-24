@@ -66,6 +66,11 @@ public class Pkcs11conf extends ValidatableConf {
      */
     private List<String> mechanisms;
 
+    /**
+     * The mechanism to be excluded.
+     */
+    private List<String> excludeMechanisms;
+
     public String getName() {
       return name;
     }
@@ -83,6 +88,17 @@ public class Pkcs11conf extends ValidatableConf {
 
     public void setMechanisms(List<String> mechanisms) {
       this.mechanisms = mechanisms;
+    }
+
+    public List<String> getExcludeMechanisms() {
+      if (excludeMechanisms == null) {
+        excludeMechanisms = new LinkedList<>();
+      }
+      return excludeMechanisms;
+    }
+
+    public void setExcludeMechanisms(List<String> excludeMechanisms) {
+      this.excludeMechanisms = excludeMechanisms;
     }
 
     @Override
