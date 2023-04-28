@@ -133,7 +133,7 @@ public class P11ModuleConf {
         }
       }
 
-      if (!excludeMechanismCodes.contains(mechanism)) {
+      if (excludeMechanismCodes.contains(mechanism)) {
         return false;
       }
 
