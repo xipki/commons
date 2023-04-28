@@ -393,7 +393,7 @@ public abstract class P11Slot implements Closeable {
     Collections.sort(sortedMechs);
 
     for (Long mech : sortedMechs) {
-      sb.append("  ").append(mechanismCodeToName(mech)).append("(").append(Functions.toFullHex(mech)).append(")\n")
+      sb.append("  ").append(mechanismCodeToName(mech)).append("(0x").append(Functions.toFullHex(mech)).append(")\n")
           .append(mechanisms.get(mech).toString("  ")).append("\n");
     }
   }
