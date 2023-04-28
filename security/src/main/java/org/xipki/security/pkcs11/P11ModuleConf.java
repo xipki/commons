@@ -74,7 +74,7 @@ public class P11ModuleConf {
 
     private Object module;
 
-    private final Set<Long> mechanismCodes = new HashSet<>();
+    private final Set<Long> includeMechanismCodes = new HashSet<>();
 
     private final Set<Long> excludeMechanismCodes = new HashSet<>();
 
@@ -106,7 +106,7 @@ public class P11ModuleConf {
       synchronized (this) {
         boolean computeCodes = (module != null) ? (this.module != module) : (this.module != NULL_MODULE);
         if (computeCodes) {
-          mechanismCodes.clear();
+          includeMechanismCodes.clear();
           excludeMechanismCodes.clear();
 
           if (includeMechanisms != null) {
@@ -114,7 +114,7 @@ public class P11ModuleConf {
               Long mechCode = (module != null) ? module.nameToCode(Category.CKM, mechName)
                   : PKCS11Constants.nameToCode(Category.CKM, mechName);
               if (mechCode != null) {
-                mechanismCodes.add(mechCode);
+                includeMechanismCodes.add(mechCode);
               }
             }
           }
@@ -133,7 +133,11 @@ public class P11ModuleConf {
         }
       }
 
-      return (!excludeMechanismCodes.contains(mechanism)) && mechanismCodes.contains(mechanism);
+      if (!excludeMechanismCodes.contains(mechanism)) {
+        return false;
+      }
+
+      return includeMechanisms == null || includeMechanismCodes.contains(mechanism);
     }
 
   } // class P11SingleMechanismFilter
