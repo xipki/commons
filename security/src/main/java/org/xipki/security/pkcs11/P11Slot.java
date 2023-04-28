@@ -7,10 +7,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.pkcs11.wrapper.MechanismInfo;
-import org.xipki.pkcs11.wrapper.PKCS11KeyId;
-import org.xipki.pkcs11.wrapper.PKCS11Module;
-import org.xipki.pkcs11.wrapper.TokenException;
+import org.xipki.pkcs11.wrapper.*;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
@@ -396,7 +393,7 @@ public abstract class P11Slot implements Closeable {
     Collections.sort(sortedMechs);
 
     for (Long mech : sortedMechs) {
-      sb.append("  ").append(mechanismCodeToName(mech)).append("\n")
+      sb.append("  ").append(mechanismCodeToName(mech)).append("(").append(Functions.toFullHex(mech)).append(")\n")
           .append(mechanisms.get(mech).toString("  ")).append("\n");
     }
   }
