@@ -203,9 +203,6 @@
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <configuration>
-            <source>8</source>
-          </configuration>
           <version>3.0.0</version>
         </plugin>
         <plugin>
@@ -320,7 +317,8 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>3.0.0</version>
-            <configuration>
+	    <configuration>
+	      <source>8</source>
               <failOnError>true</failOnError>
               <excludePackageNames>*.jaxb*</excludePackageNames>
             </configuration>
