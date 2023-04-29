@@ -140,7 +140,7 @@ public abstract class KeypairGenerator implements Closeable {
    *         Key specification. It has the following format:
    *         <ul>
    *         <li>RSA:   'RSA/'&lt;bit-length&gt; or 'RSA/'&lt;bit-length&gt;</li>
-   *         <li>DSA:   'DSA/'&lt;bit-lenth of P&gt;'/'&lt;bit-lenth of Q&gt;</li>
+   *         <li>DSA:   'DSA/'&lt;bit-length of P&gt;'/'&lt;bit-length of Q&gt;</li>
    *         <li>EC:    'EC/'&lt;curve OID&gt;</li>
    *         <li>EdDSA: 'ED25519' or 'ED448'</li>
    *         <li>XDH:   'X25519' or 'X448'</li>

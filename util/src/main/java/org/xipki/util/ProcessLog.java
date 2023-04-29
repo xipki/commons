@@ -220,20 +220,20 @@ public class ProcessLog {
 
     // remaining time and finish at
     if (hasTotal) {
-      long remaingTimeSeconds = -1;
+      long remainTimeSeconds = -1;
       if (currentSpeed > 0) {
-        remaingTimeSeconds = (total - tmpNumProcessed) / currentSpeed;
+        remainTimeSeconds = (total - tmpNumProcessed) / currentSpeed;
       }
 
       Instant finishAt = null;
-      if (remaingTimeSeconds != -1) {
-        finishAt = now.plus(remaingTimeSeconds, ChronoUnit.SECONDS);
+      if (remainTimeSeconds != -1) {
+        finishAt = now.plus(remainTimeSeconds, ChronoUnit.SECONDS);
       }
 
-      if (remaingTimeSeconds < 1) {
+      if (remainTimeSeconds < 1) {
         sb.append(formatText("--", DURATION_LEN)).append(formatText("--", TIME_LEN));
       } else {
-        sb.append(StringUtil.formatTime(remaingTimeSeconds, DURATION_LEN)).append(buildDateTime(finishAt));
+        sb.append(StringUtil.formatTime(remainTimeSeconds, DURATION_LEN)).append(buildDateTime(finishAt));
       }
     }
 

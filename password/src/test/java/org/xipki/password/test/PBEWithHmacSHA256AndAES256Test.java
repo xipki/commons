@@ -24,7 +24,7 @@ public class PBEWithHmacSHA256AndAES256Test {
   private static final byte[] salt = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 15, 16};
 
   @Test
-  public void encrypThenDecrypt() throws Exception {
+  public void encryptThenDecrypt() throws Exception {
     char[] password = "qwert".toCharArray();
     byte[] plainText = "123456".getBytes(StandardCharsets.UTF_8);
     int iterationCount = 1000;

@@ -315,12 +315,12 @@ class EmulatorP11Slot extends P11Slot {
     return decodeHex(fileName.substring(0, fileName.length() - INFO_FILE_SUFFIX.length()));
   }
 
-  private static File getInfoFile(File dir, String hextId) {
-    return new File(dir, hextId + INFO_FILE_SUFFIX);
+  private static File getInfoFile(File dir, String hexId) {
+    return new File(dir, hexId + INFO_FILE_SUFFIX);
   }
 
-  private static File getValueFile(File dir, String hextId) {
-    return new File(dir, hextId + VALUE_FILE_SUFFIX);
+  private static File getValueFile(File dir, String hexId) {
+    return new File(dir, hexId + VALUE_FILE_SUFFIX);
   }
 
   @Override
@@ -332,8 +332,8 @@ class EmulatorP11Slot extends P11Slot {
     byte[] id = objectId.getId();
     String label = objectId.getLabel();
     if (id != null) {
-      String hextId = hex(id);
-      File infoFile = getInfoFile(dir, hextId);
+      String hexId = hex(id);
+      File infoFile = getInfoFile(dir, hexId);
       if (!infoFile.exists()) {
         return false;
       }
@@ -368,11 +368,11 @@ class EmulatorP11Slot extends P11Slot {
   } // method removePkcs11Entry
 
   private static boolean deletePkcs11Entry(File dir, byte[] objectId) {
-    String hextId = hex(objectId);
-    File infoFile = getInfoFile(dir, hextId);
+    String hexId = hex(objectId);
+    File infoFile = getInfoFile(dir, hexId);
     boolean b1 = !infoFile.exists() || infoFile.delete();
 
-    File valueFile = getValueFile(dir, hextId);
+    File valueFile = getValueFile(dir, hexId);
     boolean b2 = !valueFile.exists() || valueFile.delete();
 
     return b1 || b2;
@@ -384,8 +384,8 @@ class EmulatorP11Slot extends P11Slot {
     }
 
     if (id != null && id.length > 0) {
-      String hextId = hex(id);
-      File infoFile = getInfoFile(dir, hextId);
+      String hexId = hex(id);
+      File infoFile = getInfoFile(dir, hexId);
       if (!infoFile.exists()) {
         return 0;
       }

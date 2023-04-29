@@ -163,7 +163,7 @@ public abstract class BenchmarkExecutor {
     return this;
   }
 
-  public long getErrorAccout() {
+  public long getErrorAccount() {
     return errorAccount.get();
   }
 

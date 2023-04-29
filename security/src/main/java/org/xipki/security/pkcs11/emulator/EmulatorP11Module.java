@@ -63,7 +63,7 @@ class EmulatorP11Module extends P11Module {
       try {
         createExampleRepository(baseDir, 2);
       } catch (IOException ex) {
-        throw new TokenException("could not initialize the base direcotry: " + baseDir.getPath(), ex);
+        throw new TokenException("could not initialize the base directory: " + baseDir.getPath(), ex);
       }
 
       LOG.info("create and initialize the base directory: " + baseDir.getPath());

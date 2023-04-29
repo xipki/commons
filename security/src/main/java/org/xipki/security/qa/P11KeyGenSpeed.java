@@ -97,7 +97,7 @@ public abstract class P11KeyGenSpeed extends BenchmarkExecutor {
 
     @Override
     public void run() {
-      while (!stop() && getErrorAccout() < 1) {
+      while (!stop() && getErrorAccount() < 1) {
         try {
           genKeypair();
           account(1, 0);

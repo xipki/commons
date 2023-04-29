@@ -117,12 +117,12 @@ public class DataAccessException extends Exception {
      * previously failed operation might be able to succeed when the operation is retried
      * without any intervention by application-level functionality.
      */
-    TransientDataAcces(Root),
+    TransientDataAccess(Root),
 
     /**
      * Indicate the type of failure: optimistic locking, failure to acquire lock, etc.
      */
-    ConcurrencyFailure(TransientDataAcces),
+    ConcurrencyFailure(TransientDataAccess),
 
     /**
      * Exception thrown on a pessimistic locking violation.
@@ -155,13 +155,13 @@ public class DataAccessException extends Exception {
      * <p>This exception can be thrown by user code trapping the native database exception or
      * by exception translation.
      */
-    QueryTimeout(TransientDataAcces),
+    QueryTimeout(TransientDataAccess),
 
     /**
      * Exception thrown when the underlying resource denied a permission to access a specific
      * element, such as a specific database table.
      */
-    TransientDataAccessResource(TransientDataAcces);
+    TransientDataAccessResource(TransientDataAccess);
 
     private final Reason parent;
 

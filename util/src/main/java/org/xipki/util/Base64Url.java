@@ -69,7 +69,7 @@ public class Base64Url {
 
     // Encode even 24-bits
     for (int s = 0, d = 0; s < eLen;) {
-      // Copy next three bytes into lower 24 bits of int, paying attension to sign.
+      // Copy next three bytes into lower 24 bits of int, paying attention to sign.
       int i = (sArr[s++] & 0xff) << 16 | (sArr[s++] & 0xff) << 8 | (sArr[s++] & 0xff);
 
       // Encode the int into four chars
@@ -186,7 +186,7 @@ public class Base64Url {
 
     // Encode even 24-bits
     for (int s = 0, d = 0; s < eLen;) {
-      // Copy next three bytes into lower 24 bits of int, paying attension to sign.
+      // Copy next three bytes into lower 24 bits of int, paying attention to sign.
       int i = (sArr[s++] & 0xff) << 16 | (sArr[s++] & 0xff) << 8 | (sArr[s++] & 0xff);
 
       // Encode the int into four chars
@@ -296,7 +296,7 @@ public class Base64Url {
   }
 
   /**
-   * Decodes a BASE64Url encoded string that is known to be resonably well formatted.
+   * Decodes a BASE64Url encoded string that is known to be reasonably well formatted.
    * The preconditions are:<br>
    * + The array must have no line separators at all (one line).<br>
    * + The array may not contain illegal characters within the encoded string<br>

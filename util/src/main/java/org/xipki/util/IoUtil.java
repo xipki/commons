@@ -66,10 +66,10 @@ public class IoUtil {
   public static byte[] read(InputStream in) throws IOException {
     try {
       ByteArrayOutputStream bout = new ByteArrayOutputStream();
-      int readed;
+      int read;
       byte[] buffer = new byte[2048];
-      while ((readed = in.read(buffer)) != -1) {
-        bout.write(buffer, 0, readed);
+      while ((read = in.read(buffer)) != -1) {
+        bout.write(buffer, 0, read);
       }
 
       return bout.toByteArray();

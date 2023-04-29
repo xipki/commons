@@ -229,7 +229,6 @@ public class Securities implements Closeable {
     signerFactoryRegister.registFactory(p12SignerFactory);
 
     DfltKeypairGeneratorFactory dfltKeypairGeneratorFactory = new DfltKeypairGeneratorFactory();
-    dfltKeypairGeneratorFactory.setSecurityFactory(securityFactory);
     keypairFactoryRegister.registFactory(dfltKeypairGeneratorFactory);
 
     // PKCS#11

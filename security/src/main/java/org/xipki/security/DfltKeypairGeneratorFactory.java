@@ -31,14 +31,8 @@ public class DfltKeypairGeneratorFactory implements KeypairGeneratorFactory {
 
   private P11CryptServiceFactory p11CryptServiceFactory;
 
-  private SecurityFactory securityFactory;
-
   public void setP11CryptServiceFactory(P11CryptServiceFactory p11CryptServiceFactory) {
     this.p11CryptServiceFactory = p11CryptServiceFactory;
-  }
-
-  public void setSecurityFactory(SecurityFactory securityFactory) {
-    this.securityFactory = securityFactory;
   }
 
   @Override

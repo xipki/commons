@@ -277,10 +277,15 @@ public class X509Util {
   }
 
   public static long fpCanonicalizedName(X500Name name) {
-    return FpIdCalculator.hash(toUtf8Bytes(canonicalizName(notNull(name, "name"))));
+    return FpIdCalculator.hash(toUtf8Bytes(canonicalizeName(notNull(name, "name"))));
   }
 
+  @Deprecated
   public static String canonicalizName(X500Name name) {
+    return canonicalizeName(name);
+  }
+
+  public static String canonicalizeName(X500Name name) {
     ASN1ObjectIdentifier[] tmpTypes = notNull(name, "name").getAttributeTypes();
     int len = tmpTypes.length;
     List<String> types = new ArrayList<>(len);
@@ -324,7 +329,7 @@ public class X509Util {
     } // end for(i)
 
     return sb.toString();
-  } // method canonicalizName
+  } // method canonicalizeName
 
   public static String rdnValueToString(ASN1Encodable value) {
     notNull(value, "value");

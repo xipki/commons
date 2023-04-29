@@ -382,9 +382,9 @@ public class CtLog {
 
     public byte[] getEncoded() {
       byte[] encodedDs = digitallySigned.getEncoded();
-      int totoalLen = 41 + 2 + extensions.length + encodedDs.length; //41: 1 + 32 + 8, 2:  length of extensions
+      int totalLen = 41 + 2 + extensions.length + encodedDs.length; //41: 1 + 32 + 8, 2:  length of extensions
 
-      byte[] res = new byte[totoalLen];
+      byte[] res = new byte[totalLen];
       int offset = 0;
       // version: 1 bytes
       res[offset++] = version;

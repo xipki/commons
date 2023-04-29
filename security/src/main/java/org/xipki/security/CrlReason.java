@@ -88,11 +88,11 @@ public enum CrlReason {
   private static final Map<Integer, CrlReason> REASONS = new HashMap<>();
 
   private final int code;
-  private final String desription;
+  private final String description;
 
   CrlReason(int code, String description) {
     this.code = code;
-    this.desription = description;
+    this.description = description;
   }
 
   public int getCode() {
@@ -100,7 +100,7 @@ public enum CrlReason {
   }
 
   public String getDescription() {
-    return desription;
+    return description;
   }
 
   static {
@@ -140,14 +140,14 @@ public enum CrlReason {
     } else if (reason == CRLReason.UNSPECIFIED) {
       return UNSPECIFIED;
     } else {
-      throw new IllegalArgumentException("invald CRLReason " + reason);
+      throw new IllegalArgumentException("invalid CRLReason " + reason);
     }
   }
 
   public static CrlReason forNameOrText(String text) {
     Args.notNull(text, "text");
     for (CrlReason value : values()) {
-      if (value.desription.equalsIgnoreCase(text)
+      if (value.description.equalsIgnoreCase(text)
           || value.name().equalsIgnoreCase(text)
           || Integer.toString(value.code).equals(text)) {
         return value;

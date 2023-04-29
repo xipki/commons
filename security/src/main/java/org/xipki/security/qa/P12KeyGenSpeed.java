@@ -88,7 +88,7 @@ public abstract class P12KeyGenSpeed extends BenchmarkExecutor {
 
     @Override
     public void run() {
-      while (!stop() && getErrorAccout() < 1) {
+      while (!stop() && getErrorAccount() < 1) {
         try {
           generateKeypair(securityFactory.getRandom4Key());
           account(1, 0);

@@ -4,7 +4,7 @@
 package org.xipki.shell;
 
 /**
- * Exception for illegagl action parameters / options.
+ * Exception for illegal action parameters / options.
  *
  * @author Lijun Liao (xipki)
  * @since 2.0.0

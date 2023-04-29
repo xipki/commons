@@ -104,7 +104,7 @@ public class XiXDHContentVerifierProvider implements ContentVerifierProvider {
 
   private final SecretKey hmacKey;
 
-  private final String hmacAlgoithm;
+  private final String hmacAlgorithm;
 
   private final ASN1ObjectIdentifier sigAlgOid;
 
@@ -118,11 +118,11 @@ public class XiXDHContentVerifierProvider implements ContentVerifierProvider {
     HashAlgo hash;
     if (EdECConstants.X25519.equalsIgnoreCase(keyAlgName)) {
       this.sigAlgOid = Xipki.id_alg_dhPop_x25519;
-      this.hmacAlgoithm = "HMAC-SHA512";
+      this.hmacAlgorithm = "HMAC-SHA512";
       hash = HashAlgo.SHA512;
     } else if (EdECConstants.X448.equalsIgnoreCase(keyAlgName)) {
       this.sigAlgOid = Xipki.id_alg_dhPop_x448;
-      this.hmacAlgoithm = "HMAC-SHA512";
+      this.hmacAlgorithm = "HMAC-SHA512";
       hash = HashAlgo.SHA512;
     }  else {
       throw new InvalidKeyException("unsupported verifyKey.getAlgorithm(): " + keyAlgName);
@@ -150,7 +150,7 @@ public class XiXDHContentVerifierProvider implements ContentVerifierProvider {
     // TrailingInfo ::= Issuer Distinguished Name from certificate
     byte[] trailingInfo = ownerKeyAndCert.getEncodedIssuer();
     byte[] k = hash.hash(leadingInfo, zz, trailingInfo);
-    this.hmacKey = new SecretKeySpec(k, hmacAlgoithm);
+    this.hmacKey = new SecretKeySpec(k, hmacAlgorithm);
   } // constructor
 
   @Override
@@ -167,12 +167,12 @@ public class XiXDHContentVerifierProvider implements ContentVerifierProvider {
   public ContentVerifier get(AlgorithmIdentifier verifierAlgorithmIdentifier) throws OperatorCreationException {
     ASN1ObjectIdentifier oid = verifierAlgorithmIdentifier.getAlgorithm();
     if (!this.sigAlgOid.equals(oid)) {
-      throw new OperatorCreationException("given public key is not suitable for the alogithm " + oid.getId());
+      throw new OperatorCreationException("given public key is not suitable for the algorithm " + oid.getId());
     }
 
     Mac hmac;
     try {
-      hmac = Mac.getInstance(hmacAlgoithm);
+      hmac = Mac.getInstance(hmacAlgorithm);
     } catch (NoSuchAlgorithmException ex) {
       throw new OperatorCreationException(ex.getMessage());
     }

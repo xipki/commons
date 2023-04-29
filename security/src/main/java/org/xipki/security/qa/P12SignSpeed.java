@@ -221,7 +221,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
 
     @Override
     public void run() {
-      while (!stop() && getErrorAccout() < 1) {
+      while (!stop() && getErrorAccount() < 1) {
         try {
           signer.sign(data);
           account(batch, 0);
