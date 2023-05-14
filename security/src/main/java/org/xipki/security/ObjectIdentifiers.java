@@ -475,6 +475,12 @@ public class ObjectIdentifiers {
      */
     public static final ASN1ObjectIdentifier id_kp_timeStamping = id_kp.branch("8");
 
+    public static final ASN1ObjectIdentifier id_kp_cmcCA = id_kp.branch("27");
+
+    public static final ASN1ObjectIdentifier id_kp_cmcRA = id_kp.branch("28");
+
+    public static final ASN1ObjectIdentifier id_kp_cmcKGA = id_kp.branch("32");
+
     private static final ASN1ObjectIdentifier id_appleExtendedKeyUsage =
         new ASN1ObjectIdentifier("1.2.840.113635.100.4");
 
@@ -741,6 +747,9 @@ public class ObjectIdentifiers {
       oidNameMap.put(XKU.id_kp_sshClient, "SSH Client");
       oidNameMap.put(XKU.id_kp_sshServer, "SSH Server");
       oidNameMap.put(XKU.id_kp_timeStamping, "TimeStamping");
+      oidNameMap.put(XKU.id_kp_cmcCA, "CMC CA");
+      oidNameMap.put(XKU.id_kp_cmcRA, "CMC RA");
+      oidNameMap.put(XKU.id_kp_cmcKGA, "CMC KGA");
 
       oidNameMap.put(XKU.id_kp_appleSafariExtensionSigning, "Apple Safari Extension Signing");
       oidNameMap.put(XKU.id_kp_macInstallerPackageSigning, "Apple Mac Installer Package Signing");
@@ -750,6 +759,11 @@ public class ObjectIdentifiers {
       oidNameMap.put(EdECConstants.id_ED448, EdECConstants.ED448);
       oidNameMap.put(EdECConstants.id_X25519, EdECConstants.X25519);
       oidNameMap.put(EdECConstants.id_X448, EdECConstants.X448);
+
+      oidNameMap.put(Xipki.id_xipki_cmp_cmpGenmsg, "XIPKI CMP GenMsg");
+      oidNameMap.put(BaseRequirements.id_domain_validated, "Domain Validated");
+      oidNameMap.put(BaseRequirements.id_organization_validated, "Organization Validated");
+      oidNameMap.put(BaseRequirements.id_individual_validated, "Individual Validated");
     }
   }
 
