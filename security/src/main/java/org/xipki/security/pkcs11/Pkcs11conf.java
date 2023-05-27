@@ -155,6 +155,11 @@ public class Pkcs11conf extends ValidatableConf {
      */
     private Integer maxMessageSize;
 
+    /**
+     * Timeout to borrow a new session.
+     */
+    private Integer newSessionTimeout;
+
     private List<PasswordSet> passwordSets;
 
     private List<MechanismFilter> mechanismFilters;
@@ -292,6 +297,14 @@ public class Pkcs11conf extends ValidatableConf {
 
     public void setNumSessions(Integer numSessions) {
       this.numSessions = numSessions;
+    }
+
+    public Integer getNewSessionTimeout() {
+      return newSessionTimeout;
+    }
+
+    public void setNewSessionTimeout(Integer newSessionTimeout) {
+      this.newSessionTimeout = newSessionTimeout;
     }
 
     @Override

@@ -125,6 +125,9 @@ public class NativeP11Module extends P11Module {
       PKCS11Token token = new PKCS11Token(slot.getToken(), moduleConf.isReadOnly(), userType,
           moduleConf.getUserName(), pwd, moduleConf.getNumSessions());
       token.setMaxMessageSize(moduleConf.getMaxMessageSize());
+      if (moduleConf.getNewSessionTimeout() != null) {
+        token.setTimeOutWaitNewSession(moduleConf.getNewSessionTimeout());
+      }
 
       P11Slot p11Slot = new NativeP11Slot(moduleConf.getName(), slotId, token , moduleConf.getP11MechanismFilter(),
           moduleConf.getP11NewObjectConf(), moduleConf.getSecretKeyTypes(), moduleConf.getKeyPairTypes());

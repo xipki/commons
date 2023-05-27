@@ -318,6 +318,8 @@ public class P11ModuleConf {
 
   private final Integer numSessions;
 
+  private final Integer newSessionTimeout;
+
   private final List<Long> secretKeyTypes;
 
   private final List<Long> keyPairTypes;
@@ -340,6 +342,7 @@ public class P11ModuleConf {
     }
 
     this.numSessions = moduleType.getNumSessions();
+    this.newSessionTimeout = moduleType.getNewSessionTimeout();
 
     List<String> list = moduleType.getSecretKeyTypes();
     if (list == null) {
@@ -493,6 +496,10 @@ public class P11ModuleConf {
 
   public Integer getNumSessions() {
     return numSessions;
+  }
+
+  public Integer getNewSessionTimeout() {
+    return newSessionTimeout;
   }
 
   public List<Long> getSecretKeyTypes() {
