@@ -100,27 +100,25 @@ public class JSON {
       .disableHtmlEscaping()
       .setPrettyPrinting().create();
 
-  public static <T> T parseObject(String json, Class<T> classOfT) throws JsonSyntaxException {
+  public static <T> T parseObject(String json, Class<T> classOfT) {
     return gson.fromJson(json, classOfT);
   }
 
-  public static <T> T parseObject(byte[] json, Class<T> classOfT) throws JsonSyntaxException, JsonIOException {
-    return parseObject(new ByteArrayInputStream(json), classOfT);
-  }
-
-  public static <T> T parseObject(File jsonFile, Class<T> classOfT) throws JsonSyntaxException, JsonIOException {
+  public static <T> T parseObject(byte[] json, Class<T> classOfT) {
     try {
-      return parseObject(new FileInputStream(jsonFile), classOfT);
-    } catch (FileNotFoundException e) {
+      return parseObject(new ByteArrayInputStream(json), classOfT);
+    } catch (IOException e) {
       throw new JsonIOException(e);
     }
   }
 
-  public static <T> T parseObject(InputStream json, Class<T> classOfT) throws JsonSyntaxException, JsonIOException {
+  public static <T> T parseObject(File jsonFile, Class<T> classOfT) throws IOException {
+    return parseObject(new FileInputStream(jsonFile), classOfT);
+  }
+
+  public static <T> T parseObject(InputStream json, Class<T> classOfT) throws IOException {
     try (Reader reader = new InputStreamReader(json)) {
       return gson.fromJson(reader, classOfT);
-    } catch (IOException e) {
-      throw new JsonIOException(e);
     }
   }
 
