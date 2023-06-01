@@ -56,6 +56,23 @@ public class Base64Url {
    * @return A BASE64Url encoded array. Never <code>null</code>.
    */
   public static char[] encodeToChar(byte[] sArr) {
+    return encodeToChar(sArr, true);
+  }
+
+  /**
+   * Encodes a raw byte array into a BASE64Url <code>char[]</code> representation i without padding
+   * accordance with RFC 2045.
+   *
+   * @param sArr
+   *          The bytes to convert. If <code>null</code> or length 0 an empty array will be
+   *          returned.
+   * @return A BASE64Url encoded array. Never <code>null</code>.
+   */
+  public static char[] encodeToCharNoPadding(byte[] sArr) {
+    return encodeToChar(sArr, false);
+  }
+
+  public static char[] encodeToChar(byte[] sArr, boolean withPadding) {
     // Check special case
     int sLen = sArr != null ? sArr.length : 0;
     if (sLen == 0) {
@@ -64,7 +81,20 @@ public class Base64Url {
     //assert sArr != null;
 
     int eLen = (sLen / 3) * 3;              // Length of even 24-bits.
-    int dLen = ((sLen - 1) / 3 + 1) << 2;   // Returned character / byte count
+    int left = sLen - eLen; // 0 - 2.
+
+    int dLen;
+    if (withPadding) {
+      dLen = ((sLen - 1) / 3 + 1) << 2;   // Returned character / byte count
+    } else {
+      dLen = eLen / 3 * 4;
+      if (left == 1) {
+        dLen += 2;
+      } else if (left == 2) {
+        dLen += 3;
+      }
+    }
+
     char[] dArr = new char[dLen];
 
     // Encode even 24-bits
@@ -80,16 +110,25 @@ public class Base64Url {
     }
 
     // Pad and encode last bits if source isn't even 24 bits.
-    int left = sLen - eLen; // 0 - 2.
+    int offset = eLen / 3 * 4;
+
     if (left > 0) {
       // Prepare the int
       int i = ((sArr[eLen] & 0xff) << 10) | (left == 2 ? ((sArr[sLen - 1] & 0xff) << 2) : 0);
 
-      // Set last four chars
-      dArr[dLen - 4] = CA[ i >> 12];
-      dArr[dLen - 3] = CA[(i >>> 6) & 0x3f];
-      dArr[dLen - 2] = left == 2 ? CA[i & 0x3f] : '=';
-      dArr[dLen - 1] = '=';
+      dArr[offset++] = CA[i >> 12];
+      dArr[offset++] = CA[(i >>> 6) & 0x3f];
+
+      // 1 -> 2, 2 -> 3
+      if (withPadding) {
+        // Set last four chars
+        dArr[offset++] = left == 2 ? CA[i & 0x3f] : '=';
+        dArr[offset] = '=';
+      } else {
+        if (left == 2) {
+          dArr[offset] = CA[i & 0x3f];
+        }
+      }
     }
     return dArr;
   }
@@ -173,6 +212,22 @@ public class Base64Url {
    * @return A BASE64Url encoded array. Never <code>null</code>.
    */
   public static byte[] encodeToByte(byte[] sArr) {
+    return encodeToByte(sArr, true);
+  }
+
+  /**
+   * Encodes a raw byte array into a BASE64Url <code>byte[]</code> representation without padding i
+   * accordance with RFC 2045.
+   * @param sArr
+   *          The bytes to convert. If <code>null</code> or length 0 an empty array will be
+   *          returned.
+   * @return A BASE64Url encoded array. Never <code>null</code>.
+   */
+  public static byte[] encodeToByteNoPadding(byte[] sArr) {
+    return encodeToByte(sArr, false);
+  }
+
+  public static byte[] encodeToByte(byte[] sArr, boolean withPadding) {
     // Check special case
     int sLen = sArr != null ? sArr.length : 0;
     if (sLen == 0) {
@@ -180,8 +235,21 @@ public class Base64Url {
     }
     //assert sArr != null;
 
-    int eLen = (sLen / 3) * 3;                              // Length of even 24-bits.
-    int dLen = ((sLen - 1) / 3 + 1) << 2;                   // Returned character / byte count
+    int eLen = (sLen / 3) * 3;              // Length of even 24-bits.
+    int left = sLen - eLen; // 0 - 2.
+
+    int dLen;
+    if (withPadding) {
+      dLen = ((sLen - 1) / 3 + 1) << 2;   // Returned character / byte count
+    } else {
+      dLen = eLen / 3 * 4;
+      if (left == 1) {
+        dLen += 2;
+      } else if (left == 2) {
+        dLen += 3;
+      }
+    }
+
     byte[] dArr = new byte[dLen];
 
     // Encode even 24-bits
@@ -197,16 +265,24 @@ public class Base64Url {
     }
 
     // Pad and encode last bits if source isn't an even 24 bits.
-    int left = sLen - eLen; // 0 - 2.
+    int offset = eLen / 3 * 4;
     if (left > 0) {
       // Prepare the int
       int i = ((sArr[eLen] & 0xff) << 10) | (left == 2 ? ((sArr[sLen - 1] & 0xff) << 2) : 0);
 
       // Set last four chars
-      dArr[dLen - 4] = (byte) CA[ i >> 12];
-      dArr[dLen - 3] = (byte) CA[(i >>> 6) & 0x3f];
-      dArr[dLen - 2] = left == 2 ? (byte) CA[i & 0x3f] : (byte) '=';
-      dArr[dLen - 1] = '=';
+      dArr[offset++] = (byte) CA[i >> 12];
+      dArr[offset++] = (byte) CA[(i >>> 6) & 0x3f];
+
+      // 1 -> 2, 2 -> 3
+      if (withPadding) {
+        dArr[offset++] = left == 2 ? (byte) CA[i & 0x3f] : (byte) '=';
+        dArr[offset] = '=';
+      } else {
+        if (left == 2) {
+          dArr[offset] = (byte) CA[i & 0x3f];
+        }
+      }
     }
     return dArr;
   }
