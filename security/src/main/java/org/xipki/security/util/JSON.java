@@ -4,10 +4,12 @@
 package org.xipki.security.util;
 
 import com.google.gson.*;
+import org.xipki.util.DateUtil;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 /**
  * JSON util class
@@ -25,6 +27,18 @@ public class JSON {
 
     public JsonElement serialize(byte[] src, java.lang.reflect.Type typeOfSrc, JsonSerializationContext context) {
       return new JsonPrimitive(org.xipki.util.Base64.encodeToString(src));
+    }
+  }
+
+  // only up to seconds. The milli seconds will be ignored.
+  private static class InstantTypeAdapter implements JsonSerializer<Instant>, JsonDeserializer<Instant> {
+    public Instant deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context)
+        throws JsonParseException {
+      return DateUtil.parseUtcTimeyyyyMMddhhmmss(json.getAsString());
+    }
+
+    public JsonElement serialize(Instant src, java.lang.reflect.Type typeOfSrc, JsonSerializationContext context) {
+      return new JsonPrimitive(DateUtil.toUtcTimeyyyyMMddhhmmss(src));
     }
   }
 
@@ -90,6 +104,7 @@ public class JSON {
       .registerTypeHierarchyAdapter(byte[].class, new ByteArrayToBase64TypeAdapter())
       .registerTypeHierarchyAdapter(Double.class, new DoubleTypeAdapter())
       .registerTypeHierarchyAdapter(double.class, new DoubleTypeAdapter())
+      .registerTypeHierarchyAdapter(Instant.class, new InstantTypeAdapter())
       .disableHtmlEscaping()
       .create();
 
@@ -97,6 +112,7 @@ public class JSON {
       .registerTypeHierarchyAdapter(byte[].class, new ByteArrayToBase64TypeAdapter())
       .registerTypeHierarchyAdapter(Double.class, new DoubleTypeAdapter())
       .registerTypeHierarchyAdapter(double.class, new DoubleTypeAdapter())
+      .registerTypeHierarchyAdapter(Instant.class, new InstantTypeAdapter())
       .disableHtmlEscaping()
       .setPrettyPrinting().create();
 
