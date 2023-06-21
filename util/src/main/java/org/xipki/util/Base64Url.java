@@ -366,9 +366,15 @@ public class Base64Url {
    * @return A BASE64Url encoded array. Never <code>null</code>.
    */
   public static String encodeToString(byte[] sArr) {
-    // Reuse char[] since we can't create a String incrementally anyway and StringBuffer/Builder
-    // would be slower.
-    return new String(encodeToChar(sArr));
+    return new String(encodeToChar(sArr, true));
+  }
+
+  public static String encodeToStringNoPadding(byte[] sArr) {
+    return new String(encodeToChar(sArr, false));
+  }
+
+  public static String encodeToString(byte[] sArr, boolean withPadding) {
+    return new String(encodeToChar(sArr, withPadding));
   }
 
   /**
