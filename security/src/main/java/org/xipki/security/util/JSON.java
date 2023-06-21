@@ -4,7 +4,6 @@
 package org.xipki.security.util;
 
 import com.google.gson.*;
-import org.xipki.util.DateUtil;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -30,15 +29,14 @@ public class JSON {
     }
   }
 
-  // only up to seconds. The milli seconds will be ignored.
   private static class InstantTypeAdapter implements JsonSerializer<Instant>, JsonDeserializer<Instant> {
     public Instant deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context)
         throws JsonParseException {
-      return DateUtil.parseUtcTimeyyyyMMddhhmmss(json.getAsString());
+      return Instant.parse(json.getAsString());
     }
 
     public JsonElement serialize(Instant src, java.lang.reflect.Type typeOfSrc, JsonSerializationContext context) {
-      return new JsonPrimitive(DateUtil.toUtcTimeyyyyMMddhhmmss(src));
+      return new JsonPrimitive(src.toString());
     }
   }
 
