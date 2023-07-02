@@ -34,11 +34,21 @@ public class HttpRespContent {
     return new HttpRespContent(200, contentType, base64, content);
   }
 
+  @Deprecated
   public static HttpRespContent ofError(int statusCode, String contentType, byte[] content) {
     return new HttpRespContent(statusCode, contentType, false, content);
   }
 
+  @Deprecated
   public static HttpRespContent ofError(int statusCode, String contentType, boolean base64, byte[] content) {
+    return new HttpRespContent(statusCode, contentType, base64, content);
+  }
+
+  public static HttpRespContent of(int statusCode, String contentType, byte[] content) {
+    return new HttpRespContent(statusCode, contentType, false, content);
+  }
+
+  public static HttpRespContent of(int statusCode, String contentType, boolean base64, byte[] content) {
     return new HttpRespContent(statusCode, contentType, base64, content);
   }
 
