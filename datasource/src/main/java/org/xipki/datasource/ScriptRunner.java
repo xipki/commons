@@ -48,7 +48,7 @@ public class ScriptRunner {
   private final Connection connection;
 
   private final boolean stopOnError;
-  private final boolean autoCommit;
+  //private final boolean autoCommit = true;
 
   @SuppressWarnings("UseOfSystemOutOrSystemErr")
   private PrintWriter logWriter = null;
@@ -82,18 +82,15 @@ public class ScriptRunner {
 
   public static void runScript(Connection conn, String scriptFile)
       throws Exception {
-    conn.setAutoCommit(false);
-    ScriptRunner runner = new ScriptRunner(conn, false, true);
+    ScriptRunner runner = new ScriptRunner(conn, true);
     runner.runScript(IoUtil.expandFilepath(scriptFile));
-    conn.commit();
   } // method initDb
 
   /**
    * Default constructor
    */
-  public ScriptRunner(Connection connection, boolean autoCommit, boolean stopOnError) {
+  public ScriptRunner(Connection connection, boolean stopOnError) {
     this.connection = connection;
-    this.autoCommit = autoCommit;
     this.stopOnError = stopOnError;
     File logFile = new File("create_db.log");
     File errorLogFile = new File("create_db_error.log");
@@ -162,8 +159,8 @@ public class ScriptRunner {
     try {
       boolean originalAutoCommit = connection.getAutoCommit();
       try {
-        if (originalAutoCommit != this.autoCommit) {
-          connection.setAutoCommit(this.autoCommit);
+        if (!originalAutoCommit) {
+          connection.setAutoCommit(true);
         }
         runScript(connection, reader);
       } finally {
@@ -226,14 +223,11 @@ public class ScriptRunner {
       if (command != null) {
         this.execCommand(conn, command, lineReader, ignoreSqlError);
       }
-      if (!autoCommit) {
-        conn.commit();
-      }
     }
     catch (IOException e) {
       throw new IOException(String.format("Error executing '%s': %s", command, e.getMessage()), e);
     } finally {
-      conn.rollback();
+      // conn.rollback();
       flush();
     }
   }
@@ -289,7 +283,7 @@ public class ScriptRunner {
       }
     }
 
-    if (autoCommit && !conn.getAutoCommit()) {
+    if (!conn.getAutoCommit()) {
       conn.commit();
     }
 
