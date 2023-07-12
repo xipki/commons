@@ -3,10 +3,7 @@
 
 package org.xipki.security.asn1;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.BERTags;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERUTCTime;
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x509.Time;
 
 import java.io.BufferedInputStream;
@@ -124,14 +121,16 @@ public class Asn1StreamParser {
     byte[] bytes = readBlock(instream, name);
     bytesLen.set(bytes.length);
     try {
+      ASN1Encodable asn1Time;
       if (tag == BERTags.UTC_TIME) {
-        return DERUTCTime.getInstance(bytes).getDate().toInstant();
+        asn1Time = DERUTCTime.getInstance(bytes);
       } else if (tag == BERTags.GENERALIZED_TIME) {
-        return DERGeneralizedTime.getInstance(bytes).getDate().toInstant();
+        asn1Time = DERGeneralizedTime.getInstance(bytes);
       } else {
         throw new IllegalArgumentException("invalid tag for " + name + ": " + tag);
       }
-    } catch (ParseException ex) {
+      return Time.getInstance(asn1Time).getDate().toInstant();
+    } catch (Exception ex) {
       throw new IllegalArgumentException("error parsing time", ex);
     }
   } // method readTime
@@ -141,6 +140,17 @@ public class Asn1StreamParser {
     while (remaining > 0) {
       remaining -= instream.skip(remaining);
     }
+  }
+
+  public static void skipField(InputStream instream) throws IOException {
+    markAndReadTag(instream);
+    int len = readLength(new MyInt(), instream);
+    skip(instream, len);
+  }
+
+  public static void skipTagLen(InputStream instream) throws IOException {
+    markAndReadTag(instream);
+    readLength(new MyInt(), instream);
   }
 
 }
