@@ -24,7 +24,8 @@ public enum ErrorCode {
   UNKNOWN_CERT(13),
   UNKNOWN_CERT_PROFILE(14),
   PATH_NOT_FOUND(15),
-  UNAUTHORIZED(16);
+  UNAUTHORIZED(16),
+  UNKNOWN_CA(17);
 
   private final int code;
 

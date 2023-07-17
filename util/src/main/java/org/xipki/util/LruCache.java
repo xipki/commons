@@ -377,4 +377,8 @@ public class LruCache<K, V> {
         maxSize, hitCount, missCount, hitPercent);
   }
 
+  public boolean containsKey(K key) {
+    return map.containsKey(key);
+  }
+
 }
