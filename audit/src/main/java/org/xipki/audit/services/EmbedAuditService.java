@@ -20,11 +20,13 @@ import org.xipki.util.exception.InvalidConfException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The embedded audit service.
@@ -62,6 +64,8 @@ public class EmbedAuditService implements AuditService {
   private Path writerPath;
 
   private String writerFileCoreName;
+
+  private AtomicLong lastFlushed = new AtomicLong();
 
   public EmbedAuditService() {
   }
@@ -168,6 +172,12 @@ public class EmbedAuditService implements AuditService {
 
       writer.write(payload);
       writer.write('\n');
+
+      long now = Clock.systemUTC().millis();
+      if (now > lastFlushed.get() + 10000) { // 10 seconds
+        writer.flush();
+        lastFlushed.set(now);
+      }
     } catch (Exception ex) {
       LogUtil.error(LOG, ex);
     }
