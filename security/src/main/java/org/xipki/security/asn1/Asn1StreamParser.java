@@ -43,10 +43,16 @@ public class Asn1StreamParser {
     int tag = instream.read();
     assertTag(expectedTag, tag, name);
 
-    return readBlock(instream, name);
+    return doReadBlock(instream, name);
   }
 
   public static byte[] readBlock(BufferedInputStream instream, String name) throws IOException {
+    instream.mark(10);
+    instream.read();
+    return doReadBlock(instream, name);
+  }
+
+  public static byte[] doReadBlock(BufferedInputStream instream, String name) throws IOException {
     MyInt lenBytesSize = new MyInt();
     int length = readLength(lenBytesSize, instream);
     instream.reset();
