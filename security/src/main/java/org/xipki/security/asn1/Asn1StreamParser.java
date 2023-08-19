@@ -38,21 +38,17 @@ public class Asn1StreamParser {
 
   public static final int TAG_CONSTRUCTED_SET = BERTags.CONSTRUCTED | BERTags.SET;
 
+  public static byte[] readBlock(BufferedInputStream instream, String name) throws IOException {
+    return readBlock(Integer.MAX_VALUE, instream, name);
+  }
+
   public static byte[] readBlock(int expectedTag, BufferedInputStream instream, String name) throws IOException {
     instream.mark(10);
     int tag = instream.read();
-    assertTag(expectedTag, tag, name);
+    if (expectedTag != Integer.MAX_VALUE) {
+      assertTag(expectedTag, tag, name);
+    }
 
-    return doReadBlock(instream, name);
-  }
-
-  public static byte[] readBlock(BufferedInputStream instream, String name) throws IOException {
-    instream.mark(10);
-    instream.read();
-    return doReadBlock(instream, name);
-  }
-
-  public static byte[] doReadBlock(BufferedInputStream instream, String name) throws IOException {
     MyInt lenBytesSize = new MyInt();
     int length = readLength(lenBytesSize, instream);
     instream.reset();
@@ -62,7 +58,7 @@ public class Asn1StreamParser {
       throw new IOException("error reading " + name);
     }
     return bytes;
-  } // method readBlock
+  }
 
   public static byte[] readValue(int expectedTag, BufferedInputStream instream, String name) throws IOException {
     instream.mark(10);
@@ -82,6 +78,13 @@ public class Asn1StreamParser {
   public static int markAndReadTag(InputStream instream) throws IOException {
     instream.mark(10);
     return instream.read();
+  }
+
+  public static int peekTag(InputStream instream) throws IOException {
+    instream.mark(1);
+    int tag = instream.read();
+    instream.reset();
+    return tag;
   }
 
   public static int readLength(MyInt lenBytesSize, InputStream instream) throws IOException {
@@ -123,20 +126,18 @@ public class Asn1StreamParser {
   }
 
   public static Instant readTime(MyInt bytesLen, BufferedInputStream instream, String name) throws IOException {
-    int tag = markAndReadTag(instream);
+    int tag = peekTag(instream);
     byte[] bytes = readBlock(instream, name);
     bytesLen.set(bytes.length);
     try {
-      ASN1Encodable asn1Time;
       if (tag == BERTags.UTC_TIME) {
-        asn1Time = DERUTCTime.getInstance(bytes);
+        return DERUTCTime.getInstance(bytes).getDate().toInstant();
       } else if (tag == BERTags.GENERALIZED_TIME) {
-        asn1Time = DERGeneralizedTime.getInstance(bytes);
+        return DERGeneralizedTime.getInstance(bytes).getDate().toInstant();
       } else {
         throw new IllegalArgumentException("invalid tag for " + name + ": " + tag);
       }
-      return Time.getInstance(asn1Time).getDate().toInstant();
-    } catch (Exception ex) {
+    } catch (ParseException ex) {
       throw new IllegalArgumentException("error parsing time", ex);
     }
   } // method readTime

@@ -292,7 +292,8 @@ public class CrlStreamParser extends Asn1StreamParser {
 
       //       version                 Version OPTIONAL,
       //                                    -- if present, MUST be v2
-      tag = markAndReadTag(instream);
+      tag = peekTag(instream);
+      instream.reset();
 
       if (tag == BERTags.INTEGER) {
         // optional field version is available
@@ -300,14 +301,12 @@ public class CrlStreamParser extends Asn1StreamParser {
         offset += bytes.length;
 
         this.version = ASN1Integer.getInstance(bytes).getValue().intValue();
-        tag = markAndReadTag(instream);
       } else {
         this.version = 0; // default version v1
       }
 
       //       signature               AlgorithmIdentifier,
-      assertTag(TAG_CONSTRUCTED_SEQUENCE, tag, "tbsCertList.signature");
-      bytes = readBlock(instream, "tbsCertList.signature");
+      bytes = readBlock(TAG_CONSTRUCTED_SEQUENCE, instream, "tbsCertList.signature");
       offset += bytes.length;
 
       AlgorithmIdentifier tbsSignature = AlgorithmIdentifier.getInstance(bytes);
@@ -323,12 +322,12 @@ public class CrlStreamParser extends Asn1StreamParser {
       offset += bytesLen.get();
 
       //       nextUpdate              Time OPTIONAL,
-      tag = markAndReadTag(instream);
+      tag = peekTag(instream);
       if (tag != TAG_CONSTRUCTED_SEQUENCE) {
         instream.reset();
         this.nextUpdate = readTime(bytesLen, instream, "tbsCertList.thisUpdate");
         offset += bytesLen.get();
-        tag = markAndReadTag(instream);
+        tag = peekTag(instream);
       } else {
         this.nextUpdate = null;
       }
@@ -337,6 +336,7 @@ public class CrlStreamParser extends Asn1StreamParser {
 
       //       revokedCertificates     SEQUENCE OF SEQUENCE  { ... } OPTIONAL
       if (offset < tbsCertListLength && TAG_CONSTRUCTED_SEQUENCE == tag) {
+        markAndReadTag(instream);
         int revokedCertificatesOffset = offset;
         int revokedCertificatesLength = readLength(lenBytesSize, instream);
         offset += lenBytesSize.get();
@@ -347,9 +347,7 @@ public class CrlStreamParser extends Asn1StreamParser {
         // skip the revokedCertificates
         skip(instream, revokedCertificatesLength);
         offset += revokedCertificatesLength;
-        tag = -1;
       } else {
-        instream.reset();
         this.revokedCertificatesEndIndex = -1;
         this.firstRevokedCertificateOffset = -1;
       }
