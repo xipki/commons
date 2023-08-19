@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.security.KeyUsage;
 import org.xipki.security.*;
+import org.xipki.security.asn1.Asn1StreamParser;
 import org.xipki.util.Base64;
 import org.xipki.util.*;
 import org.xipki.util.PemEncoder.PemLabel;
@@ -910,5 +911,85 @@ public class X509Util {
       throw new XiSecurityException("error while encoding Subject or SubjectPublicKeyInfo");
     }
   }
+
+
+  public static byte[] extractCertSubject(byte[] certBytes) {
+    return extractCertField(certBytes, "subject");
+  }
+
+  public static byte[] extractCertIssuer(byte[] certBytes) {
+    return extractCertField(certBytes, "issuer");
+  }
+
+  public static long extractCertNotBefore(byte[] certBytes) {
+    return extractTime(certBytes, "notBefore");
+  }
+
+  public static long extractCertNotAfter(byte[] certBytes) {
+    return extractTime(certBytes, "notAfter");
+  }
+
+  private static long extractTime(byte[] certBytes, String fieldName) {
+    byte[] bytes = extractCertField(certBytes, fieldName);
+    if (bytes[0] == BERTags.UTC_TIME) {
+      return Time.getInstance(ASN1UTCTime.getInstance(bytes)).getDate().getTime() / 1000;
+    } else {
+      return Time.getInstance(ASN1GeneralizedTime.getInstance(bytes)).getDate().getTime() / 1000;
+    }
+  }
+
+  private static byte[] extractCertField(byte[] certBytes, String fieldName) {
+    BufferedInputStream instream = new BufferedInputStream(new ByteArrayInputStream(certBytes));
+    try {
+      // SEQUENCE of Certificate
+      Asn1StreamParser.skipTagLen(instream);
+
+      // SEQUENCE OF TBSCertificate
+      Asn1StreamParser.skipTagLen(instream);
+
+      // #num = 3: version, serialNumber, signature
+      int numFields = 3;
+      for (int i = 0; i < numFields; i++) {
+        Asn1StreamParser.skipField(instream);
+      }
+
+      // issuer
+      if ("issuer".equalsIgnoreCase(fieldName)) {
+        return Asn1StreamParser.readBlock(Asn1StreamParser.TAG_CONSTRUCTED_SEQUENCE, instream, "issuer");
+      } else {
+        Asn1StreamParser.skipField(instream);
+      }
+
+      // Validity
+      if ("notBefore".equalsIgnoreCase(fieldName) || "notAfter".equalsIgnoreCase(fieldName)) {
+        Asn1StreamParser.skipTagLen(instream);
+
+        // notBefore
+        if ("notBefore".equalsIgnoreCase(fieldName)) {
+          return Asn1StreamParser.readBlock(instream, "notBefore");
+        } else {
+          Asn1StreamParser.skipField(instream);
+        }
+
+        // notAfter
+        if ("notAfter".equalsIgnoreCase(fieldName)) {
+          return Asn1StreamParser.readBlock(instream, "notAfter");
+        } else {
+          Asn1StreamParser.skipField(instream);
+        }
+      } else {
+        Asn1StreamParser.skipField(instream);
+      }
+
+      if ("subject".equalsIgnoreCase(fieldName)) {
+        return Asn1StreamParser.readBlock(Asn1StreamParser.TAG_CONSTRUCTED_SEQUENCE, instream, "subject");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("invalid certificate", e);
+    }
+
+    throw new IllegalArgumentException("unknown fieldName " + fieldName);
+  }
+
 
 }
