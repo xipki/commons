@@ -1,3 +1,6 @@
+// Copyright (c) 2013-2023 xipki. All rights reserved.
+// License Apache License 2.0
+
 package org.xipki.common.test;
 
 import org.junit.Assert;
@@ -6,6 +9,12 @@ import org.xipki.util.Base64Url;
 
 import java.util.Arrays;
 
+/**
+ * Test for {@link Base64Url}.
+ *
+ * @author Lijun Liao (xipki)
+ * @since 2.0.0
+ */
 public class Base64UrlTest {
 
   @Test

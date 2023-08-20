@@ -150,7 +150,8 @@ public class P11ModuleConf {
       singleFilters = new LinkedList<>();
     }
 
-    void addEntry(Set<P11SlotIdFilter> slots, Collection<String> includeMechanisms, Collection<String> excludeMechanisms) {
+    void addEntry(Set<P11SlotIdFilter> slots, Collection<String> includeMechanisms,
+                  Collection<String> excludeMechanisms) {
       notNull(includeMechanisms, "includeMechanisms");
       singleFilters.add(new P11SingleMechanismFilter(slots, includeMechanisms, excludeMechanisms));
     }

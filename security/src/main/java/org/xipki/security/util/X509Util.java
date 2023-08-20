@@ -912,7 +912,6 @@ public class X509Util {
     }
   }
 
-
   public static byte[] extractCertSubject(byte[] certBytes) {
     return extractCertField(certBytes, "subject");
   }
@@ -990,6 +989,5 @@ public class X509Util {
 
     throw new IllegalArgumentException("unknown fieldName " + fieldName);
   }
-
 
 }
