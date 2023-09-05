@@ -3,6 +3,8 @@
 
 package org.xipki.datasource;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
@@ -11,15 +13,10 @@ import org.xipki.util.Args;
 import org.xipki.util.FileOrValue;
 import org.xipki.util.IoUtil;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.Iterator;
 
 /**
  * Factory to create {@link DataSourceWrapper}.
@@ -36,20 +33,24 @@ public class DataSourceFactory {
       throws PasswordResolverException, IOException {
     Args.notNull(conf, "conf");
 
-    Properties props = new Properties();
+    PropertiesConfiguration props = new PropertiesConfiguration();
     try (Reader reader = new StringReader(conf.readContent())) {
       props.load(reader);
+    } catch (ConfigurationException e) {
+        throw new IOException(e);
     }
 
-    return createDataSource(name, props, passwordResolver);
+      return createDataSource(name, props, passwordResolver);
   } // method createDataSource
 
   public DataSourceWrapper createDataSource(String name, InputStream conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {
     Args.notNull(conf, "conf");
-    Properties config = new Properties();
+    PropertiesConfiguration config = new PropertiesConfiguration();
     try {
       config.load(conf);
+    } catch (ConfigurationException e) {
+        throw new IOException(e);
     } finally {
       try {
         conf.close();
@@ -61,19 +62,19 @@ public class DataSourceFactory {
     return createDataSource(name, config, passwordResolver);
   } // method createDataSource
 
-  public DataSourceWrapper createDataSource(String name, Properties conf, PasswordResolver passwordResolver)
+  public DataSourceWrapper createDataSource(String name, PropertiesConfiguration conf, PasswordResolver passwordResolver)
       throws PasswordResolverException {
     Args.notNull(conf, "conf");
     DatabaseType databaseType;
-    String className = conf.getProperty("dataSourceClassName");
+    String className = String.valueOf(conf.getProperty("dataSourceClassName"));
     if (className != null) {
       databaseType = DatabaseType.forDataSourceClass(className);
     } else {
-      className = conf.getProperty("driverClassName");
+      className = String.valueOf(conf.getProperty("driverClassName"));
       if (className != null) {
         databaseType = DatabaseType.forDriver(className);
       } else {
-        String jdbcUrl = conf.getProperty("jdbcUrl");
+        String jdbcUrl = String.valueOf(conf.getProperty("jdbcUrl"));
         if (jdbcUrl == null) {
           throw new IllegalArgumentException("none of the properties dataSourceClassName"
               + ", driverClassName and jdbcUrl is configured");
@@ -83,7 +84,7 @@ public class DataSourceFactory {
       }
     }
 
-    String password = conf.getProperty("password");
+    String password = String.valueOf(conf.getProperty("password"));
     if (password != null) {
       if (passwordResolver != null) {
         password = new String(passwordResolver.resolvePassword(password));
@@ -91,7 +92,7 @@ public class DataSourceFactory {
       conf.setProperty("password", password);
     }
 
-    password = conf.getProperty("dataSource.password");
+    password = String.valueOf(conf.getProperty("dataSource.password"));
     if (password != null) {
       if (passwordResolver != null) {
         password = new String(passwordResolver.resolvePassword(password));
@@ -104,7 +105,7 @@ public class DataSourceFactory {
      *   dataSource.url = jdbc:h2:~/xipki/db/h2/ocspcrl
      *   dataSource.url = jdbc:hsqldb:file:~/xipki/db/hsqldb/ocspcache;sql.syntax_pgs=true
      */
-    String dataSourceUrl = conf.getProperty("dataSource.url");
+    String dataSourceUrl = String.valueOf(conf.getProperty("dataSource.url"));
     if (dataSourceUrl != null) {
       String newUrl = null;
 
@@ -121,10 +122,11 @@ public class DataSourceFactory {
       }
     }
 
-    Set<Object> keySet = new HashSet<>(conf.keySet());
-    for (Object key : keySet) {
-      if (((String) key).startsWith("sqlscript.") || ((String) key).startsWith("liquibase.")) {
-        conf.remove(key);
+    Iterator<String> keys = conf.getKeys();
+    while (keys.hasNext()) {
+      String key = keys.next();
+      if (key.startsWith("sqlscript.") || key.startsWith("liquibase.")) {
+        conf.clearProperty(key);
       }
     }
 

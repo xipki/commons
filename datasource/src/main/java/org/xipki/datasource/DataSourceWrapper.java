@@ -5,6 +5,8 @@ package org.xipki.datasource;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.datasource.DataAccessException.Reason;
@@ -15,7 +17,6 @@ import java.io.Closeable;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.xipki.util.Args.notBlank;
@@ -1087,16 +1088,16 @@ public abstract class DataSourceWrapper implements Closeable {
     }
   } // method executeUpdate
 
-  static DataSourceWrapper createDataSource(String name, Properties props, DatabaseType databaseType) {
+  static DataSourceWrapper createDataSource(String name, PropertiesConfiguration props, DatabaseType databaseType) {
     notNull(props, "props");
     notNull(databaseType, "databaseType");
 
     // The DB2 schema name is case-sensitive, and must be specified in uppercase characters
-    String datasourceClassName = props.getProperty("dataSourceClassName");
+    String datasourceClassName = String.valueOf(props.getProperty("dataSourceClassName"));
     if (datasourceClassName != null) {
       if (datasourceClassName.contains(".db2.")) {
         String propName = "dataSource.currentSchema";
-        String schema = props.getProperty(propName);
+        String schema = String.valueOf(props.getProperty(propName));
         if (schema != null) {
           String upperCaseSchema = schema.toUpperCase();
           if (!schema.equals(upperCaseSchema)) {
@@ -1106,7 +1107,7 @@ public abstract class DataSourceWrapper implements Closeable {
       }
     } else {
       String propName = "jdbcUrl";
-      final String url = props.getProperty(propName);
+      final String url = String.valueOf(props.getProperty(propName));
       if (startsWithIgnoreCase(url, "jdbc:db2:")) {
         String sep = ":currentSchema=";
         int idx = url.indexOf(sep);
@@ -1125,8 +1126,9 @@ public abstract class DataSourceWrapper implements Closeable {
       }
     } // end if
 
-    String sqlType = (String) props.remove("sql.type");
-    HikariConfig conf = new HikariConfig(props);
+    String sqlType = (String) props.getProperty("sql.type");
+    props.clearProperty("sql.type");
+    HikariConfig conf = new HikariConfig(ConfigurationConverter.getProperties(props));
 
     if (databaseType == DatabaseType.UNKNOWN) {
       // map UNKNOWN to a pre-defined database type
