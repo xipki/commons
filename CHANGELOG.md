@@ -9,13 +9,13 @@ See also <https://github.com/xipki/commons/releases>
 - audit-extra
   - N/A
 - datasource
-  - N/A
+  - Feature: extend Properties to use the place holder ${env:name} for environment and ${sys:name} for system property.
 - password
   - N/A
 - security
   - N/A
 - util
-  - N/A
+  - Feature: extend Properties to use the place holder ${env:name} for environment and ${sys:name} for system property.
 - xipki-tomcat-password
   - N/A
 - Dependencies
