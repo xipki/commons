@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.util.Args;
+import org.xipki.util.ConfigurableProperties;
 import org.xipki.util.FileOrValue;
 import org.xipki.util.IoUtil;
 
@@ -18,7 +19,6 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -36,7 +36,7 @@ public class DataSourceFactory {
       throws PasswordResolverException, IOException {
     Args.notNull(conf, "conf");
 
-    Properties props = new Properties();
+    ConfigurableProperties props = new ConfigurableProperties();
     try (Reader reader = new StringReader(conf.readContent())) {
       props.load(reader);
     }
@@ -47,7 +47,7 @@ public class DataSourceFactory {
   public DataSourceWrapper createDataSource(String name, InputStream conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {
     Args.notNull(conf, "conf");
-    Properties config = new Properties();
+    ConfigurableProperties config = new ConfigurableProperties();
     try {
       config.load(conf);
     } finally {
@@ -61,7 +61,7 @@ public class DataSourceFactory {
     return createDataSource(name, config, passwordResolver);
   } // method createDataSource
 
-  public DataSourceWrapper createDataSource(String name, Properties conf, PasswordResolver passwordResolver)
+  public DataSourceWrapper createDataSource(String name, ConfigurableProperties conf, PasswordResolver passwordResolver)
       throws PasswordResolverException {
     Args.notNull(conf, "conf");
     DatabaseType databaseType;
@@ -121,9 +121,8 @@ public class DataSourceFactory {
       }
     }
 
-    Set<Object> keySet = new HashSet<>(conf.keySet());
-    for (Object key : keySet) {
-      if (((String) key).startsWith("sqlscript.") || ((String) key).startsWith("liquibase.")) {
+    for (String key : conf.propertyNames()) {
+      if (key.startsWith("sqlscript.") || key.startsWith("liquibase.")) {
         conf.remove(key);
       }
     }

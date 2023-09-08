@@ -84,11 +84,15 @@ public class StringUtil {
   }
 
   public static boolean startsWithIgnoreCase(String str, String prefix) {
-    if (str.length() < prefix.length()) {
+    return startsWithIgnoreCase(str, prefix, 0);
+  }
+
+  public static boolean startsWithIgnoreCase(String str, String prefix, int offset) {
+    if (str.length() < offset + prefix.length()) {
       return false;
     }
 
-    return prefix.equalsIgnoreCase(str.substring(0, prefix.length()));
+    return prefix.equalsIgnoreCase(str.substring(offset, offset + prefix.length()));
   }
 
   public static boolean orEqualsIgnoreCase(String str, String... tokens) {

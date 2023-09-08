@@ -8,6 +8,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.datasource.DataAccessException.Reason;
+import org.xipki.util.ConfigurableProperties;
 import org.xipki.util.LogUtil;
 import org.xipki.util.LruCache;
 
@@ -15,7 +16,6 @@ import java.io.Closeable;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.xipki.util.Args.notBlank;
@@ -1087,7 +1087,7 @@ public abstract class DataSourceWrapper implements Closeable {
     }
   } // method executeUpdate
 
-  static DataSourceWrapper createDataSource(String name, Properties props, DatabaseType databaseType) {
+  static DataSourceWrapper createDataSource(String name, ConfigurableProperties props, DatabaseType databaseType) {
     notNull(props, "props");
     notNull(databaseType, "databaseType");
 
@@ -1126,7 +1126,7 @@ public abstract class DataSourceWrapper implements Closeable {
     } // end if
 
     String sqlType = (String) props.remove("sql.type");
-    HikariConfig conf = new HikariConfig(props);
+    HikariConfig conf = new HikariConfig(props.toProperties());
 
     if (databaseType == DatabaseType.UNKNOWN) {
       // map UNKNOWN to a pre-defined database type

@@ -17,6 +17,7 @@ package org.xipki.datasource;
  */
 
 import org.xipki.password.PasswordResolver;
+import org.xipki.util.ConfigurableProperties;
 import org.xipki.util.IoUtil;
 
 import java.io.*;
@@ -24,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.time.ZonedDateTime;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,8 +60,10 @@ public class ScriptRunner {
 
   public static void runScript(String dbConfFile, String scriptFile, PasswordResolver passwordResolver)
       throws Exception {
-    Properties props = new Properties();
-    props.load(Files.newInputStream(Paths.get(IoUtil.expandFilepath(dbConfFile))));
+    ConfigurableProperties props = new ConfigurableProperties();
+    try (InputStream inStream = Files.newInputStream(Paths.get(IoUtil.expandFilepath(dbConfFile)))) {
+      props.load(inStream);
+    }
     // only one connection is needed.
     props.setProperty("minimumIdle", "1");
     try (DataSourceWrapper dataSource =

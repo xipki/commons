@@ -15,7 +15,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
 import static org.xipki.util.Args.notBlank;
 import static org.xipki.util.Args.notNull;
@@ -304,11 +303,11 @@ public class IoUtil {
     return console.readLine();
   }
 
-  public static Properties loadProperties(String path) throws IOException {
+  public static ConfigurableProperties loadProperties(String path) throws IOException {
     return loadProperties(path, false);
   }
 
-  public static Properties loadProperties(String path, boolean prependBaseDir)
+  public static ConfigurableProperties loadProperties(String path, boolean prependBaseDir)
       throws IOException {
     Path realPath = Paths.get(expandFilepath(path, prependBaseDir));
     if (!Files.exists(realPath)) {
@@ -319,7 +318,7 @@ public class IoUtil {
       throw new IOException("File " + path + " is not readable");
     }
 
-    Properties props = new Properties();
+    ConfigurableProperties props = new ConfigurableProperties();
     try (InputStream is = Files.newInputStream(realPath)) {
       props.load(is);
     }
