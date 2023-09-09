@@ -82,7 +82,7 @@ public class CtLogVerifyTest {
     if (is == null) {
       throw new IOException("could not find " + name);
     }
-    return IoUtil.read(is);
+    return IoUtil.readAndClose(is);
   }
 
 }

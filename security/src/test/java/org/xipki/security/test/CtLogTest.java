@@ -36,7 +36,7 @@ public class CtLogTest {
   }
 
   private void parseCtLogInCert(String certFile) throws Exception {
-    byte[] certBytes = IoUtil.read(getClass().getResourceAsStream(certFile));
+    byte[] certBytes = IoUtil.readAndClose(getClass().getResourceAsStream(certFile));
     certBytes = X509Util.toDerEncoded(certBytes);
     Certificate cert = Certificate.getInstance(certBytes);
     Extension extn = cert.getTBSCertificate().getExtensions().getExtension(ObjectIdentifiers.Extn.id_SCTs);

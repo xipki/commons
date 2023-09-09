@@ -30,6 +30,7 @@ import org.xipki.security.pkcs11.P11SlotId;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.util.Hex;
+import org.xipki.util.IoUtil;
 import org.xipki.util.LogUtil;
 import org.xipki.util.StringUtil;
 
@@ -49,8 +50,6 @@ import java.util.*;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
 import static org.xipki.util.Args.*;
-import static org.xipki.util.IoUtil.read;
-import static org.xipki.util.IoUtil.save;
 
 /**
  * {@link P11Slot} for PKCS#11 emulator.
@@ -525,7 +524,7 @@ class EmulatorP11Slot extends P11Slot {
     }
 
     try {
-      save(getInfoFile(pubKeyDir, hexId), StringUtil.toUtf8Bytes(sb.toString()));
+      IoUtil.save(getInfoFile(pubKeyDir, hexId), StringUtil.toUtf8Bytes(sb.toString()));
     } catch (IOException ex) {
       throw new TokenException(ex.getMessage(), ex);
     }
@@ -590,8 +589,8 @@ class EmulatorP11Slot extends P11Slot {
     File dir = (objectClass == CKO_SECRET_KEY) ? secKeyDir : privKeyDir;
 
     try {
-      save(getInfoFile(dir, hexId), StringUtil.toUtf8Bytes(str.toString()));
-      save(getValueFile(dir, hexId), value);
+      IoUtil.save(getInfoFile(dir, hexId), StringUtil.toUtf8Bytes(str.toString()));
+      IoUtil.save(getValueFile(dir, hexId), value);
     } catch (IOException ex) {
       throw new TokenException("could not save " + ckoCodeToName(objectClass).substring(4));
     }
@@ -641,14 +640,14 @@ class EmulatorP11Slot extends P11Slot {
         // secret key
         Properties props = loadProperties(infoFile);
         String keyAlgo = props.getProperty(PROP_ALGO);
-        byte[] encodedValue = read(getValueFile(secKeyDir, hexId));
+        byte[] encodedValue = IoUtil.read(getValueFile(secKeyDir, hexId));
 
         byte[] keyValue = keyCryptor.decrypt(encodedValue);
         SecretKey key = new SecretKeySpec(keyValue, keyAlgo);
         ret = new EmulatorP11Key(this, keyId, key, maxSessions, random);
       } else {
         // keypair
-        byte[] encodedValue = read(getValueFile(privKeyDir, hexId));
+        byte[] encodedValue = IoUtil.read(getValueFile(privKeyDir, hexId));
         PrivateKey privateKey = keyCryptor.decryptPrivateKey(encodedValue);
 
         Properties props = loadProperties(getInfoFile(pubKeyDir, hexId));

@@ -14,7 +14,6 @@ import org.xipki.security.pkcs12.P12KeyGenerator;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.util.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -255,7 +254,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
     notBlank(signatureAlgorithm, "signatureAlgorithm");
     notNull(keystore, "keystore");
 
-    SignerConf signerConf = getKeystoreSignerConf(new ByteArrayInputStream(keystore), PASSWORD,
+    SignerConf signerConf = getKeystoreSignerConf(keystore, PASSWORD,
         signatureAlgorithm, threads + Math.max(2, threads * 5 / 4));
     this.signer = securityFactory.createSigner(tokenType, signerConf, (X509Cert) null);
   }
@@ -279,16 +278,15 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
 
   private static byte[] getPrecomputedKeystore(String filename) throws IOException {
     InputStream in = P12SignSpeed.class.getResourceAsStream("/testkeys/" + filename);
-    return (in == null) ? null : IoUtil.read(in);
+    return (in == null) ? null : IoUtil.readAndClose(in);
   }
 
   private static SignerConf getKeystoreSignerConf(
-      InputStream keystoreStream, String password, String signatureAlgorithm, int parallelism)
-      throws IOException {
+      byte[] keystoreBytes, String password, String signatureAlgorithm, int parallelism) {
     ConfPairs conf = new ConfPairs("password", password)
         .putPair("algo", signatureAlgorithm)
         .putPair("parallelism", Integer.toString(parallelism))
-        .putPair("keystore", "base64:" + Base64.encodeToString(IoUtil.read(keystoreStream)));
+        .putPair("keystore", "base64:" + Base64.encodeToString(keystoreBytes));
     return new SignerConf(conf.getEncoded());
   }
 }

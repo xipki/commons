@@ -62,7 +62,10 @@ public class IoUtil {
     return Files.readAllBytes(Paths.get(expandFilepath(file.getPath(), prependBaseDir)));
   }
 
-  public static byte[] read(InputStream in) throws IOException {
+  /**
+   * The specified stream is closed after this method returns.
+   */
+  public static byte[] readAndClose(InputStream in) throws IOException {
     try {
       ByteArrayOutputStream bout = new ByteArrayOutputStream();
       int read;
@@ -98,7 +101,9 @@ public class IoUtil {
     File tmpFile = expandFilepath(file, prependBaseDir);
     mkdirsParent(tmpFile.toPath());
 
-    Files.copy(new ByteArrayInputStream(content), tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    try (InputStream is = new ByteArrayInputStream(content)) {
+      Files.copy(is, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
   }
 
   public static void mkdirsParent(Path path) throws IOException {

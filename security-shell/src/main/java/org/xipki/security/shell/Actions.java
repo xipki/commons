@@ -464,7 +464,7 @@ public class Actions {
 
     protected List<X509Cert> getPeerCertificates() throws CertificateException, IOException {
       if (StringUtil.isNotBlank(peerCertsFile)) {
-        return X509Util.parseCerts(Files.newInputStream(Paths.get(peerCertsFile)));
+        return X509Util.parseCerts(Paths.get(peerCertsFile).toFile());
       } else if (StringUtil.isNotBlank(peerCertFile)) {
         X509Cert cert = X509Util.parseCert(Paths.get(peerCertFile).toFile());
         return Collections.singletonList(cert);

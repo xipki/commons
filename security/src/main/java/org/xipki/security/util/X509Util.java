@@ -44,7 +44,6 @@ import static org.xipki.util.Args.notBlank;
 import static org.xipki.util.Args.notNull;
 import static org.xipki.util.CollectionUtil.isEmpty;
 import static org.xipki.util.IoUtil.expandFilepath;
-import static org.xipki.util.IoUtil.read;
 import static org.xipki.util.StringUtil.concat;
 import static org.xipki.util.StringUtil.toUtf8Bytes;
 
@@ -110,9 +109,7 @@ public class X509Util {
 
   public static X509Cert parseCert(File file) throws IOException, CertificateException {
     notNull(file, "file");
-    try (InputStream in = Files.newInputStream(expandFilepath(file).toPath())) {
-      return parseCert(in);
-    }
+    return parseCert(IoUtil.read(expandFilepath(file)));
   }
 
   public static List<X509Cert> parseCerts(byte[] certsBytes)
@@ -120,7 +117,15 @@ public class X509Util {
     return parseCerts(new ByteArrayInputStream(certsBytes));
   }
 
-  public static List<X509Cert> parseCerts(InputStream certsStream)
+  public static List<X509Cert> parseCerts(File certsFile)
+      throws IOException, CertificateException {
+    return parseCerts(Files.newInputStream(certsFile.toPath()));
+  }
+
+  /**
+   * The specified stream remains open after this method returns.
+   */
+  private static List<X509Cert> parseCerts(InputStream certsStream)
       throws IOException, CertificateException {
     List<X509Cert> certs = new LinkedList<>();
     try (PemReader pemReader = new PemReader(
@@ -135,10 +140,6 @@ public class X509Util {
       }
     }
     return certs;
-  }
-
-  public static X509Cert parseCert(InputStream certStream) throws IOException, CertificateException {
-    return parseCert(read(notNull(certStream, "certStream")));
   }
 
   public static X509Cert parseCert(byte[] bytes) throws CertificateEncodingException {
@@ -182,13 +183,7 @@ public class X509Util {
   }
 
   public static CertificationRequest parseCsr(File file) throws IOException {
-    try (InputStream in = Files.newInputStream(expandFilepath(notNull(file, "file")).toPath())) {
-      return parseCsr(in);
-    }
-  }
-
-  private static CertificationRequest parseCsr(InputStream csrStream) throws IOException {
-    return parseCsr(read(notNull(csrStream, "csrStream")));
+    return parseCsr(IoUtil.read(expandFilepath(notNull(file, "file"))));
   }
 
   public static CertificationRequest parseCsr(byte[] csrBytes) {
@@ -257,8 +252,12 @@ public class X509Util {
     return StringUtil.toUtf8String(PemEncoder.encode(notNull(cert, "cert").getEncoded(), PemLabel.CERTIFICATE));
   }
 
-  public static X509Certificate parseX509Certificate(InputStream crlStream) throws CertificateException {
-    return (X509Certificate) getCertFactory().generateCertificate(notNull(crlStream, "crlStream"));
+  public static X509Certificate parseX509Certificate(byte[] bytes) throws CertificateException {
+    try (InputStream is = new ByteArrayInputStream(notNull(bytes, "bytes"))) {
+      return (X509Certificate) getCertFactory().generateCertificate(is);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static X509CRLHolder parseCrl(File file) throws IOException, CRLException {

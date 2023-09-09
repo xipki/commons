@@ -197,7 +197,7 @@ public class DefaultCurl implements Curl {
 
       if (inputStream != null) {
         if (respContentStream == null) {
-          result.setContent(IoUtil.read(inputStream));
+          result.setContent(IoUtil.readAndClose(inputStream));
         } else {
           byte[] buffer = new byte[8192];
           int read;
@@ -209,7 +209,7 @@ public class DefaultCurl implements Curl {
           result.setContentLength(contentLength);
         }
       } else if (errorStream != null) {
-        result.setErrorContent(IoUtil.read(errorStream));
+        result.setErrorContent(IoUtil.readAndClose(errorStream));
       }
 
       return result;

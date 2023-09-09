@@ -18,8 +18,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Factory to create {@link DataSourceWrapper}.

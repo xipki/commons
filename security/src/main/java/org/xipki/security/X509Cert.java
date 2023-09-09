@@ -13,7 +13,6 @@ import org.xipki.security.util.KeyUtil;
 import org.xipki.security.util.X509Util;
 import org.xipki.util.Hex;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.*;
@@ -320,7 +319,7 @@ public class X509Cert {
       synchronized (sync) {
         encoded = getEncoded();
         try {
-          jceInstance = X509Util.parseX509Certificate(new ByteArrayInputStream(encoded));
+          jceInstance = X509Util.parseX509Certificate(encoded);
         } catch (CertificateException ex) {
           throw new IllegalStateException("error converting to X509Certificate", ex);
         }

@@ -3,7 +3,10 @@
 
 package org.xipki.security.asn1;
 
-import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.BERTags;
+import org.bouncycastle.asn1.DERGeneralizedTime;
+import org.bouncycastle.asn1.DERUTCTime;
 import org.bouncycastle.asn1.x509.Time;
 
 import java.io.BufferedInputStream;

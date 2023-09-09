@@ -269,7 +269,7 @@ public class StringUtil {
 
   public static String getVersion(Class clazz) {
     try {
-      return toUtf8String(IoUtil.read(clazz.getResourceAsStream("/version"))).trim();
+      return toUtf8String(IoUtil.readAndClose(clazz.getResourceAsStream("/version"))).trim();
     } catch (Exception ex) {
       return "UNKNOWN";
     }
