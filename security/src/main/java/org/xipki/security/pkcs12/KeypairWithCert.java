@@ -50,6 +50,9 @@ public class KeypairWithCert {
     this.publicKey = certificateChain[0].getPublicKey();
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   public static KeypairWithCert fromKeystore(
       String keystoreType, InputStream keystoreStream, char[] keystorePassword,
       String keyname, char[] keyPassword, X509Cert cert)
@@ -58,6 +61,9 @@ public class KeypairWithCert {
         cert == null ? null : new X509Cert[] {cert});
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   public static KeypairWithCert fromKeystore(
       String keystoreType, InputStream keystoreStream, char[] keystorePassword,
       String keyname, char[] keyPassword, X509Cert[] certchain)
@@ -82,11 +88,6 @@ public class KeypairWithCert {
       return fromKeystore(keystore, keyname, keyPassword, certchain);
     } catch (NoSuchAlgorithmException | ClassCastException | CertificateException | IOException ex) {
       throw new XiSecurityException(ex.getMessage(), ex);
-    } finally {
-      try {
-        keystoreStream.close();
-      } catch (IOException ex) {
-      }
     }
   }
 

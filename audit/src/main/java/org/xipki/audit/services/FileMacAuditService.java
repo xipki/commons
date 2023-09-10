@@ -74,10 +74,9 @@ public class FileMacAuditService extends MacAuditService {
   @Override
   protected void storeIntegrity(String integrityText) {
     if (integrityText != null) {
-      try {
+      try (InputStream is = new ByteArrayInputStream(integrityText.getBytes(StandardCharsets.UTF_8))) {
         writer.flush();
-        Files.copy(new ByteArrayInputStream(integrityText.getBytes(StandardCharsets.UTF_8)),
-                integrityFilePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(is, integrityFilePath, StandardCopyOption.REPLACE_EXISTING);
       } catch (IOException ex) {
         throw new IllegalStateException(ex);
       }

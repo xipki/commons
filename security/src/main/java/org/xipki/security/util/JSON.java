@@ -8,6 +8,7 @@ import com.google.gson.*;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Instant;
 
 /**
@@ -120,18 +121,25 @@ public class JSON {
 
   public static <T> T parseObject(byte[] json, Class<T> classOfT) {
     try {
-      return parseObject(new ByteArrayInputStream(json), classOfT);
+      return parseObjectAndClose(new ByteArrayInputStream(json), classOfT);
     } catch (IOException e) {
       throw new JsonIOException(e);
     }
   }
 
-  public static <T> T parseObject(File jsonFile, Class<T> classOfT) throws IOException {
-    return parseObject(new FileInputStream(jsonFile), classOfT);
+  public static <T> T parseObject(Path jsonFilePath, Class<T> classOfT) throws IOException {
+    return parseObjectAndClose(new FileInputStream(jsonFilePath.toFile()), classOfT);
   }
 
-  public static <T> T parseObject(InputStream json, Class<T> classOfT) throws IOException {
-    try (Reader reader = new InputStreamReader(json)) {
+  public static <T> T parseObject(File jsonFile, Class<T> classOfT) throws IOException {
+    return parseObjectAndClose(new FileInputStream(jsonFile), classOfT);
+  }
+
+  /**
+   * The specified stream is closed after this method returns.
+   */
+  public static <T> T parseObjectAndClose(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
+    try (Reader reader = new InputStreamReader(jsonInputStream)) {
       return gson.fromJson(reader, classOfT);
     }
   }
@@ -150,10 +158,16 @@ public class JSON {
     return prettyGson.toJson(obj);
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   public static void writeJSON(Object object, OutputStream outputStream) {
     gson.toJson(object, new StreamAppendable(outputStream));
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   public static void writePrettyJSON(Object object, OutputStream outputStream) {
     prettyGson.toJson(object, new StreamAppendable(outputStream));
   }

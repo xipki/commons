@@ -13,10 +13,8 @@ import org.xipki.util.IoUtil;
 import org.xipki.util.StringUtil;
 import org.xipki.util.exception.InvalidConfException;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -59,8 +57,8 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
     }
 
     if (pkcs11Conf == null) {
-      try (InputStream confStream = Files.newInputStream(Paths.get(pkcs11ConfFile))) {
-        pkcs11Conf = JSON.parseObject(confStream, Pkcs11conf.class);
+      try {
+        pkcs11Conf = JSON.parseObject(new File(pkcs11ConfFile), Pkcs11conf.class);
         pkcs11Conf.validate();
       } catch (IOException ex) {
         throw new InvalidConfException("could not create P11Conf: " + ex.getMessage(), ex);

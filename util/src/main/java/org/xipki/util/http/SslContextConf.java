@@ -180,21 +180,22 @@ public class SslContextConf {
           for (FileOrBinary fb : sslTrustanchors) {
             byte[] bytes = fb.readContent();
             if (CompareUtil.areEqual(bytes, 0, PEM_PREFIX, 0, PEM_PREFIX.length)) {
-              BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
-              StringBuilder sb = null;
-              String line;
-              while ((line = reader.readLine()) != null) {
-                if (line.equals("-----BEGIN CERTIFICATE-----")) {
-                  sb = new StringBuilder(1000);
-                } else if (line.equals("-----END CERTIFICATE-----")) {
-                  if (sb != null) {
-                    byte[] certBytes = Base64.decode(sb.toString());
-                    sb = null;
-                    ks.setCertificateEntry("cert-" + (idx++), parseCert(cf, certBytes));
-                  }
-                } else {
-                  if (sb != null) {
-                    sb.append(line);
+              try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)))) {
+                StringBuilder sb = null;
+                String line;
+                while ((line = reader.readLine()) != null) {
+                  if (line.equals("-----BEGIN CERTIFICATE-----")) {
+                    sb = new StringBuilder(1000);
+                  } else if (line.equals("-----END CERTIFICATE-----")) {
+                    if (sb != null) {
+                      byte[] certBytes = Base64.decode(sb.toString());
+                      sb = null;
+                      ks.setCertificateEntry("cert-" + (idx++), parseCert(cf, certBytes));
+                    }
+                  } else {
+                    if (sb != null) {
+                      sb.append(line);
+                    }
                   }
                 }
               }

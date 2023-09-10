@@ -36,6 +36,9 @@ public class P12MacContentSignerBuilder {
     this.key = notNull(key, "key");
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   public P12MacContentSignerBuilder(
       String keystoreType, InputStream keystoreStream, char[] keystorePassword, String keyname, char[] keyPassword)
       throws XiSecurityException {

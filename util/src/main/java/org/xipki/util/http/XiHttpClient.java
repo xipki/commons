@@ -108,7 +108,7 @@ public class XiHttpClient {
     try {
       int respCode = conn.getResponseCode();
       InputStream inputstream = respCode == HttpURLConnection.HTTP_OK ? conn.getInputStream() : conn.getErrorStream();
-      byte[] content = inputstream == null ? new byte[0] : IoUtil.readAndClose(inputstream);
+      byte[] content = inputstream == null ? new byte[0] : IoUtil.readAllBytesAndClose(inputstream);
       if (content.length > 0) {
         String encoding = conn.getHeaderField("content-transfer-encoding");
         if (encoding != null && "base64".equalsIgnoreCase(encoding.trim())) {

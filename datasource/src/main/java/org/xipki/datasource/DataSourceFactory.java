@@ -42,20 +42,14 @@ public class DataSourceFactory {
     return createDataSource(name, props, passwordResolver);
   } // method createDataSource
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   public DataSourceWrapper createDataSource(String name, InputStream conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {
     Args.notNull(conf, "conf");
     ConfigurableProperties config = new ConfigurableProperties();
-    try {
-      config.load(conf);
-    } finally {
-      try {
-        conf.close();
-      } catch (Exception ex) {
-        LOG.error("could not close stream: {}", ex.getMessage());
-      }
-    }
-
+    config.load(conf);
     return createDataSource(name, config, passwordResolver);
   } // method createDataSource
 
@@ -131,8 +125,9 @@ public class DataSourceFactory {
   public DataSourceWrapper createDataSourceForFile(String name, String confFile, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {
     Args.notBlank(confFile, "confFile");
-    InputStream fileIn = Files.newInputStream(Paths.get(IoUtil.expandFilepath(confFile)));
-    return createDataSource(name, fileIn, passwordResolver);
+    try (InputStream fileIn = Files.newInputStream(Paths.get(IoUtil.expandFilepath(confFile)))) {
+      return createDataSource(name, fileIn, passwordResolver);
+    }
   }
 
 }

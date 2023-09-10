@@ -56,10 +56,12 @@ public abstract class Pkcs12SignVerifyTest {
     String certFile = getCertificateFile();
     X509Cert cert = X509Util.parseCert(new File(certFile));
 
-    InputStream ks = Files.newInputStream(Paths.get(getPkcs12File()));
-    char[] password = getPassword().toCharArray();
-    KeypairWithCert keypairWithCert = KeypairWithCert.fromKeystore("PKCS12", ks,
-        password, null, password, cert);
+    KeypairWithCert keypairWithCert;
+    try (InputStream ks = Files.newInputStream(Paths.get(getPkcs12File()))) {
+      char[] password = getPassword().toCharArray();
+      keypairWithCert = KeypairWithCert.fromKeystore("PKCS12", ks,
+          password, null, password, cert);
+    }
     P12ContentSignerBuilder builder = new P12ContentSignerBuilder(keypairWithCert);
     signer = builder.createSigner(getSignatureAlgorithm(), 1, new SecureRandom());
     return signer;

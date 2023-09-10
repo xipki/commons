@@ -65,16 +65,9 @@ public class IoUtil {
   /**
    * The specified stream is closed after this method returns.
    */
-  public static byte[] readAndClose(InputStream in) throws IOException {
+  public static byte[] readAllBytesAndClose(InputStream in) throws IOException {
     try {
-      ByteArrayOutputStream bout = new ByteArrayOutputStream();
-      int read;
-      byte[] buffer = new byte[2048];
-      while ((read = in.read(buffer)) != -1) {
-        bout.write(buffer, 0, read);
-      }
-
-      return bout.toByteArray();
+      return readAllBytes(in);
     } finally {
       try {
         in.close();
@@ -82,6 +75,20 @@ public class IoUtil {
         LOG.error("could not close stream: {}", ex.getMessage());
       }
     }
+  }
+
+  /**
+   * The specified stream remains open after this method returns.
+   */
+  public static byte[] readAllBytes(InputStream in) throws IOException {
+    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+    int read;
+    byte[] buffer = new byte[2048];
+    while ((read = in.read(buffer)) != -1) {
+      bout.write(buffer, 0, read);
+    }
+
+    return bout.toByteArray();
   }
 
   public static void save(String fileName, byte[] encoded) throws IOException {

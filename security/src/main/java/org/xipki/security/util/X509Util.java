@@ -114,12 +114,16 @@ public class X509Util {
 
   public static List<X509Cert> parseCerts(byte[] certsBytes)
       throws IOException, CertificateException {
-    return parseCerts(new ByteArrayInputStream(certsBytes));
+    try (InputStream is = new ByteArrayInputStream(certsBytes)) {
+      return parseCerts(is);
+    }
   }
 
   public static List<X509Cert> parseCerts(File certsFile)
       throws IOException, CertificateException {
-    return parseCerts(Files.newInputStream(certsFile.toPath()));
+    try (InputStream is = Files.newInputStream(certsFile.toPath())) {
+      return parseCerts(is);
+    }
   }
 
   /**
@@ -147,25 +151,23 @@ public class X509Util {
 
     byte[] certBytes = null;
     if (CompareUtil.areEqual(bytes, 0, PEM_PREFIX, 0, PEM_PREFIX.length)) {
-      try {
-        try (PemReader r = new PemReader(
-            new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8))) {
-          PemObject obj;
-          while (true) {
-            obj = r.readPemObject();
-            if (obj == null) {
-              break;
-            }
-
-            if (obj.getType().equalsIgnoreCase("CERTIFICATE")) {
-              certBytes = obj.getContent();
-              break;
-            }
+      try (PemReader r = new PemReader(
+          new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8))) {
+        PemObject obj;
+        while (true) {
+          obj = r.readPemObject();
+          if (obj == null) {
+            break;
           }
 
-          if (certBytes == null) {
-            throw new CertificateEncodingException("found no certificate");
+          if (obj.getType().equalsIgnoreCase("CERTIFICATE")) {
+            certBytes = obj.getContent();
+            break;
           }
+        }
+
+        if (certBytes == null) {
+          throw new CertificateEncodingException("found no certificate");
         }
       } catch (IOException ex) {
         throw new CertificateEncodingException("error while parsing bytes");
@@ -937,8 +939,7 @@ public class X509Util {
   }
 
   private static byte[] extractCertField(byte[] certBytes, String fieldName) {
-    BufferedInputStream instream = new BufferedInputStream(new ByteArrayInputStream(certBytes));
-    try {
+    try (BufferedInputStream instream = new BufferedInputStream(new ByteArrayInputStream(certBytes))) {
       // SEQUENCE of Certificate
       Asn1StreamParser.skipTagLen(instream);
 

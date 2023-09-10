@@ -17,6 +17,7 @@ import org.xipki.util.PemEncoder.PemLabel;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -182,8 +183,9 @@ public abstract class XiAction implements Action {
       }
     }
 
-    Files.copy(
-        new ByteArrayInputStream(encoded), tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    try (InputStream is = new ByteArrayInputStream(encoded)) {
+      Files.copy(is, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
   } // method save
 
   private static String randomHex(int numOfBytes) {

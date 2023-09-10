@@ -94,9 +94,7 @@ public class P12SignerFactory implements SignerFactory {
     str = conf.getConfValue("keystore");
     String keyLabel = conf.getConfValue("key-label");
 
-    InputStream keystoreStream = getInputStream(str);
-
-    try {
+    try (InputStream keystoreStream = getInputStream(str)) {
       SignAlgo sigAlgo = null;
       String algoName = conf.getConfValue("algo");
       if (algoName != null) {
@@ -143,7 +141,7 @@ public class P12SignerFactory implements SignerFactory {
           return signerBuilder.createSigner(sigAlgo, parallelism, securityFactory.getRandom4Sign());
         }
       }
-    } catch (NoSuchAlgorithmException | NoSuchPaddingException | XiSecurityException ex) {
+    } catch (NoSuchAlgorithmException | NoSuchPaddingException | XiSecurityException | IOException ex) {
       throw new ObjectCreationException(String.format("%s: %s", ex.getClass().getName(), ex.getMessage()));
     }
   } // method newSigner

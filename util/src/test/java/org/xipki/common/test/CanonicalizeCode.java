@@ -338,29 +338,30 @@ public class CanonicalizeCode {
   } // method removeTrailingSpaces
 
   private static byte[] detectNewline(File file) throws IOException {
-    InputStream is = Files.newInputStream(file.toPath());
-    byte[] bytes = new byte[200];
-    int size;
-    try {
-      size = is.read(bytes);
-    } finally {
-      is.close();
-    }
+    try (InputStream is = Files.newInputStream(file.toPath())) {
+      byte[] bytes = new byte[200];
+      int size;
+      try {
+        size = is.read(bytes);
+      } finally {
+        is.close();
+      }
 
-    for (int i = 0; i < size - 1; i++) {
-      byte bb = bytes[i];
-      if (bb == '\n') {
-        return new byte[]{'\n'};
-      } else if (bb == '\r') {
-        if (bytes[i + 1] == '\n') {
-          return new byte[]{'\r', '\n'};
-        } else {
-          return new byte[]{'\r'};
+      for (int i = 0; i < size - 1; i++) {
+        byte bb = bytes[i];
+        if (bb == '\n') {
+          return new byte[]{'\n'};
+        } else if (bb == '\r') {
+          if (bytes[i + 1] == '\n') {
+            return new byte[]{'\r', '\n'};
+          } else {
+            return new byte[]{'\r'};
+          }
         }
       }
-    }
 
-    return new byte[]{'\n'};
+      return new byte[]{'\n'};
+    }
   }
 
   private static void writeLine(OutputStream out, byte[] newLine, String line)

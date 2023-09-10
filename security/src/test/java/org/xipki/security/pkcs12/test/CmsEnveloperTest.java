@@ -24,6 +24,7 @@ import org.xipki.security.util.KeyUtil;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
@@ -54,7 +55,9 @@ public class CmsEnveloperTest {
   public void testEeKeyAgree() throws Exception {
     KeyStore ks = KeyUtil.getInKeyStore("PKCS12");
     char[] password = "1234".toCharArray();
-    ks.load(Files.newInputStream(Paths.get("src/test/resources/pkcs12test/test-ec.p12")), password);
+    try (InputStream is = Files.newInputStream(Paths.get("src/test/resources/pkcs12test/test-ec.p12"))) {
+      ks.load(is, password);
+    }
 
     X509Certificate reciCert = (X509Certificate) ks.getCertificate("main");
     PrivateKey reciPrivKey = (PrivateKey) ks.getKey("main", password);
@@ -112,7 +115,9 @@ public class CmsEnveloperTest {
     HashAlgo hashAlgo = HashAlgo.SHA256;
     KeyStore ks = KeyUtil.getInKeyStore("PKCS12");
     char[] password = "1234".toCharArray();
-    ks.load(Files.newInputStream(Paths.get("src/test/resources/pkcs12test/test1.p12")), password);
+    try (InputStream is = Files.newInputStream(Paths.get("src/test/resources/pkcs12test/test1.p12"))) {
+      ks.load(is, password);
+    }
 
     X509Certificate reciCert = (X509Certificate) ks.getCertificate("main");
     PrivateKey reciKey = (PrivateKey) ks.getKey("main", password);

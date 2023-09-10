@@ -199,6 +199,9 @@ public class SSLContextBuilder {
     }
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   public SSLContextBuilder loadTrustMaterial(InputStream instream, char[] storePassword)
       throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
     notNull(instream, "Truststore instream");

@@ -278,7 +278,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
 
   private static byte[] getPrecomputedKeystore(String filename) throws IOException {
     InputStream in = P12SignSpeed.class.getResourceAsStream("/testkeys/" + filename);
-    return (in == null) ? null : IoUtil.readAndClose(in);
+    return (in == null) ? null : IoUtil.readAllBytesAndClose(in);
   }
 
   private static SignerConf getKeystoreSignerConf(
