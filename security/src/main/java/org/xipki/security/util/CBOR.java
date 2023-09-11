@@ -10,27 +10,27 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.time.Instant;
 
 /**
- * JSON util class
+ * CBOR util class
  *
  * @author Lijun Liao (xipki)
  * @since 6.1.0
  */
-public class JSON {
+public class CBOR {
 
   private static class InstantSerializer extends JsonSerializer<Instant> {
 
     @Override
     public void serialize(Instant instant, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
         throws IOException {
-      jsonGenerator.writeString(instant.toString());
+      jsonGenerator.writeNumber(instant.toEpochMilli());
     }
-
   }
 
   private static class InstantDeserializer extends JsonDeserializer<Instant> {
@@ -38,7 +38,7 @@ public class JSON {
     @Override
     public Instant deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
         throws IOException, JacksonException {
-      return Instant.parse(jsonParser.getValueAsString());
+      return Instant.ofEpochMilli(jsonParser.getValueAsLong());
     }
 
   }
@@ -53,41 +53,27 @@ public class JSON {
 
   }
 
-  private static final ObjectMapper json;
-  private static final ObjectWriter prettyJson;
-
+  private static final ObjectMapper cbor;
   static {
-    json = new ObjectMapper().registerModule(XiJsonModule.INSTANCE)
-            .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
+    cbor = new ObjectMapper(new CBORFactory())
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    prettyJson = new ObjectMapper().registerModule(XiJsonModule.INSTANCE)
-        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
-        .writerWithDefaultPrettyPrinter();
+    cbor.registerModule(XiJsonModule.INSTANCE);
   }
 
-  public static <T> T parseObject(String json, Class<T> classOfT) {
+  public static <T> T parseObject(byte[] cborBytes, Class<T> classOfT) {
     try {
-      return JSON.json.readValue(json, classOfT);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static <T> T parseObject(byte[] json, Class<T> classOfT) {
-    try {
-      return JSON.json.readValue(json, classOfT);
+      return cbor.readValue(cborBytes, classOfT);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   public static <T> T parseObject(Path jsonFilePath, Class<T> classOfT) throws IOException {
-    return json.readValue(jsonFilePath.toFile(), classOfT);
+    return cbor.readValue(jsonFilePath.toFile(), classOfT);
   }
 
   public static <T> T parseObject(File jsonFile, Class<T> classOfT) throws IOException {
-    return json.readValue(jsonFile, classOfT);
+    return cbor.readValue(jsonFile, classOfT);
   }
 
   /**
@@ -95,29 +81,13 @@ public class JSON {
    */
   public static <T> T parseObjectAndClose(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
     try (Reader reader = new InputStreamReader(jsonInputStream)) {
-      return json.readValue(reader, classOfT);
+      return cbor.readValue(reader, classOfT);
     }
   }
 
-  public static String toJson(Object obj) {
+  public static byte[] toBytes(Object obj) {
     try {
-      return json.writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static byte[] toJSONBytes(Object obj) {
-    try {
-      return json.writeValueAsBytes(obj);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static String toPrettyJson(Object obj) {
-    try {
-      return prettyJson.writeValueAsString(obj);
+      return cbor.writeValueAsBytes(obj);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -126,20 +96,9 @@ public class JSON {
   /**
    * The specified stream remains open after this method returns.
    */
-  public static void writeJSON(Object object, OutputStream outputStream) {
+  public static void writeCBOR(Object object, OutputStream outputStream) {
     try {
-      json.writeValue(outputStream, object);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * The specified stream remains open after this method returns.
-   */
-  public static void writePrettyJSON(Object object, OutputStream outputStream) {
-    try {
-      prettyJson.writeValue(outputStream, object);
+      cbor.writeValue(outputStream, object);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
