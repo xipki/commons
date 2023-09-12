@@ -333,6 +333,7 @@ public abstract class P11Slot implements Closeable {
 
   /**
    * Writes the token details to the given {@code stream}.
+   * The specified stream remains open after this method returns.
    * @param stream
    *          Output stream. Must not be {@code null}.
    * @param verbose
@@ -779,6 +780,9 @@ public abstract class P11Slot implements Closeable {
     return sb.toString();
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   protected void printSupportedMechanism(OutputStream stream) throws IOException {
     notNull(stream, "stream");
 

@@ -81,14 +81,15 @@ public class IoUtil {
    * The specified stream remains open after this method returns.
    */
   public static byte[] readAllBytes(InputStream in) throws IOException {
-    ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    int read;
-    byte[] buffer = new byte[2048];
-    while ((read = in.read(buffer)) != -1) {
-      bout.write(buffer, 0, read);
-    }
+    try (ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
+      int read;
+      byte[] buffer = new byte[2048];
+      while ((read = in.read(buffer)) != -1) {
+        bout.write(buffer, 0, read);
+      }
 
-    return bout.toByteArray();
+      return bout.toByteArray();
+    }
   }
 
   public static void save(String fileName, byte[] encoded) throws IOException {

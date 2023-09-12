@@ -501,11 +501,10 @@ public class Actions {
 
     private void replaceFile(File file, String oldText, String newText)
         throws Exception {
-      BufferedReader reader = Files.newBufferedReader(file.toPath());
-      ByteArrayOutputStream writer = new ByteArrayOutputStream();
-
       boolean changed = false;
-      try {
+      byte[] newBytes = null;
+      try (BufferedReader reader = Files.newBufferedReader(file.toPath());
+           ByteArrayOutputStream writer = new ByteArrayOutputStream()) {
         String line;
         while ((line = reader.readLine()) != null) {
           if (line.contains(oldText)) {
@@ -516,14 +515,14 @@ public class Actions {
           }
           writer.write('\n');
         }
-      } finally {
-        writer.close();
-        reader.close();
+
+        if (changed) {
+          newBytes = writer.toByteArray();
+        }
       }
 
       if (changed) {
-        File newFile = new File(file.getPath());
-        IoUtil.save(newFile, writer.toByteArray());
+        IoUtil.save(new File(file.getPath()), newBytes);
       }
     }
 

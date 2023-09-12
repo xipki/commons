@@ -127,11 +127,9 @@ public class CanonicalizeCode {
   private void canonicalizeFile(File file) throws Exception {
     byte[] newLine = detectNewline(file);
 
-    BufferedReader reader = Files.newBufferedReader(file.toPath());
-
-    ByteArrayOutputStream writer = new ByteArrayOutputStream();
-
-    try {
+    byte[] newBytes;
+    try (BufferedReader reader = Files.newBufferedReader(file.toPath());
+         ByteArrayOutputStream writer = new ByteArrayOutputStream()){
       String line;
       boolean lastLineEmpty = false;
 
@@ -152,13 +150,12 @@ public class CanonicalizeCode {
           writeLine(writer, newLine, canonicalizedLine);
         }
       } // end while
-    } finally {
-      writer.close();
-      reader.close();
+
+      newBytes = writer.toByteArray();
     }
 
     byte[] oldBytes = IoUtil.read(file);
-    byte[] newBytes = writer.toByteArray();
+
     if (!Arrays.equals(oldBytes, newBytes)) {
       File newFile = new File(file.getPath() + "-new");
       IoUtil.save(file, newBytes);
@@ -169,22 +166,20 @@ public class CanonicalizeCode {
 
   private void canonicalizeTextFile(File file) throws Exception {
     byte[] newLine = new byte[]{'\n'};
-    BufferedReader reader = Files.newBufferedReader(file.toPath());
-    ByteArrayOutputStream writer = new ByteArrayOutputStream();
 
-    try {
+    byte[] newBytes;
+    try (BufferedReader reader = Files.newBufferedReader(file.toPath());
+         ByteArrayOutputStream writer = new ByteArrayOutputStream()) {
       String line;
       while ((line = reader.readLine()) != null) {
         String canonicalizedLine = canonicalizeTextLine(line);
         writeLine(writer, newLine, canonicalizedLine);
       } // end while
-    } finally {
-      writer.close();
-      reader.close();
+
+      newBytes = writer.toByteArray();
     }
 
     byte[] oldBytes = IoUtil.read(file);
-    byte[] newBytes = writer.toByteArray();
     if (!Arrays.equals(oldBytes, newBytes)) {
       File newFile = new File(file.getPath() + "-new");
       IoUtil.save(file, newBytes);

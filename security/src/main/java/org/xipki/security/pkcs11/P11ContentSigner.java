@@ -271,6 +271,7 @@ abstract class P11ContentSigner implements XiContentSigner {
 
       return identity.sign(mechanism, null, dataToSign);
     }
+
   } // method ECDSA
 
   private static class EdDSA extends P11ContentSigner {

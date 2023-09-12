@@ -5,6 +5,8 @@ package org.xipki.security;
 
 import org.bouncycastle.operator.ContentSigner;
 
+import java.io.IOException;
+
 /**
  * Extends {@link ContentSigner} by a new method {@link #getEncodedAlgorithmIdentifier()}.
  *

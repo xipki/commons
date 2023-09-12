@@ -512,10 +512,9 @@ public class X509Util {
   public static List<X509Cert> listCertificates(String encodedCerts)
       throws CertificateException, IOException {
     List<X509Cert> certs = new LinkedList<>();
-    try (BufferedReader reader = new BufferedReader(new StringReader(encodedCerts))) {
+    try (BufferedReader reader = new BufferedReader(new StringReader(encodedCerts));
+         ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
       String line;
-
-      ByteArrayOutputStream bout = new ByteArrayOutputStream();
       while ((line = reader.readLine()) != null) {
         if (BEGIN_CERTIFICATE.equals(line)) {
           bout.reset();

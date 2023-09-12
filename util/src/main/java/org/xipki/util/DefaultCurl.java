@@ -88,6 +88,9 @@ public class DefaultCurl implements Curl {
     return curlPost(url, null, verbose, headers, userPassword, content);
   }
 
+  /**
+   * The specified respContentStream remains open after this method returns.
+   */
   @Override
   public CurlResult curlPost(
       String url, OutputStream respContentStream, boolean verbose,

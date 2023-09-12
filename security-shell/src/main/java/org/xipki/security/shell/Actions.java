@@ -184,6 +184,7 @@ public class Actions {
       KeyStore inKs = KeyStore.getInstance(inType);
       KeyStore outKs;
       ByteArrayOutputStream outPemKs;
+
       if ("PEM".equalsIgnoreCase(outType)) {
         outPemKs = new ByteArrayOutputStream();
         outKs = null;
@@ -193,61 +194,69 @@ public class Actions {
         outKs.load(null);
       }
 
-      char[] inPassword = readPasswordIfNotSet("password of the source keystore", inPwdHint);
-      try (InputStream inStream = Files.newInputStream(realInFile.toPath())) {
-        inKs.load(inStream, inPassword);
-      }
+      byte[] outBytes;
+      try {
+        char[] inPassword = readPasswordIfNotSet("password of the source keystore", inPwdHint);
+        try (InputStream inStream = Files.newInputStream(realInFile.toPath())) {
+          inKs.load(inStream, inPassword);
+        }
 
-      char[] outPassword = ("PEM".equalsIgnoreCase(outType) && "NONE".equalsIgnoreCase(outPwdHint)) ? null
-          : readPasswordIfNotSet("password of the destination keystore", outPwdHint);
+        char[] outPassword = ("PEM".equalsIgnoreCase(outType) && "NONE".equalsIgnoreCase(outPwdHint)) ? null
+            : readPasswordIfNotSet("password of the destination keystore", outPwdHint);
 
-      OutputEncryptor pemOe = null;
-      if ("PEM".equalsIgnoreCase(outType) && outPassword != null) {
-        JceOpenSSLPKCS8EncryptorBuilder eb = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.PBE_SHA1_3DES);
-        eb.setPassword(outPassword);
-        pemOe = eb.build();
-      }
+        OutputEncryptor pemOe = null;
+        if ("PEM".equalsIgnoreCase(outType) && outPassword != null) {
+          JceOpenSSLPKCS8EncryptorBuilder eb = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.PBE_SHA1_3DES);
+          eb.setPassword(outPassword);
+          pemOe = eb.build();
+        }
 
-      Enumeration<String> aliases = inKs.aliases();
-      while (aliases.hasMoreElements()) {
-        String alias = aliases.nextElement();
-        if (inKs.isKeyEntry(alias)) {
-          java.security.cert.Certificate[] certs = inKs.getCertificateChain(alias);
-          Key key = inKs.getKey(alias, inPassword);
-          if (outKs != null) {
-            outKs.setKeyEntry(alias, key, outPassword, certs);
-          } else {
-            if (outPassword == null) {
-              outPemKs.write(PemEncoder.encode(key.getEncoded(), PemEncoder.PemLabel.PRIVATE_KEY));
+        Enumeration<String> aliases = inKs.aliases();
+        while (aliases.hasMoreElements()) {
+          String alias = aliases.nextElement();
+          if (inKs.isKeyEntry(alias)) {
+            java.security.cert.Certificate[] certs = inKs.getCertificateChain(alias);
+            Key key = inKs.getKey(alias, inPassword);
+            if (outKs != null) {
+              outKs.setKeyEntry(alias, key, outPassword, certs);
             } else {
-              JcaPKCS8Generator gen = new JcaPKCS8Generator((PrivateKey) key, pemOe);
-              PemObject po = gen.generate();
-              outPemKs.write(PemEncoder.encode(po.getContent(), PemEncoder.PemLabel.ENCRYPTED_PRIVATE_KEY));
-            }
-            outPemKs.write(CRLF);
+              if (outPassword == null) {
+                outPemKs.write(PemEncoder.encode(key.getEncoded(), PemEncoder.PemLabel.PRIVATE_KEY));
+              } else {
+                JcaPKCS8Generator gen = new JcaPKCS8Generator((PrivateKey) key, pemOe);
+                PemObject po = gen.generate();
+                outPemKs.write(PemEncoder.encode(po.getContent(), PemEncoder.PemLabel.ENCRYPTED_PRIVATE_KEY));
+              }
+              outPemKs.write(CRLF);
 
-            for (java.security.cert.Certificate cert : certs) {
+              for (java.security.cert.Certificate cert : certs) {
+                writePemCert(outPemKs, cert);
+              }
+            }
+          } else {
+            java.security.cert.Certificate cert = inKs.getCertificate(alias);
+            if (outKs != null) {
+              outKs.setCertificateEntry(alias, cert);
+            } else {
               writePemCert(outPemKs, cert);
             }
           }
-        } else {
-          java.security.cert.Certificate cert = inKs.getCertificate(alias);
-          if (outKs != null) {
-            outKs.setCertificateEntry(alias, cert);
-          } else {
-            writePemCert(outPemKs, cert);
+        }
+
+        if (outPemKs == null) {
+          try (ByteArrayOutputStream bout = new ByteArrayOutputStream(4096)) {
+            outKs.store(bout, outPassword);
+            outBytes = bout.toByteArray();
           }
+        } else {
+          outBytes = outPemKs.toByteArray();
+        }
+      } finally {
+        if (outPemKs != null) {
+          outPemKs.close();
         }
       }
 
-      byte[] outBytes;
-      if (outPemKs == null) {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
-        outKs.store(bout, outPassword);
-        outBytes = bout.toByteArray();
-      } else {
-        outBytes = outPemKs.toByteArray();
-      }
       saveVerbose("saved destination keystore to file", realOutFile, outBytes);
       return null;
     }
@@ -955,9 +964,10 @@ public class Actions {
         aliases.add(alias);
       }
 
-      ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
-      ks.store(bout, password);
-      saveVerbose("saved keystore to file", realKsFile, bout.toByteArray());
+      try (ByteArrayOutputStream bout = new ByteArrayOutputStream(4096)) {
+        ks.store(bout, password);
+        saveVerbose("saved keystore to file", realKsFile, bout.toByteArray());
+      }
       return null;
     }
 

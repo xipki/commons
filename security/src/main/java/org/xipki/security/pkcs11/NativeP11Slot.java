@@ -754,6 +754,9 @@ class NativeP11Slot extends P11Slot {
     }
   }
 
+  /**
+   * The specified stream remains open after this method returns.
+   */
   @Override
   public void showDetails(OutputStream stream, Long objectHandle, boolean verbose) throws IOException {
     Token underlyingToken = token.getToken();
