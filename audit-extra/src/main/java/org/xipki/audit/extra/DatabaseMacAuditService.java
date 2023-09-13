@@ -126,11 +126,11 @@ public class DatabaseMacAuditService extends MacAuditService {
         String sql = datasource.buildSelectFirstSql(1,
                 "TAG FROM AUDIT WHERE SHARD_ID=" + shardId + " AND ID=" + maxId);
         ResultSet rs = null;
-        Statement stmt = null;
+        PreparedStatement stmt = null;
 
         try {
-          stmt = datasource.createStatement(conn);
-          rs = stmt.executeQuery(sql);
+          stmt = datasource.prepareStatement(conn, sql);
+          rs = stmt.executeQuery();
           rs.next();
 
           id.set(maxId);
