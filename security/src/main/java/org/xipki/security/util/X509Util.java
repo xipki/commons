@@ -500,9 +500,6 @@ public class X509Util {
 
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < certchain.length; i++) {
-      if (i != 0) {
-        sb.append("\r\n");
-      }
       sb.append(StringUtil.toUtf8String(
           PemEncoder.encode(certchain[i], PemLabel.CERTIFICATE)));
     }

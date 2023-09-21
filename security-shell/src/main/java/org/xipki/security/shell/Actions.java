@@ -227,7 +227,6 @@ public class Actions {
                 PemObject po = gen.generate();
                 outPemKs.write(PemEncoder.encode(po.getContent(), PemEncoder.PemLabel.ENCRYPTED_PRIVATE_KEY));
               }
-              outPemKs.write(CRLF);
 
               for (java.security.cert.Certificate cert : certs) {
                 writePemCert(outPemKs, cert);
@@ -264,7 +263,6 @@ public class Actions {
     private static void writePemCert(OutputStream out, java.security.cert.Certificate cert)
         throws CertificateEncodingException, IOException {
       out.write(PemEncoder.encode(cert.getEncoded(), PemEncoder.PemLabel.CERTIFICATE));
-      out.write(CRLF);
     }
 
   } // class ConvertKeystore
