@@ -112,7 +112,7 @@ public class ProcessLog {
 
   public void finish() {
     finished.set(true);
-    endTime = Instant.now();
+    endTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
     totalElapsedTime = Duration.between(startTime, endTime);
 
     totalAverageSpeed = 0;
@@ -148,7 +148,7 @@ public class ProcessLog {
   }
 
   public final void reset() {
-    startTime = Instant.now();
+    startTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
     numProcessed = new AtomicLong(0);
     lastPrintTime = Instant.ofEpochMilli(0);
     measureDeque.clear();

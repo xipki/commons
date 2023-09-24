@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -87,7 +88,7 @@ public abstract class BenchmarkExecutor {
     sb.append("threads:  ").append(threads).append("\n");
     sb.append("duration: ").append(StringUtil.formatTime(duration, false)).append("\n");
     sb.append("unit:     ").append(unit).append("\n");
-    sb.append("start at: ").append(ZonedDateTime.now());
+    sb.append("start at: ").append(ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS));
 
     System.out.println(sb);
 
