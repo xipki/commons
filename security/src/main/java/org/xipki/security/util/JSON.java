@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
 
@@ -91,12 +92,24 @@ public class JSON {
   }
 
   /**
-   * The specified stream is closed after this method returns.s
+   * The specified stream remains open after this method returns.
+   */
+  public static <T> T parseObject(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
+    Reader noCloseReader = new InputStreamReader(jsonInputStream) {
+      @Override
+      public void close() {
+      }
+    };
+    // jackson closes the stream.
+    return json.readValue(noCloseReader, classOfT);
+  }
+
+  /**
+   * The specified stream is closed after this method returns.
    */
   public static <T> T parseObjectAndClose(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
-    try (Reader reader = new InputStreamReader(jsonInputStream)) {
-      return json.readValue(reader, classOfT);
-    }
+    // jackson closes the stream.
+    return json.readValue(new InputStreamReader(jsonInputStream), classOfT);
   }
 
   public static String toJson(Object obj) {
@@ -128,6 +141,17 @@ public class JSON {
    */
   public static void writeJSON(Object object, OutputStream outputStream) {
     try {
+      outputStream.write(toJSONBytes(object));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * The specified stream is closed after this method returns.
+   */
+  public static void writeJSONAndClose(Object object, OutputStream outputStream) {
+    try {
       json.writeValue(outputStream, object);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -138,6 +162,17 @@ public class JSON {
    * The specified stream remains open after this method returns.
    */
   public static void writePrettyJSON(Object object, OutputStream outputStream) {
+    try {
+      outputStream.write(toPrettyJson(object).getBytes(StandardCharsets.UTF_8));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * The specified stream is closed after this method returns.
+   */
+  public static void writePrettyJSONAndClose(Object object, OutputStream outputStream) {
     try {
       prettyJson.writeValue(outputStream, object);
     } catch (IOException e) {
