@@ -113,7 +113,7 @@ public class CertRevocationInfo {
     return new CertRevocationInfo(reason, revocationTime, invalidityTime);
   }
 
-  public String getEncoded() {
+  public String encode() {
     ConfPairs pairs = new ConfPairs()
         .putPair("reason", reason.getDescription())
         .putPair("revocationTime", Long.toString(revocationTime.getEpochSecond()));
