@@ -190,7 +190,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read integer value, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public long readInt() throws IOException {
+    public long readLong() throws IOException {
         int ib = m_is.read();
 
         // in case of negative integers, extends the sign to all bits; otherwise zero...
@@ -572,7 +572,20 @@ public class CborDecoder implements AutoCloseable {
         }
     }
 
-    public Long readIntObj() throws IOException {
+    public Long readLongObj() throws IOException {
+        CborType type = peekType();
+        if (isNull(type)) {
+            read1Byte();
+            return null;
+        } else if (type.getMajorType() == CborConstants.TYPE_UNSIGNED_INTEGER
+            || type.getMajorType() == CborConstants.TYPE_NEGATIVE_INTEGER) {
+            return readLong();
+        } else {
+            throw new IOException("stream does not have integer");
+        }
+    }
+
+    public Integer readIntObj() throws IOException {
         CborType type = peekType();
         if (isNull(type)) {
             read1Byte();
@@ -580,19 +593,6 @@ public class CborDecoder implements AutoCloseable {
         } else if (type.getMajorType() == CborConstants.TYPE_UNSIGNED_INTEGER
             || type.getMajorType() == CborConstants.TYPE_NEGATIVE_INTEGER) {
             return readInt();
-        } else {
-            throw new IOException("stream does not have integer");
-        }
-    }
-
-    public Integer readInt32Obj() throws IOException {
-        CborType type = peekType();
-        if (isNull(type)) {
-            read1Byte();
-            return null;
-        } else if (type.getMajorType() == CborConstants.TYPE_UNSIGNED_INTEGER
-            || type.getMajorType() == CborConstants.TYPE_NEGATIVE_INTEGER) {
-            return readInt32Exact();
         } else {
             throw new IOException("stream does not have integer");
         }
@@ -645,8 +645,8 @@ public class CborDecoder implements AutoCloseable {
         return ret;
     }
 
-    public int readInt32Exact() throws IOException {
-        long v = readInt();
+    public int readInt() throws IOException {
+        long v = readLong();
         if (v < Integer.MIN_VALUE || v > Integer.MAX_VALUE) {
             throw new IOException("value is out of range of int32");
         }
