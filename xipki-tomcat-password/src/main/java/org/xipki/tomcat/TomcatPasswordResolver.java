@@ -33,14 +33,9 @@ public class TomcatPasswordResolver {
       sslHostConfig.setTruststorePassword(resolvePassword(pwd));
     }
 
-    pwd = sslHostConfig.getCertificateKeystorePassword();
+    pwd = sslHostConfig.getTruststorePassword();
     if (pwd != null) {
-      sslHostConfig.setCertificateKeystorePassword(resolvePassword(pwd));
-    }
-
-    pwd = sslHostConfig.getCertificateKeyPassword();
-    if (pwd != null) {
-      sslHostConfig.setCertificateKeyPassword(resolvePassword(pwd));
+      sslHostConfig.setTruststorePassword(resolvePassword(pwd));
     }
 
     Set<SSLHostConfigCertificate> certificates = sslHostConfig.getCertificates();
@@ -157,7 +152,7 @@ public class TomcatPasswordResolver {
       char[] pwd = passwordResolver.resolvePassword(password);
       return new String(pwd);
     } catch (Exception e) {
-      System.err.println("ERROR: could not resolve password");
+      System.err.println("ERROR: xipki-tomcat-password: could not resolve password");
       return password;
     }
   }
