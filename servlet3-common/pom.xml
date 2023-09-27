@@ -8,18 +8,24 @@
     <artifactId>xipki-commons-parent</artifactId>
     <version>6.3.1-SNAPSHOT</version>
   </parent>
-  <artifactId>xipki-tomcat-password</artifactId>
+  <artifactId>servlet3-common</artifactId>
+  <name>XiPKI :: ${project.artifactId}</name>
+  <packaging>bundle</packaging>
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.apache.tomcat/tomcat-coyote -->
     <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-coyote</artifactId>
-      <version>9.0.73</version>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>security</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>password</artifactId>
+      <artifactId>audit</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
     </dependency>
   </dependencies>
 </project>

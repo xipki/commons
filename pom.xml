@@ -40,7 +40,6 @@
   </properties>
   <modules>
     <!-- Base components -->
-    <module>xipki-tomcat-password</module>
     <module>password</module>
     <module>util</module>
     <module>audit</module>
@@ -49,6 +48,8 @@
     <module>security</module>
     <module>shell-base</module>
     <module>security-shell</module>
+    <module>xipki-tomcat-password</module>
+    <module>servlet3-common</module>
   </modules>
   <scm>
     <connection>scm:git:git@github.com:xipki/commons.git</connection>
