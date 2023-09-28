@@ -1,9 +1,8 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
 
-package org.xipki.commons.servlet3;
+package org.xipki.util.http;
 
-import javax.servlet.http.HttpServletResponse;
 import org.xipki.util.Base64;
 import org.xipki.util.CollectionUtil;
 
@@ -49,6 +48,10 @@ public class RestResponse {
     this.body = body;
   }
 
+  public boolean isBase64() {
+    return base64;
+  }
+
   public int getStatusCode() {
     return statusCode;
   }
@@ -64,37 +67,6 @@ public class RestResponse {
   public byte[] getBody() {
     return body;
   }
-
-  public void fillResponse(HttpServletResponse resp) throws IOException {
-    resp.setStatus(statusCode);
-    if (contentType != null) {
-      resp.setContentType(contentType);
-    }
-
-    if (CollectionUtil.isNotEmpty(headers)) {
-      for (Map.Entry<String, List<String>> m : headers.entrySet()) {
-        for (String value : m.getValue()) {
-          resp.addHeader(m.getKey(), value);
-        }
-      }
-    }
-
-    if (body == null) {
-      resp.setContentLength(0);
-    } else {
-      byte[] content;
-      if (base64) {
-        resp.setHeader("Content-Transfer-Encoding", "base64");
-        content = Base64.encodeToByte(body, true);
-      } else {
-        content = body;
-      }
-
-      resp.setContentLength(content.length);
-      resp.getOutputStream().write(content);
-    }
-  }
-
   public RestResponse putHeader(String name, String value) {
     List<String> values = headers.computeIfAbsent(name, k -> new ArrayList<>(1));
     values.add(value);

@@ -1,21 +1,23 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
 
-package org.xipki.commons.servlet3;
+package org.xipki.servlet5;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.security.X509Cert;
 import org.xipki.security.util.X509Util;
-import org.xipki.util.LogUtil;
-import org.xipki.util.LruCache;
-import org.xipki.util.StringUtil;
+import org.xipki.util.*;
+import org.xipki.util.http.RestResponse;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * TLS helper.
@@ -30,7 +32,6 @@ import java.security.cert.X509Certificate;
  *   <li>SSL_CLIENT_CERT</li>
  * </ul>
  * @author Lijun Liao (xipki)
- * @since 2.1.0
  */
 
 public class ServletHelper {
@@ -83,10 +84,15 @@ public class ServletHelper {
   public static X509Cert getTlsClientCert(HttpServletRequest request)
       throws IOException {
     if (reverseProxyMode == null) {
-      X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+      X509Certificate[] certs = (X509Certificate[]) request.getAttribute("jakarta.servlet.request.X509Certificate");
+      if (certs == null || certs.length < 1) {
+        certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+      }
+
       if (certs == null || certs.length < 1) {
         return null;
       }
+
       X509Certificate cert0 = certs[0];
       Reference ref = new Reference(cert0);
 
@@ -171,6 +177,38 @@ public class ServletHelper {
       } else {
         log.debug("{} HTTP GET path: {}\nResponse:\n{}", prefix, requestURI, LogUtil.base64Encode(respBody));
       }
+    }
+  }
+
+  public static void fillResponse(RestResponse restResp, HttpServletResponse resp) throws IOException {
+    resp.setStatus(restResp.getStatusCode());
+    if (restResp.getContentType() != null) {
+      resp.setContentType(restResp.getContentType());
+    }
+
+    Map<String, List<String>> headers = restResp.getHeaders();
+    if (CollectionUtil.isNotEmpty(headers)) {
+      for (Map.Entry<String, List<String>> m : headers.entrySet()) {
+        for (String value : m.getValue()) {
+          resp.addHeader(m.getKey(), value);
+        }
+      }
+    }
+
+    byte[] body = restResp.getBody();
+    if (body == null) {
+      resp.setContentLength(0);
+    } else {
+      byte[] content;
+      if (restResp.isBase64()) {
+        resp.setHeader("Content-Transfer-Encoding", "base64");
+        content = Base64.encodeToByte(body, true);
+      } else {
+        content = body;
+      }
+
+      resp.setContentLength(content.length);
+      resp.getOutputStream().write(content);
     }
   }
 
