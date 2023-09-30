@@ -11,7 +11,7 @@ import java.io.IOException;
 
 /**
  * HTTP request metadata retriever.
- *
+ * @author Lijun Liao
  */
 
 public class HttpRequestMetadataRetrieverImpl implements HttpRequestMetadataRetriever {
@@ -35,6 +35,31 @@ public class HttpRequestMetadataRetrieverImpl implements HttpRequestMetadataRetr
   @Override
   public X509Cert getTlsClientCert() throws IOException {
     return ServletHelper.getTlsClientCert(req);
+  }
+
+  @Override
+  public String getMethod() {
+    return req.getMethod();
+  }
+
+  @Override
+  public String getServletPath() {
+    return req.getServletPath();
+  }
+
+  @Override
+  public String getContentType() {
+    return req.getContentType();
+  }
+
+  @Override
+  public Object getAttribute(String name) {
+    return req.getAttribute(name);
+  }
+
+  @Override
+  public String getRequestURI() {
+    return req.getRequestURI();
   }
 
 }

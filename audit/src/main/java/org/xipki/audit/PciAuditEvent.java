@@ -90,6 +90,17 @@ public class PciAuditEvent {
     this.level = AuditLevel.INFO;
   } // constructor
 
+  public static PciAuditEvent newPciAuditEvent(
+      String userId, String eventType, String affectedResource, AuditStatus status, AuditLevel level) {
+    PciAuditEvent event = new PciAuditEvent();
+    event.setUserId(userId);
+    event.setEventType(eventType);
+    event.setAffectedResource(affectedResource);
+    event.setStatus(status.name());
+    event.setLevel(level);
+    return event;
+  }
+
   public AuditLevel getLevel() {
     return level;
   }

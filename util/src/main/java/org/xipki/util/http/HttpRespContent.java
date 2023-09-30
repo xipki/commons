@@ -27,11 +27,11 @@ public class HttpRespContent {
   }
 
   public static HttpRespContent ofOk(String contentType, byte[] content) {
-    return new HttpRespContent(200, contentType, false, content);
+    return new HttpRespContent(HttpStatusCode.SC_OK, contentType, false, content);
   }
 
   public static HttpRespContent ofOk(String contentType, boolean base64, byte[] content) {
-    return new HttpRespContent(200, contentType, base64, content);
+    return new HttpRespContent(HttpStatusCode.SC_OK, contentType, base64, content);
   }
 
   @Deprecated
@@ -53,7 +53,7 @@ public class HttpRespContent {
   }
 
   public boolean isOK() {
-    return statusCode == 200;
+    return statusCode == HttpStatusCode.SC_OK;
   }
 
   public int getStatusCode() {

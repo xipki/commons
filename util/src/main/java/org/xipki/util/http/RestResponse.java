@@ -3,10 +3,6 @@
 
 package org.xipki.util.http;
 
-import org.xipki.util.Base64;
-import org.xipki.util.CollectionUtil;
-
-import java.io.IOException;
 import java.util.*;
 
 /**

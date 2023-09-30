@@ -39,4 +39,29 @@ public class HttpRequestMetadataRetrieverImpl implements HttpRequestMetadataRetr
     return ServletHelper.getTlsClientCert(req);
   }
 
+  @Override
+  public String getMethod() {
+    return req.getMethod();
+  }
+
+  @Override
+  public String getServletPath() {
+    return req.getServletPath();
+  }
+
+  @Override
+  public String getContentType() {
+    return req.getContentType();
+  }
+
+  @Override
+  public Object getAttribute(String name) {
+    return req.getAttribute(name);
+  }
+
+  @Override
+  public String getRequestURI() {
+    return req.getRequestURI();
+  }
+
 }

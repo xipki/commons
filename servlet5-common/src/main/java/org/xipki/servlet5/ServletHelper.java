@@ -196,7 +196,7 @@ public class ServletHelper {
     }
 
     byte[] body = restResp.getBody();
-    if (body == null) {
+    if (body == null || body.length == 0) {
       resp.setContentLength(0);
     } else {
       byte[] content;

@@ -22,4 +22,13 @@ public interface HttpRequestMetadataRetriever {
 
   X509Cert getTlsClientCert() throws IOException;
 
+  String getMethod();
+
+  String getServletPath();
+
+  String getContentType();
+
+  Object getAttribute(String name);
+
+  String getRequestURI();
 }
