@@ -30,7 +30,9 @@ import org.xipki.security.asn1.Asn1StreamParser;
 import org.xipki.util.Base64;
 import org.xipki.util.*;
 import org.xipki.util.PemEncoder.PemLabel;
+import org.xipki.util.exception.ErrorCode;
 import org.xipki.util.exception.InvalidConfException;
+import org.xipki.util.exception.OperationException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -188,8 +190,30 @@ public class X509Util {
     return parseCsr(IoUtil.read(expandFilepath(notNull(file, "file"))));
   }
 
-  public static CertificationRequest parseCsr(byte[] csrBytes) {
-    return CertificationRequest.getInstance(toDerEncoded(notNull(csrBytes, "csrBytes")));
+  public static CertificationRequest parseCsr(byte[] csrBytes) throws IOException {
+    try {
+      return CertificationRequest.getInstance(toDerEncoded(notNull(csrBytes, "csrBytes")));
+    } catch (IllegalArgumentException ex) {
+      throw new IOException("invalid CSR bytes", ex);
+    }
+  }
+
+  public static CertificationRequest parseCsrInRequest(byte[] p10Bytes)
+      throws OperationException {
+    try {
+      return CertificationRequest.getInstance(toDerEncoded(p10Bytes));
+    } catch (Exception ex) {
+      throw new OperationException(ErrorCode.BAD_REQUEST, "invalid CSR: " + ex.getMessage());
+    }
+  }
+
+  public static CertificationRequest parseCsrInRequest(ASN1Encodable p10Asn1)
+      throws OperationException {
+    try {
+      return CertificationRequest.getInstance(p10Asn1);
+    } catch (Exception ex) {
+      throw new OperationException(ErrorCode.BAD_REQUEST, "invalid CSR: " + ex.getMessage());
+    }
   }
 
   public static byte[] toDerEncoded(byte[] bytes) {
