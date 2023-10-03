@@ -11,10 +11,7 @@ import org.xipki.audit.AuditService;
 import org.xipki.audit.PciAuditEvent;
 import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
-import org.xipki.util.ConfPairs;
-import org.xipki.util.DateUtil;
-import org.xipki.util.LogUtil;
-import org.xipki.util.StringUtil;
+import org.xipki.util.*;
 import org.xipki.util.exception.InvalidConfException;
 
 import java.io.*;
@@ -109,9 +106,9 @@ public class EmbedAuditService implements AuditService {
 
     String logFilePath = confPairs.value(KEY_FILE);
 
-    if (StringUtil.isBlank(logFilePath)) {
-      logFilePath = "logs/audit.log";
-    }
+    logFilePath = StringUtil.isBlank(logFilePath)
+        ? "logs/audit.log" : StringUtil.resolveVariables(logFilePath);
+    logFilePath = IoUtil.expandFilepath(logFilePath, true);
 
     File logFile = new File(logFilePath).getAbsoluteFile();
     this.logDir = logFile.getParentFile();

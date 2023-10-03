@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.*;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -141,64 +143,7 @@ public class ConfigurableProperties {
    *             list, or {@code null} if it did not have one.
    */
   public synchronized String setProperty(String key, String value) {
-    // resolve value
-    List<String> varTypes = new LinkedList<>();
-    List<String> varNames = new LinkedList<>();
-    List<int[]> positions = new LinkedList<>();
-    for (int i = 0; i < value.length();) {
-      if (StringUtil.startsWithIgnoreCase(value, "${env:", i)
-          || StringUtil.startsWithIgnoreCase(value, "${sys:", i)) {
-        int closeIndex = value.indexOf('}', i + 6); // 6 = "${env:".length() and "${sys:".length()
-        if (closeIndex == -1) {
-          break;
-        } else {
-          varTypes.add(StringUtil.startsWithIgnoreCase(value, "${env:", i) ? "env" : "sys");
-          varNames.add(value.substring(i + 6, closeIndex));
-          positions.add(new int[]{i, closeIndex});
-
-          i = closeIndex + 1;
-        }
-      } else {
-        i++;
-      }
-    }
-
-    if (varTypes.isEmpty()) {
-      return map.put(key, value);
-    }
-
-    StringBuilder valueBuilder = new StringBuilder();
-    int firstStartIndex = positions.get(0)[0];
-    if (firstStartIndex > 0) {
-      valueBuilder.append(value.substring(0, firstStartIndex));
-    }
-
-    int n = positions.size();
-
-    for (int i = 0; i < n; i++) {
-      String type = varTypes.get(i);
-      String name = varNames.get(i);
-      int[] indexes = positions.get(i);
-
-      String thisValue;
-      if ("env".equalsIgnoreCase(type)) {
-        thisValue = System.getenv(name);
-      } else {
-        thisValue = System.getProperty(name);
-      }
-
-      if (thisValue == null) { // not defined
-        thisValue = value.substring(indexes[0], indexes[1] + 1);
-      }
-      valueBuilder.append(thisValue);
-
-      int nextVarStartIndex = (i == n - 1) ? value.length() : positions.get(i + 1)[0];
-      if (nextVarStartIndex > indexes[1] + 1) {
-        valueBuilder.append(value.substring(indexes[1] + 1, nextVarStartIndex));
-      }
-    }
-
-    return map.put(key, valueBuilder.toString());
+    return map.put(key, StringUtil.resolveVariables(value));
   }
 
   public synchronized String remove(String key) {

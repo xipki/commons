@@ -85,12 +85,13 @@ public class FileMacAuditService extends MacAuditService {
 
   @Override
   protected void doExtraInit(ConfPairs confPairs, PasswordResolver passwordResolver) {
-    String str = confPairs.value(KEY_FILE);
-    if (StringUtil.isBlank(str)) {
+    String filePath = confPairs.value(KEY_FILE);
+    if (StringUtil.isBlank(filePath)) {
       throw new IllegalArgumentException("property " + KEY_FILE + " not defined");
     }
+    filePath = IoUtil.expandFilepath(StringUtil.resolveVariables(filePath), true);
 
-    File logFile = new File(str).getAbsoluteFile();
+    File logFile = new File(filePath).getAbsoluteFile();
     this.logDir = logFile.getParentFile();
     this.logDir.mkdirs();
 

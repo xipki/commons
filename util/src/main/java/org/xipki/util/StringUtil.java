@@ -21,6 +21,73 @@ public class StringUtil {
   private StringUtil() {
   }
 
+  public static String resolveVariables(String value) {
+    // resolve value
+    List<String> varTypes = null;
+    List<String> varNames = null;
+    List<int[]> positions = null;
+    for (int i = 0; i < value.length();) {
+      if (StringUtil.startsWithIgnoreCase(value, "${env:", i)
+          || StringUtil.startsWithIgnoreCase(value, "${sys:", i)) {
+        int closeIndex = value.indexOf('}', i + 6); // 6 = "${env:".length() and "${sys:".length()
+        if (closeIndex == -1) {
+          break;
+        } else {
+          if (varTypes == null) {
+            varTypes = new LinkedList<>();
+            varNames = new LinkedList<>();
+            positions = new LinkedList<>();
+          }
+
+          varTypes.add(StringUtil.startsWithIgnoreCase(value, "${env:", i) ? "env" : "sys");
+          varNames.add(value.substring(i + 6, closeIndex));
+          positions.add(new int[]{i, closeIndex});
+
+          i = closeIndex + 1;
+        }
+      } else {
+        i++;
+      }
+    }
+
+    if (varTypes == null) {
+      return value;
+    }
+
+    StringBuilder valueBuilder = new StringBuilder();
+    int firstStartIndex = positions.get(0)[0];
+    if (firstStartIndex > 0) {
+      valueBuilder.append(value.substring(0, firstStartIndex));
+    }
+
+    int n = positions.size();
+
+    for (int i = 0; i < n; i++) {
+      String type = varTypes.get(i);
+      String name = varNames.get(i);
+      int[] indexes = positions.get(i);
+
+      String thisValue;
+      if ("env".equalsIgnoreCase(type)) {
+        thisValue = System.getenv(name);
+      } else {
+        thisValue = System.getProperty(name);
+      }
+
+      if (thisValue == null) { // not defined
+        thisValue = value.substring(indexes[0], indexes[1] + 1);
+      }
+      valueBuilder.append(thisValue);
+
+      int nextVarStartIndex = (i == n - 1) ? value.length() : positions.get(i + 1)[0];
+      if (nextVarStartIndex > indexes[1] + 1) {
+        valueBuilder.append(value.substring(indexes[1] + 1, nextVarStartIndex));
+      }
+    }
+
+    return valueBuilder.toString();
+  }
+
   public static List<String> split(String str, String delim) {
     if (str == null) {
       return null;
@@ -49,22 +116,13 @@ public class StringUtil {
   }
 
   public static Set<String> splitAsSet(String str, String delim) {
-    if (str == null) {
-      return null;
-    }
+    List<String> tokens = split(str, delim);
+    return (tokens == null) ? null : new HashSet<>(tokens);
+  }
 
-    if (str.isEmpty()) {
-      return Collections.emptySet();
-    }
-
-    StringTokenizer st = new StringTokenizer(str, delim);
-    Set<String> ret = new HashSet<>(st.countTokens());
-
-    while (st.hasMoreTokens()) {
-      ret.add(st.nextToken());
-    }
-
-    return ret;
+  public static String[] splitAsArray(String str, String delim) {
+    List<String> tokens = split(str, delim);
+    return (tokens == null) ? null : tokens.toArray(new String[0]);
   }
 
   public static String collectionAsString(Collection<String> set, String delim) {
