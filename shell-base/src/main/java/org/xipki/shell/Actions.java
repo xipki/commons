@@ -113,11 +113,23 @@ public class Actions {
       }
 
       String dest = files.get(n - 1);
-      char c = dest.charAt(dest.length() - 1);
-      boolean isDestDir = c == '\\' || c == '/';
       dest = expandFilepath(dest);
 
-      if (n != 2 && !isDestDir) {
+      File destObj = new File(dest);
+      boolean destExists = destObj.exists();
+      boolean isDestDir;
+      if (destExists) {
+        isDestDir = destObj.isDirectory();
+      } else {
+        if (n > 2) {
+          isDestDir = true;
+        } else {
+          char c = dest.charAt(dest.length() - 1);
+          isDestDir = c == '\\' || c == '/';
+        }
+      }
+
+      if (n > 2 && !isDestDir) {
         throw new IllegalCmdParamException(dest + " is not a folder");
       }
 

@@ -6,6 +6,7 @@ package org.xipki.util;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.Set;
 
@@ -142,6 +143,41 @@ public class LogUtil {
   public static String base64Encode(byte[] bytes) {
     return (bytes == null) ? "NULL"
         : (bytes.length == 0) ? "EMPTY" : Base64.encodeToString(bytes, true);
+  }
+
+  private static String toUtf8String(byte[] bytes) {
+    if (bytes == null) {
+      return "NULL";
+    }
+    return new String(bytes, StandardCharsets.UTF_8);
+  }
+
+  public static void logTextReqResp(
+      String prefix, Logger log, boolean logReqResp, boolean viaPost,
+      String requestURI, byte[] requestBytes, byte[] respBody) {
+    if (logReqResp && log.isDebugEnabled()) {
+
+      if (viaPost) {
+        log.debug("{} HTTP POST path: {}\nRequest:\n{}\nResponse:\n{}",
+            prefix, requestURI, toUtf8String(requestBytes), toUtf8String(respBody));
+      } else {
+        log.debug("{} HTTP GET path: {}\nResponse:\n{}", prefix, requestURI, toUtf8String(respBody));
+      }
+    }
+  }
+
+  public static void logReqResp(
+      String prefix, Logger log, boolean logReqResp, boolean viaPost,
+      String requestURI, byte[] requestBytes, byte[] respBody) {
+    if (logReqResp && log.isDebugEnabled()) {
+
+      if (viaPost) {
+        log.debug("{} HTTP POST path: {}\nRequest:\n{}\nResponse:\n{}",
+            prefix, requestURI, base64Encode(requestBytes), base64Encode(respBody));
+      } else {
+        log.debug("{} HTTP GET path: {}\nResponse:\n{}", prefix, requestURI, base64Encode(respBody));
+      }
+    }
   }
 
 }
