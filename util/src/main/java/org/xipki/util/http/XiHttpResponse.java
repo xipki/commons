@@ -11,7 +11,7 @@ import java.util.*;
  * @since 6.0.0
  */
 
-public class RestResponse {
+public class HttpResponse {
 
   private final int statusCode;
 
@@ -23,15 +23,15 @@ public class RestResponse {
 
   private final byte[] body;
 
-  public RestResponse(int statusCode) {
+  public HttpResponse(int statusCode) {
     this(statusCode, null, null, false, null);
   }
 
-  public RestResponse(int statusCode, String contentType, Map<String, String> headers, byte[] body) {
+  public HttpResponse(int statusCode, String contentType, Map<String, String> headers, byte[] body) {
     this(statusCode, contentType, headers, false, body);
   }
 
-  public RestResponse(int statusCode, String contentType, Map<String, String> headers, boolean base64, byte[] body) {
+  public HttpResponse(int statusCode, String contentType, Map<String, String> headers, boolean base64, byte[] body) {
     this.statusCode = statusCode;
     this.base64 = base64;
     this.contentType = contentType;
@@ -63,7 +63,7 @@ public class RestResponse {
   public byte[] getBody() {
     return body;
   }
-  public RestResponse putHeader(String name, String value) {
+  public HttpResponse putHeader(String name, String value) {
     List<String> values = headers.computeIfAbsent(name, k -> new ArrayList<>(1));
     values.add(value);
     return this;

@@ -6,6 +6,7 @@ package org.xipki.security.util;
 import org.xipki.security.X509Cert;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Interface to retrieve the metadata of HTTP request.
@@ -14,13 +15,11 @@ import java.io.IOException;
  * @since 3.0.1
  */
 
-public interface HttpRequestMetadataRetriever {
+public interface XiHttpRequest {
 
   String getHeader(String headerName);
 
   String getParameter(String paramName);
-
-  X509Cert getTlsClientCert() throws IOException;
 
   String getMethod();
 
@@ -31,4 +30,6 @@ public interface HttpRequestMetadataRetriever {
   Object getAttribute(String name);
 
   String getRequestURI();
+
+  InputStream getInputStream() throws IOException;
 }

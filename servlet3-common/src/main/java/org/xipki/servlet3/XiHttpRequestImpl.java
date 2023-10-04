@@ -1,24 +1,26 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
 
-package org.xipki.servlet5;
+package org.xipki.servlet3;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.xipki.security.X509Cert;
-import org.xipki.security.util.HttpRequestMetadataRetriever;
+import org.xipki.util.http.XiHttpRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * HTTP request metadata retriever.
- * @author Lijun Liao
+ *
+ * @author Lijun Liao (xipki)
+ * @since 3.0.1
  */
 
-public class HttpRequestMetadataRetrieverImpl implements HttpRequestMetadataRetriever {
+public class HttpRequestWrapperImpl implements XiHttpRequest {
 
   private final HttpServletRequest req;
 
-  public HttpRequestMetadataRetrieverImpl(HttpServletRequest req) {
+  public HttpRequestWrapperImpl(HttpServletRequest req) {
     this.req = req;
   }
 
@@ -30,11 +32,6 @@ public class HttpRequestMetadataRetrieverImpl implements HttpRequestMetadataRetr
   @Override
   public String getParameter(String paramName) {
     return req.getParameter(paramName);
-  }
-
-  @Override
-  public X509Cert getTlsClientCert() throws IOException {
-    return ServletHelper.getTlsClientCert(req);
   }
 
   @Override
@@ -60,6 +57,11 @@ public class HttpRequestMetadataRetrieverImpl implements HttpRequestMetadataRetr
   @Override
   public String getRequestURI() {
     return req.getRequestURI();
+  }
+
+  @Override
+  public InputStream getInputStream() throws IOException {
+    return req.getInputStream();
   }
 
 }
