@@ -46,7 +46,7 @@ public class SecurePasswordInputPanel extends Panel {
     KEYS_MAP.put(idx,   new String[] {CAPS, "z", "x", "c", "v", "b", "n", "m", CLEAR});
   } // method static
 
-  private SecurePasswordInputPanel() {
+  public SecurePasswordInputPanel() {
     super(new GridLayout(0, 1));
 
     this.passwordField = new JPasswordField(10);

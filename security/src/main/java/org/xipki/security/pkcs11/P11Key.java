@@ -160,7 +160,7 @@ public abstract class P11Key {
     return digestSecretKey0(mechanism);
   }
 
-  public boolean supportsDigest(long mechanism) throws TokenException, XiSecurityException {
+  public boolean supportsDigest(long mechanism) {
     return keyId.getObjectCLass() == CKO_SECRET_KEY && slot.supportsMechanism(mechanism, CKF_DIGEST);
   }
 

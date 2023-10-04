@@ -419,9 +419,9 @@ public enum SignAlgo {
       return getDSASigAlgo(hashAlgo);
     } else if (keyType == PKCS11Constants.CKK_EC_EDWARDS) {
       String keyAlgo = EdECConstants.getName(p11Key.getEcParams());
-      if (keyAlgo.equalsIgnoreCase(EdECConstants.ED25519)) {
+      if (EdECConstants.ED25519.equalsIgnoreCase(keyAlgo)) {
         return ED25519;
-      } else if (keyAlgo.equalsIgnoreCase(EdECConstants.ED448)) {
+      } else if (EdECConstants.ED448.equalsIgnoreCase(keyAlgo)) {
         return ED448;
       } else {
         throw new NoSuchAlgorithmException("Unknown Edwards public key " + keyAlgo);

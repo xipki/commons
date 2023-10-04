@@ -62,7 +62,7 @@ public class EmbedAuditService implements AuditService {
 
   private String writerFileCoreName;
 
-  private AtomicLong lastFlushed = new AtomicLong();
+  private final AtomicLong lastFlushed = new AtomicLong();
 
   public EmbedAuditService() {
   }

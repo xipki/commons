@@ -1,9 +1,7 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
 
-package org.xipki.security.util;
-
-import org.xipki.security.X509Cert;
+package org.xipki.util.http;
 
 import java.io.IOException;
 import java.io.InputStream;

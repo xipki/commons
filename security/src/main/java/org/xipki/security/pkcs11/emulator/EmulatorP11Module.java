@@ -61,7 +61,7 @@ class EmulatorP11Module extends P11Module {
 
     if (!baseDir.exists()) {
       try {
-        createExampleRepository(baseDir, 2);
+        createExampleRepository(baseDir);
       } catch (IOException ex) {
         throw new TokenException("could not initialize the base directory: " + baseDir.getPath(), ex);
       }
@@ -161,16 +161,6 @@ class EmulatorP11Module extends P11Module {
     setSlots(slots);
   } // constructor
 
-  private static boolean parseBoolean(String value, String name) throws TokenException {
-      if ("true".equalsIgnoreCase(value)) {
-        return true;
-      } else if ("false".equalsIgnoreCase(value)) {
-        return false;
-      } else {
-        throw new TokenException("invalid " + name + ": " + value);
-      }
-  }
-
   public static P11Module getInstance(P11ModuleConf moduleConf) throws TokenException {
     notNull(moduleConf, "moduleConf");
     return new EmulatorP11Module(moduleConf);
@@ -186,8 +176,8 @@ class EmulatorP11Module extends P11Module {
     LOG.info("close PKCS#11 module: {}", getName());
   }
 
-  private void createExampleRepository(File dir, int numSlots) throws IOException {
-    for (int i = 0; i < numSlots; i++) {
+  private void createExampleRepository(File dir) throws IOException {
+    for (int i = 0; i < 2; i++) {
       File slotDir = new File(dir, i + "-" + (800000 + i));
       slotDir.mkdirs();
 

@@ -55,7 +55,7 @@ import static org.xipki.util.Args.notNull;
  * </a>
  * @since 4.4
  */
-public class SSLContextBuilder {
+public class SslContextBuilder {
 
   private static final String TLS   = "TLS";
 
@@ -68,11 +68,11 @@ public class SSLContextBuilder {
   private SecureRandom secureRandom;
   private Provider provider;
 
-  public static SSLContextBuilder create() {
-    return new SSLContextBuilder();
+  public static SslContextBuilder create() {
+    return new SslContextBuilder();
   }
 
-  public SSLContextBuilder() {
+  public SslContextBuilder() {
     super();
     this.keyManagers = new LinkedHashSet<>();
     this.trustManagers = new LinkedHashSet<>();
@@ -93,22 +93,22 @@ public class SSLContextBuilder {
    *      Cryptography Architecture Standard Algorithm Name Documentation</a>
    * @since 4.4.7
    */
-  public SSLContextBuilder setProtocol(String protocol) {
+  public SslContextBuilder setProtocol(String protocol) {
     this.protocol = protocol;
     return this;
   }
 
-  public SSLContextBuilder setSecureRandom(SecureRandom secureRandom) {
+  public SslContextBuilder setSecureRandom(SecureRandom secureRandom) {
     this.secureRandom = secureRandom;
     return this;
   }
 
-  public SSLContextBuilder setProvider(Provider provider) {
+  public SslContextBuilder setProvider(Provider provider) {
     this.provider = provider;
     return this;
   }
 
-  public SSLContextBuilder setProvider(String name) {
+  public SslContextBuilder setProvider(String name) {
     if (name != null && !name.trim().isEmpty()) {
       this.provider = Security.getProvider(name);
     }
@@ -130,7 +130,7 @@ public class SSLContextBuilder {
    *      Cryptography Architecture Standard Algorithm Name Documentation</a>
    * @since 4.4.7
    */
-  public SSLContextBuilder setKeyStoreType(String keyStoreType) {
+  public SslContextBuilder setKeyStoreType(String keyStoreType) {
     this.keyStoreType = keyStoreType;
     return this;
   }
@@ -150,7 +150,7 @@ public class SSLContextBuilder {
    *      Cryptography Architecture Standard Algorithm Name Documentation</a>
    * @since 4.4.7
    */
-  public SSLContextBuilder setKeyManagerFactoryAlgorithm(String keyManagerFactoryAlgorithm) {
+  public SslContextBuilder setKeyManagerFactoryAlgorithm(String keyManagerFactoryAlgorithm) {
     this.keyManagerFactoryAlgorithm = keyManagerFactoryAlgorithm;
     return this;
   }
@@ -170,12 +170,12 @@ public class SSLContextBuilder {
    *      Cryptography Architecture Standard Algorithm Name Documentation</a>
    * @since 4.4.7
    */
-  public SSLContextBuilder setTrustManagerFactoryAlgorithm(String trustManagerFactoryAlgorithm) {
+  public SslContextBuilder setTrustManagerFactoryAlgorithm(String trustManagerFactoryAlgorithm) {
     this.trustManagerFactoryAlgorithm = trustManagerFactoryAlgorithm;
     return this;
   }
 
-  public SSLContextBuilder loadTrustMaterial(KeyStore truststore)
+  public SslContextBuilder loadTrustMaterial(KeyStore truststore)
       throws NoSuchAlgorithmException, KeyStoreException {
     final TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(trustManagerFactoryAlgorithm == null
                 ? TrustManagerFactory.getDefaultAlgorithm() : trustManagerFactoryAlgorithm);
@@ -187,11 +187,11 @@ public class SSLContextBuilder {
     return this;
   }
 
-  public SSLContextBuilder loadTrustMaterial() throws NoSuchAlgorithmException, KeyStoreException {
+  public SslContextBuilder loadTrustMaterial() throws NoSuchAlgorithmException, KeyStoreException {
     return loadTrustMaterial(null);
   }
 
-  public SSLContextBuilder loadTrustMaterial(File file, char[] storePassword)
+  public SslContextBuilder loadTrustMaterial(File file, char[] storePassword)
       throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
     notNull(file, "Truststore file");
     try (InputStream is = Files.newInputStream(file.toPath())) {
@@ -202,7 +202,7 @@ public class SSLContextBuilder {
   /**
    * The specified stream remains open after this method returns.
    */
-  public SSLContextBuilder loadTrustMaterial(InputStream instream, char[] storePassword)
+  public SslContextBuilder loadTrustMaterial(InputStream instream, char[] storePassword)
       throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
     notNull(instream, "Truststore instream");
     final KeyStore trustStore = KeyStore.getInstance(keyStoreType);
@@ -210,7 +210,7 @@ public class SSLContextBuilder {
     return loadTrustMaterial(trustStore);
   }
 
-  public SSLContextBuilder loadKeyMaterial(KeyStore keystore, char[] keyPassword)
+  public SslContextBuilder loadKeyMaterial(KeyStore keystore, char[] keyPassword)
       throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
     final KeyManagerFactory kmfactory = KeyManagerFactory
             .getInstance(keyManagerFactoryAlgorithm == null
@@ -223,7 +223,7 @@ public class SSLContextBuilder {
     return this;
   }
 
-  public SSLContextBuilder loadKeyMaterial(File file, char[] storePassword, char[] keyPassword)
+  public SslContextBuilder loadKeyMaterial(File file, char[] storePassword, char[] keyPassword)
       throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, CertificateException, IOException {
     notNull(file, "Keystore file");
     try (InputStream is = Files.newInputStream(file.toPath())) {
@@ -231,7 +231,7 @@ public class SSLContextBuilder {
     }
   }
 
-  public SSLContextBuilder loadKeyMaterial(InputStream instream, char[] storePassword, char[] keyPassword)
+  public SslContextBuilder loadKeyMaterial(InputStream instream, char[] storePassword, char[] keyPassword)
       throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, CertificateException, IOException {
     notNull(instream, "Keystore instream");
     final KeyStore identityStore = KeyStore.getInstance(keyStoreType);

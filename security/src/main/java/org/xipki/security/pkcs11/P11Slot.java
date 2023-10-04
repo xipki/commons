@@ -613,11 +613,11 @@ public abstract class P11Slot implements Closeable {
    * Generates a DSA keypair.
    *
    * @param plength
-   *          bit length of P
+   *          The bit length of P
    * @param qlength
-   *          bit length of Q
+   *          The bit length of Q
    * @param control
-   *          Control of the key generation process. Must not be {@code null}.
+   *          The control of the key generation process. Must not be {@code null}.
    * @return the identifier of the key within the PKCS#P11 token.
    * @throws TokenException
    *         if PKCS#11 token exception occurs.
@@ -796,27 +796,6 @@ public abstract class P11Slot implements Closeable {
     if (readOnly) {
       throw new TokenException("Writable operation " + operationName + " is not permitted");
     }
-  }
-
-  protected static String formatNumber(int value, int numChars) {
-    return formatString(Integer.toString(value), numChars, true);
-  }
-
-  private static String formatString(String str, int numChars, boolean prepend) {
-    if (str.length() >= numChars) {
-      return str;
-    }
-
-    char[] chars = str.toCharArray();
-    char[] ret = new char[numChars];
-    if (prepend) {
-      System.arraycopy(chars, 0, ret, numChars - chars.length, chars.length);
-      Arrays.fill(ret, 0, numChars - chars.length, ' ');
-    } else {
-      System.arraycopy(chars, 0, ret, 0, chars.length);
-      Arrays.fill(ret, chars.length, numChars, ' ');
-    }
-    return new String(ret);
   }
 
 }

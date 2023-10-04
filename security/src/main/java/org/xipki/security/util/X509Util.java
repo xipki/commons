@@ -389,7 +389,7 @@ public class X509Util {
     }
 
     List<ASN1ObjectIdentifier> list = new ArrayList<>(usages);
-    Collections.sort(list, (o1, o2) -> o1.getId().compareTo(o2.getId()));
+    list.sort(Comparator.comparing(ASN1ObjectIdentifier::getId));
     list = removeDuplication(list);
 
     KeyPurposeId[] kps = new KeyPurposeId[list.size()];

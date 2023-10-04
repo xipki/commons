@@ -224,10 +224,9 @@ public interface PasswordCallback {
         }
         break;
       default:
-        String callbackClass = type;
         try {
           pwdCallback = (PasswordCallback) PasswordCallback.class.getClassLoader()
-              .loadClass(callbackClass).getConstructor().newInstance();
+              .loadClass(type).getConstructor().newInstance();
         } catch (Exception e) {
           throw new IllegalStateException("unknown PasswordCallback type '" + type + "'");
         }

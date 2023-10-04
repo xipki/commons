@@ -76,8 +76,6 @@ public abstract class MacAuditService implements AuditService {
 
   protected String previousTag;
 
-  private String algo;
-
   private String tagPrefix;
 
   private byte[] tagPrefixBytes;
@@ -85,8 +83,6 @@ public abstract class MacAuditService implements AuditService {
   private String keyId;
 
   private SecureRandom rnd;
-
-  private SecretKey macKey;
 
   private SecretKey encKey;
 
@@ -217,7 +213,7 @@ public abstract class MacAuditService implements AuditService {
     str = confPairs.value(KEY_ENC_INTERVAL);
     encInterval = (str == null) ? 1 : Integer.parseInt(str);
 
-    algo = confPairs.value(KEY_ALGO);
+    String algo = confPairs.value(KEY_ALGO);
     int algoId;
     if (algo == null) {
       algo = "HmacSHA256";
@@ -247,7 +243,7 @@ public abstract class MacAuditService implements AuditService {
       SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
       char[] passwordChars = password.toCharArray();
       KeySpec spec = new PBEKeySpec(passwordChars, "MAC".getBytes(StandardCharsets.UTF_8), 10000, 256);
-      macKey = factory.generateSecret(spec);
+      SecretKey macKey = factory.generateSecret(spec);
 
       spec = new PBEKeySpec(passwordChars, "ENC".getBytes(StandardCharsets.UTF_8), 10000, 256);
       encKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");

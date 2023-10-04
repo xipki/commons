@@ -4,7 +4,6 @@
 package org.xipki.security.pkcs11;
 
 import org.xipki.pkcs11.wrapper.TokenException;
-import org.xipki.util.CompareUtil;
 
 import java.util.*;
 
@@ -71,22 +70,6 @@ public abstract class P11Module {
     }
     return slot;
   } // method getSlot
-
-  void destroySlot(long slotId) {
-    P11SlotId p11SlotId = null;
-    for (P11SlotId si : slots.keySet()) {
-      if (CompareUtil.equalsObject(si.getId(), slotId)) {
-        p11SlotId = si;
-        break;
-      }
-    }
-    if (p11SlotId != null) {
-      P11Slot slot = slots.remove(p11SlotId);
-      if (slot != null) {
-        slot.close();
-      }
-    }
-  }
 
   public List<P11SlotId> getSlotIds() {
     return slotIds;

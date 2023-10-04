@@ -57,7 +57,7 @@ public class StringUtil {
     StringBuilder valueBuilder = new StringBuilder();
     int firstStartIndex = positions.get(0)[0];
     if (firstStartIndex > 0) {
-      valueBuilder.append(value.substring(0, firstStartIndex));
+      valueBuilder.append(value, 0, firstStartIndex);
     }
 
     int n = positions.size();
@@ -81,7 +81,7 @@ public class StringUtil {
 
       int nextVarStartIndex = (i == n - 1) ? value.length() : positions.get(i + 1)[0];
       if (nextVarStartIndex > indexes[1] + 1) {
-        valueBuilder.append(value.substring(indexes[1] + 1, nextVarStartIndex));
+        valueBuilder.append(value, indexes[1] + 1, nextVarStartIndex);
       }
     }
 
@@ -325,7 +325,7 @@ public class StringUtil {
     return new BigInteger(tmpStr, defaultHex ? 16 : 10);
   }
 
-  public static String getVersion(Class clazz) {
+  public static String getVersion(Class<?> clazz) {
     try {
       return toUtf8String(IoUtil.readAllBytesAndClose(clazz.getResourceAsStream("/version"))).trim();
     } catch (Exception ex) {

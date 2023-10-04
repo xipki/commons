@@ -44,7 +44,8 @@ public class CtLogTest {
     SignedCertificateTimestampList sctList2 = SignedCertificateTimestampList.getInstance(encodedScts);
     SignedCertificateTimestamp sct = sctList2.getSctList().get(0);
     sct.getDigitallySigned().getEncoded();
-    sctList2.getSctList().get(0).getDigitallySigned().getSignatureObject();
+    Object signatureObject = sctList2.getSctList().get(0).getDigitallySigned().getSignatureObject();
+    Assert.assertNotNull("signatureObject", signatureObject);
     Assert.assertArrayEquals(encodedScts, sctList2.getEncoded());
   }
 

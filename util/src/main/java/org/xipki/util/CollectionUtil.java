@@ -97,10 +97,12 @@ public class CollectionUtil {
     return (list == null) ? Collections.emptyList() : Collections.unmodifiableList(list);
   }
 
+  @SafeVarargs
   public static <T> Set<T> asUnmodifiableSet(T... list) {
     return Collections.unmodifiableSet(asSet(list));
   }
 
+  @SafeVarargs
   public static <T> Set<T> asSet(T... list) {
     if (list == null) {
       return Collections.emptySet();

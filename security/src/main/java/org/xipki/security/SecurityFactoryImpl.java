@@ -123,7 +123,7 @@ public class SecurityFactoryImpl extends AbstractSecurityFactory {
       String algoName;
       try {
         algoName = SignAlgo.getInstance(algId).getJceName();
-      } catch (NoSuchAlgorithmException ex) {
+      } catch (Exception ex) {
         algoName = algId.getAlgorithm().getId();
       }
 

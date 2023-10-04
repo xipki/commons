@@ -111,8 +111,6 @@ class EmulatorP11Slot extends P11Slot {
 
   private final boolean namedCurveSupported;
 
-  private final File slotDir;
-
   private final File privKeyDir;
 
   private final File pubKeyDir;
@@ -194,10 +192,10 @@ class EmulatorP11Slot extends P11Slot {
       throws TokenException {
     super(moduleName, slotId, readOnly, secretKeyTypes, keypairTypes, newObjectConf);
 
-    this.slotDir = notNull(slotDir, "slotDir");
     this.keyCryptor = notNull(keyCryptor, "privateKeyCryptor");
     this.maxSessions = numSessions == null ? 20 : positive(numSessions, "numSessions");
 
+    notNull(slotDir, "slotDir");
     this.privKeyDir = new File(slotDir, DIR_PRIV_KEY);
     if (!this.privKeyDir.exists()) {
       this.privKeyDir.mkdirs();
@@ -223,10 +221,6 @@ class EmulatorP11Slot extends P11Slot {
 
     initMechanisms(supportedMechs, mechanismFilter);
   } // constructor
-
-  File slotDir() {
-    return slotDir;
-  }
 
   private List<File> getFilesForLabel(File dir, String label) throws TokenException {
     List<File> ret = new LinkedList<>();
@@ -326,45 +320,6 @@ class EmulatorP11Slot extends P11Slot {
   public void close() {
     LOG.info("close slot " + slotId);
   }
-
-  private boolean removePkcs11Entry(File dir, PKCS11KeyId objectId) throws TokenException {
-    byte[] id = objectId.getId();
-    String label = objectId.getLabel();
-    if (id != null) {
-      String hexId = hex(id);
-      File infoFile = getInfoFile(dir, hexId);
-      if (!infoFile.exists()) {
-        return false;
-      }
-
-      if (StringUtil.isBlank(label)) {
-        return deletePkcs11Entry(dir, id);
-      } else {
-        Properties props = loadProperties(infoFile);
-        return label.equals(props.getProperty("label")) && deletePkcs11Entry(dir, id);
-      }
-    }
-
-    // id is null, delete all entries with the specified label
-    boolean deleted = false;
-    File[] infoFiles = dir.listFiles(INFO_FILENAME_FILTER);
-    if (infoFiles != null) {
-      for (File infoFile : infoFiles) {
-        if (!infoFile.isFile()) {
-          continue;
-        }
-
-        Properties props = loadProperties(infoFile);
-        if (label.equals(props.getProperty("label"))) {
-          if (deletePkcs11Entry(dir, getKeyIdFromInfoFilename(infoFile.getName()))) {
-            deleted = true;
-          }
-        }
-      }
-    }
-
-    return deleted;
-  } // method removePkcs11Entry
 
   private static boolean deletePkcs11Entry(File dir, byte[] objectId) {
     String hexId = hex(objectId);
@@ -745,11 +700,10 @@ class EmulatorP11Slot extends P11Slot {
       long keyType   = Long.parseLong(props.getProperty(PROP_KEYTYPE));
       String label = props.getProperty(PROP_LABEL);
 
-      PKCS11KeyId keyObjectId = new PKCS11KeyId(keyHandle, objClass, keyType, keyId, keyLabel);
+      PKCS11KeyId keyObjectId = new PKCS11KeyId(keyHandle, objClass, keyType, keyId, label);
 
-      Long pubicKeyHandle = null;
       if (!isSecretKey) {
-        pubicKeyHandle = keyHandle + 1;
+        long pubicKeyHandle = keyHandle + 1;
         keyObjectId.setPublicKeyHandle(pubicKeyHandle);
       }
 
@@ -769,7 +723,6 @@ class EmulatorP11Slot extends P11Slot {
 
       long objClass = isSecretKey ? CKO_SECRET_KEY : CKO_PRIVATE_KEY;
 
-      byte[] id = getKeyIdFromInfoFilename(keyInfoFile.getName());
       Properties props = loadProperties(keyInfoFile);
 
       String label = props.getProperty(PROP_LABEL);
@@ -819,6 +772,7 @@ class EmulatorP11Slot extends P11Slot {
     }
     assertMechanismSupported(mech, CKF_GENERATE_KEY_PAIR);
 
+    notNull(keysize, "keysize");
     byte[] keyBytes = new byte[keysize / 8];
     random.nextBytes(keyBytes);
     SecretKey key = new SecretKeySpec(keyBytes, getSecretKeyAlgorithm(keyType));
@@ -1048,7 +1002,7 @@ class EmulatorP11Slot extends P11Slot {
           "\n").getBytes(StandardCharsets.UTF_8));
 
       long keyClass;
-      File infoFile = null;
+      File infoFile;
       if ((objectHandle & 0xFF) == 1) {
         keyClass = CKO_PUBLIC_KEY;
         int hashCode = (int) (objectHandle >> 8);
@@ -1132,7 +1086,7 @@ class EmulatorP11Slot extends P11Slot {
       int no = 0;
       if (keyInfoFiles != null) {
         for (File keyInfoFile : keyInfoFiles) {
-          String text = formatNumber(++no, 3) + ". " + objectToString(CKO_SECRET_KEY, keyInfoFile) + "\n";
+          String text = StringUtil.formatAccount(++no, 3) + ". " + objectToString(CKO_SECRET_KEY, keyInfoFile) + "\n";
           stream.write(("  " + text).getBytes(StandardCharsets.UTF_8));
         }
       }
@@ -1141,7 +1095,7 @@ class EmulatorP11Slot extends P11Slot {
       keyInfoFiles = privKeyDir.listFiles(INFO_FILENAME_FILTER);
       if (keyInfoFiles != null) {
         for (File keyInfoFile : keyInfoFiles) {
-          String text = formatNumber(++no, 3) + ". " + objectToString(CKO_PRIVATE_KEY, keyInfoFile) + "\n";
+          String text = StringUtil.formatAccount(++no, 3) + ". " + objectToString(CKO_PRIVATE_KEY, keyInfoFile) + "\n";
           stream.write(("  " + text).getBytes(StandardCharsets.UTF_8));
         }
       }
@@ -1150,7 +1104,7 @@ class EmulatorP11Slot extends P11Slot {
       keyInfoFiles = pubKeyDir.listFiles(INFO_FILENAME_FILTER);
       if (keyInfoFiles != null) {
         for (File keyInfoFile : keyInfoFiles) {
-          String text = formatNumber(++no, 3) + ". " + objectToString(CKO_PUBLIC_KEY, keyInfoFile) + "\n";
+          String text = StringUtil.formatAccount(++no, 3) + ". " + objectToString(CKO_PUBLIC_KEY, keyInfoFile) + "\n";
           stream.write(("  " + text).getBytes(StandardCharsets.UTF_8));
         }
       }
@@ -1164,10 +1118,12 @@ class EmulatorP11Slot extends P11Slot {
 
   private static File getInfoFileForHashCode(File dir, int hashCode) {
     File[] files = dir.listFiles(INFO_FILENAME_FILTER);
-    for (File file : files) {
-      byte[] id = getKeyIdFromInfoFilename(file.getName());
-      if (hashCode == Arrays.hashCode(id)) {
-        return file;
+    if (files != null) {
+      for (File file : files) {
+        byte[] id = getKeyIdFromInfoFilename(file.getName());
+        if (hashCode == Arrays.hashCode(id)) {
+          return file;
+        }
       }
     }
     return null;
@@ -1205,16 +1161,6 @@ class EmulatorP11Slot extends P11Slot {
         return id;
       }
     }
-  }
-
-  private String generateLabel(String label) throws TokenException {
-    String tmpLabel = label;
-    int idx = 0;
-    while (objectExistsByIdLabel(null, tmpLabel)) {
-      idx++;
-      tmpLabel = label + "-" + idx;
-    }
-    return label;
   }
 
 }

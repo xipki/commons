@@ -34,45 +34,48 @@ public final class DSAParameterCache {
   static {
     String resourceFile = "/conf/DSAParameters.cfg";
     InputStream confStream = DSAParameterCache.class.getResourceAsStream(resourceFile);
+    if (confStream == null) {
+      LOG.error("resource {} does not exist", resourceFile);
+    } else {
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(confStream, StandardCharsets.UTF_8))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          line = line.trim();
+          if (line.isEmpty() || line.startsWith("#")) {
+            continue;
+          }
 
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(confStream, StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        line = line.trim();
-        if (line.isEmpty() || line.startsWith("#")) {
-          continue;
+          if (!line.startsWith("DSA/")) {
+            continue;
+          }
+
+          String[] tokens = line.split("/");
+          int plen = Integer.parseInt(tokens[1]);
+          int qlen = Integer.parseInt(tokens[2]);
+
+          String line0 = reader.readLine().trim();
+          if (!line0.startsWith("P:")) {
+            continue;
+          }
+          BigInteger p = new BigInteger(line0.substring(2).trim(), 16);
+
+          line0 = reader.readLine().trim();
+          if (!line0.startsWith("Q:")) {
+            continue;
+          }
+          BigInteger q = new BigInteger(line0.substring(2).trim(), 16);
+
+          line0 = reader.readLine().trim();
+          if (!line0.startsWith("G:")) {
+            continue;
+          }
+          BigInteger g = new BigInteger(line0.substring(2).trim(), 16);
+
+          addDSAParamSpec(plen, qlen, p, q, g);
         }
-
-        if (!line.startsWith("DSA/")) {
-          continue;
-        }
-
-        String[] tokens = line.split("/");
-        int plen = Integer.parseInt(tokens[1]);
-        int qlen = Integer.parseInt(tokens[2]);
-
-        String line0 = reader.readLine().trim();
-        if (!line0.startsWith("P:")) {
-          continue;
-        }
-        BigInteger p = new BigInteger(line0.substring(2).trim(), 16);
-
-        line0 = reader.readLine().trim();
-        if (!line0.startsWith("Q:")) {
-          continue;
-        }
-        BigInteger q = new BigInteger(line0.substring(2).trim(), 16);
-
-        line0 = reader.readLine().trim();
-        if (!line0.startsWith("G:")) {
-          continue;
-        }
-        BigInteger g = new BigInteger(line0.substring(2).trim(), 16);
-
-        addDSAParamSpec(plen, qlen, p, q, g);
+      } catch (Exception ex) {
+        LOG.error("error reading DSAParameters", ex);
       }
-    } catch (Exception ex) {
-      LOG.error("error reading DSAParameters", ex);
     }
   }
 
@@ -87,9 +90,10 @@ public final class DSAParameterCache {
       match = false;
       LOG.error("plen and P does not match");
     }
-    if (plen != p.bitLength()) {
+
+    if (qlen != q.bitLength()) {
       match = false;
-      LOG.error("plen and P does not match");
+      LOG.error("qlen and Q does not match");
     }
 
     if (match) {

@@ -851,8 +851,7 @@ public abstract class DataSourceWrapper implements Closeable {
     executeUpdate(conn, getSqlToAddPrimaryKey(primaryKeyName, table, columns));
   }
 
-  protected String getSqlToDropForeignKeyConstraint(String constraintName, String baseTable)
-      throws DataAccessException {
+  protected String getSqlToDropForeignKeyConstraint(String constraintName, String baseTable) {
     notBlank(constraintName, "constraintName");
     notBlank(baseTable, "baseTable");
 
@@ -1125,7 +1124,7 @@ public abstract class DataSourceWrapper implements Closeable {
       }
     } // end if
 
-    String sqlType = (String) props.remove("sql.type");
+    String sqlType = props.remove("sql.type");
     HikariConfig conf = new HikariConfig(props.toProperties());
 
     if (databaseType == DatabaseType.UNKNOWN) {

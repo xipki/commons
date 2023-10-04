@@ -187,7 +187,6 @@ public class P12KeyGenerator {
   public static KeyStoreWrapper generateIdentity(
       KeyPairWithSubjectPublicKeyInfo kp, KeystoreGenerationParameters params, String selfSignedCertSubject)
       throws Exception {
-    Instant now = Instant.now();
     Instant notBefore = Instant.now().minus(10, ChronoUnit.MINUTES); // 10 minutes past
     Instant notAfter = notBefore.plus(3650, ChronoUnit.DAYS);
 
@@ -274,7 +273,8 @@ public class P12KeyGenerator {
       throw new IllegalArgumentException("unknown type of key " + key.getClass().getName());
     }
 
-    return builder.createSigner(algo, 1, null).borrowSigner().value();
+    ConcurrentContentSigner csigner = builder.createSigner(algo, 1, null);
+    return csigner.borrowSigner().value();
   } // method getContentSigner
 
 }

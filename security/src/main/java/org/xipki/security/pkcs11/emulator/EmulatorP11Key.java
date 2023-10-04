@@ -233,6 +233,9 @@ class EmulatorP11Key extends P11Key {
           }
         } else if (keyType == CKK_EC_EDWARDS) {
           algorithm = EdECConstants.getName(getEcParams());
+          if (algorithm == null) {
+            throw new TokenException("Unknown EC-EdWards curve " +  getEcParams().getId());
+          }
           for (int i = 0; i < maxSessions; i++) {
             Signature signature = Signature.getInstance(algorithm, "BC");
             signature.initSign((PrivateKey) signingKey);
@@ -348,7 +351,7 @@ class EmulatorP11Key extends P11Key {
       throw new TokenException("params must be instanceof P11ByteArrayParams");
     }
 
-    GMac gmac = new GMac(new GCMBlockCipher(new AESEngine()));
+    GMac gmac = new GMac(GCMBlockCipher.newInstance(AESEngine.newInstance()));
     gmac.init(new ParametersWithIV(new KeyParameter(signingKey.getEncoded()), iv));
     gmac.update(contentToSign, 0, contentToSign.length);
     byte[] signature = new byte[gmac.getMacSize()];

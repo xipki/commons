@@ -52,7 +52,7 @@ public class ConfigurableProperties {
   /**
    * Reads a property list (key and element pairs) from the input
    * character stream in a simple line-oriented format.
-   *
+   * <p>
    * The specified stream remains open after this method returns.
    *
    * @param   reader   the input character stream.

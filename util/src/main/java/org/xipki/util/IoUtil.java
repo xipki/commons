@@ -361,7 +361,7 @@ public class IoUtil {
     try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
       long fileLength = file.length() - 1;
       if (fileLength < 1) {
-        return null;
+        return "";
       }
 
       // Set the pointer at the last of the file

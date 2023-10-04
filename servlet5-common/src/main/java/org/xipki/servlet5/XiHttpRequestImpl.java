@@ -4,7 +4,6 @@
 package org.xipki.servlet5;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.xipki.security.X509Cert;
 import org.xipki.util.http.XiHttpRequest;
 
 import java.io.IOException;
@@ -15,11 +14,11 @@ import java.io.InputStream;
  * @author Lijun Liao
  */
 
-public class HttpRequestWrapperImpl implements XiHttpRequest {
+public class XiHttpRequestImpl implements XiHttpRequest {
 
   private final HttpServletRequest req;
 
-  public HttpRequestWrapperImpl(HttpServletRequest req) {
+  public XiHttpRequestImpl(HttpServletRequest req) {
     this.req = req;
   }
 
@@ -31,11 +30,6 @@ public class HttpRequestWrapperImpl implements XiHttpRequest {
   @Override
   public String getParameter(String paramName) {
     return req.getParameter(paramName);
-  }
-
-  @Override
-  public X509Cert getTlsClientCert() throws IOException {
-    return ServletHelper.getTlsClientCert(req);
   }
 
   @Override

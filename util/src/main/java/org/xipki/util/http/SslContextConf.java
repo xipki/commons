@@ -152,7 +152,7 @@ public class SslContextConf {
     }
 
     if (sslContext == null) {
-      SSLContextBuilder builder = new SSLContextBuilder();
+      SslContextBuilder builder = new SslContextBuilder();
       if (sslStoreType != null) {
         builder.setKeyStoreType(sslStoreType);
       }

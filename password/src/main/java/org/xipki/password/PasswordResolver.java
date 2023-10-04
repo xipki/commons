@@ -18,7 +18,7 @@ public interface PasswordResolver {
    *          Hint of the password. Must not be {@code null}.
    * @return the resolved password
    * @throws PasswordResolverException
-   *         if cannot resolve the password
+   *         If cannot resolve the password
    */
   char[] resolvePassword(String passwordHint) throws PasswordResolverException;
 

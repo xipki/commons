@@ -147,9 +147,7 @@ public class Validity implements Comparable<Validity> {
 
       return (validity < obj.validity) ? -1 : 1;
     } else {
-      long thisMinutes = approxMinutes();
-      long thatMinutes = obj.approxMinutes();
-      return (thisMinutes == thatMinutes) ? 0 : (thisMinutes < thatMinutes) ? -1 : 1;
+      return Long.compare(approxMinutes(), obj.approxMinutes());
     }
   }
 

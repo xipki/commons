@@ -3,8 +3,6 @@
 
 package org.xipki.datasource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.util.Args;
@@ -27,8 +25,6 @@ import java.nio.file.Paths;
  */
 
 public class DataSourceFactory {
-
-  private static final Logger LOG = LoggerFactory.getLogger(DataSourceFactory.class);
 
   public DataSourceWrapper createDataSource(String name, FileOrValue conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {

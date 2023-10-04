@@ -16,11 +16,11 @@ import java.io.InputStream;
  * @since 3.0.1
  */
 
-public class HttpRequestWrapperImpl implements XiHttpRequest {
+public class XiHttpRequestImpl implements XiHttpRequest {
 
   private final HttpServletRequest req;
 
-  public HttpRequestWrapperImpl(HttpServletRequest req) {
+  public XiHttpRequestImpl(HttpServletRequest req) {
     this.req = req;
   }
 

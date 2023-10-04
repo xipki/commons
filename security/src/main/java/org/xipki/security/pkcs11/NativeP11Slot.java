@@ -35,7 +35,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.time.Clock;
 import java.util.*;
 
 import static org.xipki.pkcs11.wrapper.AttributeVector.newSecretKey;
@@ -56,8 +55,6 @@ class NativeP11Slot extends P11Slot {
       PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
 
   private static final Logger LOG = LoggerFactory.getLogger(NativeP11Slot.class);
-
-  private static final Clock clock = Clock.systemUTC();
 
   private final PKCS11Token token;
 
@@ -88,7 +85,7 @@ class NativeP11Slot extends P11Slot {
         ? CKM_RSA_X9_31_KEY_PAIR_GEN : CKM_RSA_PKCS_KEY_PAIR_GEN;
   } // constructor
 
-  private Map<Long, MechanismInfo> getSupportedMechanisms() throws TokenException {
+  private Map<Long, MechanismInfo> getSupportedMechanisms() {
     Set<Long> mechanisms = token.getMechanisms();
 
     List<Long> newList = new ArrayList<>(mechanisms.size());
@@ -346,7 +343,7 @@ class NativeP11Slot extends P11Slot {
       handleList.add(handle);
     }
 
-    List<Long> destroyedHandles = null;
+    List<Long> destroyedHandles;
     try {
       destroyedHandles = token.destroyObjects(handleList);
     } catch (TokenException e) {
@@ -799,9 +796,9 @@ class NativeP11Slot extends P11Slot {
           String text;
           try {
             String objectText = objectToString(handle);
-            text = formatNumber(i, 3) + ". " + objectText;
+            text = StringUtil.formatAccount(i, 3) + ". " + objectText;
           } catch (Exception ex) {
-            text = formatNumber(i, 3) + ". " + "Error reading object with handle " + handle;
+            text = StringUtil.formatAccount(i, 3) + ". " + "Error reading object with handle " + handle;
             LOG.debug(text, ex);
           }
 
@@ -850,7 +847,7 @@ class NativeP11Slot extends P11Slot {
           keySpec = "RSA/" + (modulus == null ? "<N/A>" : modulus.bitLength());
         } else if (keyType == CKK_EC || keyType == CKK_EC_EDWARDS || keyType == CKK_EC_MONTGOMERY) {
           byte[] ecParams = token.getAttrValues(handle, CKA_EC_PARAMS).ecParams();
-          String curveName = null;
+          String curveName;
           if (ecParams == null) {
             curveName = "<N/A>";
           } else  {
