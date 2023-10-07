@@ -6,7 +6,7 @@ package org.xipki.servlet5;
 import jakarta.servlet.http.HttpServletResponse;
 import org.xipki.util.Base64;
 import org.xipki.util.CollectionUtil;
-import org.xipki.util.http.XiHttpResponse;
+import org.xipki.util.http.HttpResponse;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,13 +19,13 @@ import java.util.Map;
 
 public class ServletHelper {
 
-  public static void fillResponse(XiHttpResponse restResp, HttpServletResponse resp) throws IOException {
-    resp.setStatus(restResp.getStatusCode());
-    if (restResp.getContentType() != null) {
-      resp.setContentType(restResp.getContentType());
+  public static void fillResponse(HttpResponse httpResp, HttpServletResponse resp) throws IOException {
+    resp.setStatus(httpResp.getStatusCode());
+    if (httpResp.getContentType() != null) {
+      resp.setContentType(httpResp.getContentType());
     }
 
-    Map<String, List<String>> headers = restResp.getHeaders();
+    Map<String, List<String>> headers = httpResp.getHeaders();
     if (CollectionUtil.isNotEmpty(headers)) {
       for (Map.Entry<String, List<String>> m : headers.entrySet()) {
         for (String value : m.getValue()) {
@@ -34,12 +34,12 @@ public class ServletHelper {
       }
     }
 
-    byte[] body = restResp.getBody();
+    byte[] body = httpResp.getBody();
     if (body == null || body.length == 0) {
       resp.setContentLength(0);
     } else {
       byte[] content;
-      if (restResp.isBase64()) {
+      if (httpResp.isBase64()) {
         resp.setHeader("Content-Transfer-Encoding", "base64");
         content = Base64.encodeToByte(body, true);
       } else {

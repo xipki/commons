@@ -82,6 +82,10 @@ public class TlsHelper {
     if (reverseProxyMode == null) {
       X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
       if (certs == null || certs.length < 1) {
+        certs = (X509Certificate[]) request.getAttribute("jakarta.servlet.request.X509Certificate");
+      }
+
+      if (certs == null || certs.length < 1) {
         return null;
       }
       X509Certificate cert0 = certs[0];

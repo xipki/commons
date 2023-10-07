@@ -46,9 +46,8 @@ public class XiHttpClient {
   }
 
   public HttpRespContent httpGet(String url) throws IOException {
-    Args.notNull(url, "url");
     try {
-      HttpURLConnection httpConn = openHttpConn(new URL(url));
+      HttpURLConnection httpConn = openHttpConn(new URL(Args.notNull(url, "url")));
       httpConn.setRequestMethod("GET");
       return parseResponse(httpConn);
     } catch (XiHttpClientException ex) {
@@ -78,9 +77,8 @@ public class XiHttpClient {
 
   public HttpRespContent httpPost(String url, String requestContentType, byte[] request)
       throws IOException {
-    Args.notNull(url, "url");
     try {
-      HttpURLConnection httpConn = openHttpConn(new URL(url));
+      HttpURLConnection httpConn = openHttpConn(new URL(Args.notNull(url, "url")));
       httpConn.setRequestMethod("POST");
       httpConn.setDoOutput(true);
       httpConn.setUseCaches(false);
@@ -103,10 +101,8 @@ public class XiHttpClient {
   } // method httpPost
 
   private HttpRespContent parseResponse(HttpURLConnection conn) throws XiHttpClientException {
-    Args.notNull(conn, "conn");
-
     try {
-      int respCode = conn.getResponseCode();
+      int respCode = Args.notNull(conn, "conn").getResponseCode();
       InputStream inputstream = respCode == HttpURLConnection.HTTP_OK ? conn.getInputStream() : conn.getErrorStream();
       byte[] content = inputstream == null ? new byte[0] : IoUtil.readAllBytesAndClose(inputstream);
       if (content.length > 0) {
@@ -117,15 +113,14 @@ public class XiHttpClient {
       }
 
       return respCode == HttpURLConnection.HTTP_OK ? HttpRespContent.ofOk(conn.getContentType(), content)
-          : HttpRespContent.ofError(respCode, conn.getContentType(), content);
+          : HttpRespContent.of(respCode, conn.getContentType(), content);
     } catch (IOException ex) {
       throw new XiHttpClientException(ex);
     }
   } // method parseResponse
 
   private HttpURLConnection openHttpConn(URL url) throws IOException {
-    Args.notNull(url, "url");
-    URLConnection conn = url.openConnection();
+    URLConnection conn = Args.notNull(url, "url").openConnection();
     if (!(conn instanceof HttpURLConnection)) {
       throw new IOException(url + " is not of protocol HTTP: " + url.getProtocol());
     }

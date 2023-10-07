@@ -1,72 +1,29 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
-
 package org.xipki.util.http;
 
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
+ * HTTP response interface.
  *
  * @author Lijun Liao (xipki)
- * @since 6.0.0
  */
+public interface XiHttpResponse {
 
-public class XiHttpResponse {
+  void setStatus(int sc);
 
-  private final int statusCode;
+  void sendError(int sc) throws IOException;
 
-  private final String contentType;
+  void setContentType(String type);
 
-  private final Map<String, List<String>> headers;
+  void addHeader(String name, String value);
 
-  private final boolean base64;
+  void setHeader(String name, String value);
 
-  private final byte[] body;
+  void setContentLength(int len);
 
-  public XiHttpResponse(int statusCode) {
-    this(statusCode, null, null, false, null);
-  }
-
-  public XiHttpResponse(int statusCode, String contentType, Map<String, String> headers, byte[] body) {
-    this(statusCode, contentType, headers, false, body);
-  }
-
-  public XiHttpResponse(int statusCode, String contentType, Map<String, String> headers, boolean base64, byte[] body) {
-    this.statusCode = statusCode;
-    this.base64 = base64;
-    this.contentType = contentType;
-    this.headers = new HashMap<>();
-    if (headers != null) {
-      for (Map.Entry<String, String> m : headers.entrySet()) {
-        this.headers.put(m.getKey(), Arrays.asList(m.getValue()));
-      }
-    }
-    this.body = body;
-  }
-
-  public boolean isBase64() {
-    return base64;
-  }
-
-  public int getStatusCode() {
-    return statusCode;
-  }
-
-  public String getContentType() {
-    return contentType;
-  }
-
-  public Map<String, List<String>> getHeaders() {
-    return headers;
-  }
-
-  public byte[] getBody() {
-    return body;
-  }
-  public XiHttpResponse putHeader(String name, String value) {
-    List<String> values = headers.computeIfAbsent(name, k -> new ArrayList<>(1));
-    values.add(value);
-    return this;
-  }
+  OutputStream getOutputStream() throws IOException;
 
 }

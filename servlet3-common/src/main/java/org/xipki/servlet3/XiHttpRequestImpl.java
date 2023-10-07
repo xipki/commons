@@ -1,8 +1,8 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
-
 package org.xipki.servlet3;
 
+import org.xipki.util.Args;
 import org.xipki.util.http.XiHttpRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * HTTP request metadata retriever.
+ * HTTP request wrapper.
  *
  * @author Lijun Liao (xipki)
  * @since 3.0.1
@@ -21,7 +21,7 @@ public class XiHttpRequestImpl implements XiHttpRequest {
   private final HttpServletRequest req;
 
   public XiHttpRequestImpl(HttpServletRequest req) {
-    this.req = req;
+    this.req = Args.notNull(req, "req");
   }
 
   @Override
@@ -60,8 +60,18 @@ public class XiHttpRequestImpl implements XiHttpRequest {
   }
 
   @Override
+  public String getContextPath() {
+    return req.getContextPath();
+  }
+
+  @Override
   public InputStream getInputStream() throws IOException {
     return req.getInputStream();
+  }
+
+  @Override
+  public void setAttribute(String name, String value) {
+    req.setAttribute(name, value);
   }
 
 }
