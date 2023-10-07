@@ -5,6 +5,7 @@ package org.xipki.security;
 
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.operator.RuntimeOperatorException;
+import org.xipki.util.Args;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,8 +14,6 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Arrays;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * {@link XiContentSigner} based on {@link Signature}.
@@ -76,9 +75,9 @@ public class SignatureSigner implements XiContentSigner {
 
   public SignatureSigner(AlgorithmIdentifier sigAlgId, Signature signer, PrivateKey key)
       throws XiSecurityException {
-    this.sigAlgId = notNull(sigAlgId, "sigAlgId");
-    this.signer = notNull(signer, "signer");
-    this.key = notNull(key, "key");
+    this.sigAlgId = Args.notNull(sigAlgId, "sigAlgId");
+    this.signer = Args.notNull(signer, "signer");
+    this.key = Args.notNull(key, "key");
     try {
       this.encodedSigAlgId = sigAlgId.getEncoded();
     } catch (IOException ex) {

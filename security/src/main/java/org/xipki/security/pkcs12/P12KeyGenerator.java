@@ -21,6 +21,7 @@ import org.xipki.security.*;
 import org.xipki.security.util.GMUtil;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.security.util.X509Util;
+import org.xipki.util.Args;
 import org.xipki.util.RandomUtil;
 
 import javax.crypto.SecretKey;
@@ -37,8 +38,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * PKCS#12 key generator.
@@ -105,8 +104,7 @@ public class P12KeyGenerator {
   public KeyStoreWrapper generateECKeypair(
       ASN1ObjectIdentifier curveOid, KeystoreGenerationParameters params, String selfSignedCertSubject)
       throws Exception {
-    notNull(curveOid, "curveOid");
-    KeyPair keypair = KeyUtil.generateECKeypair(curveOid, params.getRandom());
+    KeyPair keypair = KeyUtil.generateECKeypair(Args.notNull(curveOid, "curveOid"), params.getRandom());
     AlgorithmIdentifier algId = new AlgorithmIdentifier(X9ObjectIdentifiers.id_ecPublicKey, curveOid);
 
     ECPublicKey pub = (ECPublicKey) keypair.getPublic();
@@ -121,8 +119,7 @@ public class P12KeyGenerator {
   public KeyStoreWrapper generateEdECKeypair(
       ASN1ObjectIdentifier curveOid, KeystoreGenerationParameters params, String selfSignedCertSubject)
       throws Exception {
-    notNull(curveOid, "curveOid");
-    if (!EdECConstants.isEdwardsOrMontgomeryCurve(curveOid)) {
+    if (!EdECConstants.isEdwardsOrMontgomeryCurve(Args.notNull(curveOid, "curveOid"))) {
       throw new IllegalArgumentException("invalid EdDSA curve  " + curveOid.getId());
     }
     KeyPair keypair = KeyUtil.generateEdECKeypair(curveOid, params.getRandom());

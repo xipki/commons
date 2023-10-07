@@ -10,12 +10,11 @@ import org.xipki.security.EdECConstants;
 import org.xipki.security.SecurityFactory;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.security.util.KeyUtil;
+import org.xipki.util.Args;
 import org.xipki.util.BenchmarkExecutor;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Speed test of PKCS#12 keypair generation.
@@ -107,7 +106,7 @@ public abstract class P12KeyGenSpeed extends BenchmarkExecutor {
 
   public P12KeyGenSpeed(String description, SecurityFactory securityFactory) {
     super(description);
-    this.securityFactory = notNull(securityFactory, "securityFactory");
+    this.securityFactory = Args.notNull(securityFactory, "securityFactory");
   }
 
   protected abstract void generateKeypair(SecureRandom random) throws Exception;

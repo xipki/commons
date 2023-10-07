@@ -10,6 +10,7 @@ import org.bouncycastle.asn1.pkcs.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.RuntimeOperatorException;
 import org.xipki.security.*;
+import org.xipki.util.Args;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
@@ -19,9 +20,6 @@ import java.security.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.xipki.util.Args.notNull;
-import static org.xipki.util.Args.positive;
 
 /**
  * Builder of PKCS#12 XDH (e.g. X25519, X448) MAC signer.
@@ -95,21 +93,16 @@ public class P12XdhMacContentSignerBuilder {
 
   public P12XdhMacContentSignerBuilder(X509Cert peerCert, PrivateKey privateKey, PublicKey publicKey)
       throws XiSecurityException {
-    notNull(privateKey, "privateKey");
-    notNull(peerCert, "peerCert");
-    this.publicKey = notNull(publicKey, "publicKey");
+    this.publicKey = Args.notNull(publicKey, "publicKey");
     this.certificateChain = null;
-    init(privateKey, peerCert);
+    init(Args.notNull(privateKey, "privateKey"), Args.notNull(peerCert, "peerCert"));
   }
 
   public P12XdhMacContentSignerBuilder(KeypairWithCert keypairWithCert, X509Cert peerCert)
       throws XiSecurityException {
-    notNull(keypairWithCert, "keypairWithCert");
-    notNull(peerCert, "peerCert");
-    this.publicKey = keypairWithCert.getPublicKey();
+    this.publicKey = Args.notNull(keypairWithCert, "keypairWithCert").getPublicKey();
     this.certificateChain = keypairWithCert.getCertificateChain();
-
-    init(keypairWithCert.getKey(), peerCert);
+    init(keypairWithCert.getKey(), Args.notNull(peerCert, "peerCert"));
   }
 
   private void init(PrivateKey privateKey, X509Cert peerCert) throws XiSecurityException {
@@ -159,9 +152,7 @@ public class P12XdhMacContentSignerBuilder {
   } // method init
 
   public ConcurrentContentSigner createSigner(int parallelism) throws XiSecurityException {
-    positive(parallelism, "parallelism");
-
-    List<XiContentSigner> signers = new ArrayList<>(parallelism);
+    List<XiContentSigner> signers = new ArrayList<>(Args.positive(parallelism, "parallelism"));
 
     for (int i = 0; i < parallelism; i++) {
       XiContentSigner signer = new XdhMacContentSigner(algo, key, peerIssuerAndSerial);

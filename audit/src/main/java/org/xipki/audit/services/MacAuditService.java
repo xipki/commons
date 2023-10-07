@@ -14,6 +14,7 @@ import org.xipki.password.PasswordResolverException;
 import org.xipki.util.Base64;
 import org.xipki.util.ConfPairs;
 import org.xipki.util.StringUtil;
+import org.xipki.util.exception.InvalidConfException;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -72,7 +73,7 @@ public abstract class MacAuditService implements AuditService {
 
   protected int shardId;
 
-  protected AtomicLong id = new AtomicLong(0);
+  protected final AtomicLong id = new AtomicLong(0);
 
   protected String previousTag;
 
@@ -114,7 +115,7 @@ public abstract class MacAuditService implements AuditService {
   protected abstract void doClose() throws Exception;
 
   protected void doExtraInit(ConfPairs confPairs, PasswordResolver passwordResolver)
-          throws PasswordResolverException {
+      throws PasswordResolverException, InvalidConfException {
   }
 
   protected void verify(long id, String tag, String integrityText, ConfPairs confPairs) {
@@ -195,17 +196,17 @@ public abstract class MacAuditService implements AuditService {
   }
 
   @Override
-  public void init(String conf) {
+  public void init(String conf) throws InvalidConfException {
     try {
       init(conf, null);
     } catch (PasswordResolverException ex) {
-      throw new IllegalStateException(ex);
+      throw new InvalidConfException("error resolving password", ex);
     }
   }
 
   @Override
   public void init(String conf, PasswordResolver passwordResolver)
-          throws PasswordResolverException {
+          throws PasswordResolverException, InvalidConfException {
     ConfPairs confPairs = new ConfPairs(conf);
     String str = confPairs.value(KEY_SHARD_ID);
     shardId = StringUtil.isBlank(str) ? 0 : Integer.parseInt(str);

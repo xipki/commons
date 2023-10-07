@@ -13,6 +13,7 @@ import org.xipki.util.exception.EncodeException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides an encoder capable of encoding data into CBOR format to a given {@link OutputStream}.
@@ -203,7 +204,7 @@ public class CborEncoder {
         // extends the sign over all bits...
         int sign = value >> 31;
         // in case value is negative, this bit should be set...
-        int mt = (int) (sign & NEG_INT_MASK);
+        int mt = (sign & NEG_INT_MASK);
         // complement negative value...
         writeUInt16(mt, (sign ^ value) & 0xffff);
     }
@@ -248,7 +249,7 @@ public class CborEncoder {
         // extends the sign over all bits...
         int sign = value >> 31;
         // in case value is negative, this bit should be set...
-        int mt = (int) (sign & NEG_INT_MASK);
+        int mt = (sign & NEG_INT_MASK);
         // complement negative value...
         writeUInt8(mt, (sign ^ value) & 0xff);
     }
@@ -314,11 +315,11 @@ public class CborEncoder {
         // extends the sign over all bits...
         int sign = value >> 31;
         // in case value is negative, this bit should be set...
-        int mt = (int) (sign & NEG_INT_MASK);
+        int mt = (sign & NEG_INT_MASK);
         // complement negative value...
         value = Math.min(0x17, (sign ^ value));
 
-        m_os.write((int) (mt | value));
+        m_os.write(mt | value);
     }
 
     /**
@@ -346,7 +347,7 @@ public class CborEncoder {
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
      */
     public void writeTextString(String value) throws IOException {
-        writeString(CborConstants.TYPE_TEXT_STRING, value == null ? null : value.getBytes("UTF-8"));
+        writeString(CborConstants.TYPE_TEXT_STRING, value == null ? null : value.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

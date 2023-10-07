@@ -9,12 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.security.util.DSAParameterCache;
+import org.xipki.util.Args;
 import org.xipki.util.BenchmarkExecutor;
 
 import java.math.BigInteger;
 import java.security.spec.DSAParameterSpec;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Speed test of PKCS#11 keypair generation.
@@ -49,9 +48,9 @@ public abstract class P11KeyGenSpeed extends BenchmarkExecutor {
 
     private final ASN1ObjectIdentifier curveOid;
 
-    public EC(P11Slot slot, ASN1ObjectIdentifier curveOid) throws Exception {
+    public EC(P11Slot slot, ASN1ObjectIdentifier curveOid) {
       super(slot, "PKCS#11 EC key generation\ncurve: " + AlgorithmUtil.getCurveName(curveOid));
-      this.curveOid = notNull(curveOid, "curveOid");
+      this.curveOid = Args.notNull(curveOid, "curveOid");
     }
 
     @Override
@@ -116,7 +115,7 @@ public abstract class P11KeyGenSpeed extends BenchmarkExecutor {
 
   public P11KeyGenSpeed(P11Slot slot, String description) {
     super(description);
-    this.slot = notNull(slot, "slot");
+    this.slot = Args.notNull(slot, "slot");
   }
 
   protected abstract void genKeypair() throws Exception;

@@ -243,7 +243,7 @@ public class P11Actions {
       println("generated " + keyType + " key " + keyId + " on slot " + slotIndex);
     }
 
-    protected P11NewKeyControl getControl() throws IllegalCmdParamException {
+    protected P11NewKeyControl getControl() {
       byte[] id0 = (id == null) ? null : Hex.decode(id);
       P11NewKeyControl control = new P11NewKeyControl(id0, label);
       if (StringUtil.isNotBlank(extractable)) {

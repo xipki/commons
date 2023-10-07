@@ -6,11 +6,10 @@ package org.xipki.security;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xipki.util.Args;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * An implementation of {@link AlgorithmValidator} where the permitted algorithms
@@ -68,7 +67,7 @@ public class CollectionAlgorithmValidator implements AlgorithmValidator {
    *            all algorithms
    */
   public CollectionAlgorithmValidator(Collection<SignAlgo> algos) {
-    this.algos = Collections.unmodifiableSet(new HashSet<>(algos));
+    this.algos = Set.copyOf(algos);
     Set<String> names = new HashSet<>();
     for (SignAlgo m : algos) {
       names.add(m.getJceName());
@@ -86,15 +85,13 @@ public class CollectionAlgorithmValidator implements AlgorithmValidator {
 
   @Override
   public boolean isAlgorithmPermitted(AlgorithmIdentifier algId) {
-    notNull(algId, "algId");
-
     if (algos.isEmpty()) {
       return true;
     }
 
     SignAlgo algo;
     try {
-      algo = SignAlgo.getInstance(algId);
+      algo = SignAlgo.getInstance(Args.notNull(algId, "algId"));
     } catch (NoSuchAlgorithmException ex) {
       return false;
     }
@@ -104,7 +101,7 @@ public class CollectionAlgorithmValidator implements AlgorithmValidator {
 
   @Override
   public boolean isAlgorithmPermitted(SignAlgo algo) {
-    return algos.contains(notNull(algo, "algo"));
+    return algos.contains(Args.notNull(algo, "algo"));
   }
 
 }

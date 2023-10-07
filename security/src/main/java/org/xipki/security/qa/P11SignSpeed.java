@@ -23,9 +23,6 @@ import org.xipki.util.exception.ObjectCreationException;
 import java.math.BigInteger;
 import java.time.Clock;
 
-import static org.xipki.util.Args.notBlank;
-import static org.xipki.util.Args.notNull;
-
 /**
  * Speed test of PKCS#11 signature creation.
  *
@@ -251,16 +248,17 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
       throws ObjectCreationException {
     super(description + "\nsignature algorithm: " + signatureAlgorithm);
 
-    notNull(securityFactory, "securityFactory");
-    this.slot = notNull(slot, "slot");
-    notBlank(signatureAlgorithm, "signatureAlgorithm");
-    this.keyId = notNull(keyId, "keyId");
+    Args.notNull(securityFactory, "securityFactory");
+    this.slot = Args.notNull(slot, "slot");
+    this.keyId = Args.notNull(keyId, "keyId");
 
     this.deleteKeyAfterTest = deleteKeyAfterTest;
 
     P11SlotId slotId = slot.getSlotId();
     SignerConf signerConf = getPkcs11SignerConf(slot.getModuleName(),
-        slotId.getId(), keyId.getId(), signatureAlgorithm, threads + Math.max(2, threads * 5 / 4));
+        slotId.getId(), keyId.getId(),
+        Args.notBlank(signatureAlgorithm, "signatureAlgorithm"),
+        threads + Math.max(2, threads * 5 / 4));
     try {
       this.signer = securityFactory.createSigner("PKCS11", signerConf, (X509Cert) null);
     } catch (ObjectCreationException ex) {

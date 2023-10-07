@@ -19,9 +19,6 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import static org.xipki.util.Args.notBlank;
-import static org.xipki.util.Args.notNull;
-
 /**
  * Speed test of PKCS#12 signature creation.
  *
@@ -250,12 +247,11 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
       throws Exception {
     super(description);
 
-    notNull(securityFactory, "securityFactory");
-    notBlank(signatureAlgorithm, "signatureAlgorithm");
-    notNull(keystore, "keystore");
-
-    SignerConf signerConf = getKeystoreSignerConf(keystore, PASSWORD,
-        signatureAlgorithm, threads + Math.max(2, threads * 5 / 4));
+    Args.notNull(securityFactory, "securityFactory");
+    SignerConf signerConf = getKeystoreSignerConf(
+        Args.notNull(keystore, "keystore"), PASSWORD,
+        Args.notBlank(signatureAlgorithm, "signatureAlgorithm"),
+        threads + Math.max(2, threads * 5 / 4));
     this.signer = securityFactory.createSigner(tokenType, signerConf, (X509Cert) null);
   }
 

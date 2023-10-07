@@ -3,9 +3,8 @@
 
 package org.xipki.security;
 
+import org.xipki.util.Args;
 import org.xipki.util.StringUtil;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * MD'5 Fingerprint calculator.
@@ -25,8 +24,7 @@ public class FpIdCalculator {
    * @return long represented of the first 8 bytes
    */
   public static long hash(String data) {
-    notNull(data, "data");
-    byte[] encoded = StringUtil.toUtf8Bytes(data);
+    byte[] encoded = StringUtil.toUtf8Bytes(Args.notNull(data, "data"));
     byte[] bytes = HashAlgo.SHA1.hash(encoded);
     return bytesToLong(bytes);
   }
@@ -37,8 +35,7 @@ public class FpIdCalculator {
    * @return long represented of the first 8 bytes
    */
   public static long hash(byte[] data) {
-    notNull(data, "data");
-    byte[] bytes = HashAlgo.SHA1.hash(data);
+    byte[] bytes = HashAlgo.SHA1.hash(Args.notNull(data, "data"));
     return bytesToLong(bytes);
   }
 

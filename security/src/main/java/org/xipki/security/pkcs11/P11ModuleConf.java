@@ -9,16 +9,12 @@ import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.pkcs11.wrapper.PKCS11Constants;
 import org.xipki.pkcs11.wrapper.PKCS11Module;
+import org.xipki.util.Args;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.StringUtil;
 import org.xipki.util.exception.InvalidConfException;
 
 import java.util.*;
-
-import static org.xipki.pkcs11.wrapper.PKCS11Constants.Category;
-import static org.xipki.pkcs11.wrapper.PKCS11Constants.nameToCode;
-import static org.xipki.util.Args.notEmpty;
-import static org.xipki.util.Args.notNull;
 
 /**
  * Configuration of a PKCS#11 module.
@@ -112,8 +108,8 @@ public class P11ModuleConf {
 
           if (includeMechanisms != null) {
             for (String mechName : includeMechanisms) {
-              Long mechCode = (module != null) ? module.nameToCode(Category.CKM, mechName)
-                  : PKCS11Constants.nameToCode(Category.CKM, mechName);
+              Long mechCode = (module != null) ? module.nameToCode(PKCS11Constants.Category.CKM, mechName)
+                  : PKCS11Constants.nameToCode(PKCS11Constants.Category.CKM, mechName);
               if (mechCode != null) {
                 includeMechanismCodes.add(mechCode);
               }
@@ -122,8 +118,8 @@ public class P11ModuleConf {
 
           if (excludeMechanisms != null) {
             for (String mechName : excludeMechanisms) {
-              Long mechCode = (module != null) ? module.nameToCode(Category.CKM, mechName)
-                  : PKCS11Constants.nameToCode(Category.CKM, mechName);
+              Long mechCode = (module != null) ? module.nameToCode(PKCS11Constants.Category.CKM, mechName)
+                  : PKCS11Constants.nameToCode(PKCS11Constants.Category.CKM, mechName);
               if (mechCode != null) {
                 excludeMechanismCodes.add(mechCode);
               }
@@ -153,12 +149,14 @@ public class P11ModuleConf {
 
     void addEntry(Set<P11SlotIdFilter> slots, Collection<String> includeMechanisms,
                   Collection<String> excludeMechanisms) {
-      notNull(includeMechanisms, "includeMechanisms");
-      singleFilters.add(new P11SingleMechanismFilter(slots, includeMechanisms, excludeMechanisms));
+      singleFilters.add(
+          new P11SingleMechanismFilter(slots,
+              Args.notNull(includeMechanisms, "includeMechanisms"),
+              excludeMechanisms));
     }
 
     public boolean isMechanismPermitted(P11SlotId slotId, long mechanism, PKCS11Module module) {
-      notNull(slotId, "slotId");
+      Args.notNull(slotId, "slotId");
       if (CollectionUtil.isEmpty(singleFilters)) {
         return true;
       }
@@ -233,7 +231,7 @@ public class P11ModuleConf {
 
     public List<char[]> getPassword(P11SlotId slotId)
         throws PasswordResolverException {
-      notNull(slotId, "slotId");
+      Args.notNull(slotId, "slotId");
       if (CollectionUtil.isEmpty(singleRetrievers)) {
         return null;
       }
@@ -329,9 +327,8 @@ public class P11ModuleConf {
   public P11ModuleConf(
       Pkcs11conf.Module moduleType, List<Pkcs11conf.MechanismSet> mechanismSets, PasswordResolver passwordResolver)
       throws InvalidConfException {
-    notNull(moduleType, "moduleType");
-    notEmpty(mechanismSets, "mechanismSets");
-    this.name = moduleType.getName();
+    Args.notEmpty(mechanismSets, "mechanismSets");
+    this.name = Args.notNull(moduleType, "moduleType").getName();
     this.readOnly = moduleType.isReadonly();
 
     this.userType = moduleType.getUser().toUpperCase();
@@ -513,7 +510,7 @@ public class P11ModuleConf {
   }
 
   public boolean isSlotIncluded(P11SlotId slotId) {
-    notNull(slotId, "slotId");
+    Args.notNull(slotId, "slotId");
     boolean included;
     if (CollectionUtil.isEmpty(includeSlots)) {
       included = true;
@@ -580,7 +577,7 @@ public class P11ModuleConf {
 
   private static Long toKeyType(String str) {
     if (str.startsWith("CKK_")) {
-      return nameToCode(Category.CKK, str);
+      return PKCS11Constants.nameToCode(PKCS11Constants.Category.CKK, str);
     } else {
       int radix = 10;
       if (str.startsWith("0X")) {

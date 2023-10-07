@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
+//
 // License Apache License 2.0
 
 package org.xipki.security.qa;
@@ -6,14 +7,13 @@ package org.xipki.security.qa;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.security.*;
+import org.xipki.util.Args;
 import org.xipki.util.BenchmarkExecutor;
 import org.xipki.util.ConfPairs;
 import org.xipki.util.RandomUtil;
 import org.xipki.util.exception.ObjectCreationException;
 
 import java.security.NoSuchAlgorithmException;
-
-import static org.xipki.util.Args.notBlank;
 
 /**
  * Speed test of signature creation for JCE based Token.
@@ -59,10 +59,11 @@ public class JceSignSpeed extends BenchmarkExecutor {
           throws ObjectCreationException {
     super(description + "\nsignature algorithm: " + signatureAlgorithm);
 
-    notBlank(signatureAlgorithm, "signatureAlgorithm");
+    Args.notBlank(signatureAlgorithm, "signatureAlgorithm");
 
     try {
-      SignerConf signerConf = getJceSignerConf(alias, threads, SignAlgo.getInstance(signatureAlgorithm));
+      SignerConf signerConf = getJceSignerConf(alias, threads,
+          SignAlgo.getInstance(signatureAlgorithm));
       this.signer = securityFactory.createSigner(type, signerConf, (X509Cert) null);
     } catch (ObjectCreationException ex) {
       close();
@@ -72,10 +73,6 @@ public class JceSignSpeed extends BenchmarkExecutor {
       throw new ObjectCreationException(ex.getMessage());
     }
   } // constructor
-
-  @Override
-  public final void close() {
-  }
 
   @Override
   protected Runnable getTester() throws Exception {

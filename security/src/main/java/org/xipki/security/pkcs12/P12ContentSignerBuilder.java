@@ -16,9 +16,9 @@ import org.bouncycastle.operator.bc.BcContentSignerBuilder;
 import org.xipki.security.*;
 import org.xipki.security.util.GMUtil;
 import org.xipki.security.util.SignerUtil;
+import org.xipki.util.Args;
 import org.xipki.util.CollectionUtil;
 
-import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECPrivateKey;
@@ -26,9 +26,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.EllipticCurve;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.xipki.util.Args.notNull;
-import static org.xipki.util.Args.positive;
 
 /**
  * Builder of signer based PKCS#12 keystore.
@@ -43,7 +40,7 @@ public class P12ContentSignerBuilder {
 
     private final SignAlgo signAlgo;
 
-    private RSAContentSignerBuilder(SignAlgo signAlgo) throws NoSuchAlgorithmException {
+    private RSAContentSignerBuilder(SignAlgo signAlgo) {
       super(signAlgo.getAlgorithmIdentifier(), signAlgo.getHashAlgo().getAlgorithmIdentifier());
       this.signAlgo = signAlgo;
     }
@@ -69,7 +66,7 @@ public class P12ContentSignerBuilder {
 
     private final SignAlgo signAlgo;
 
-    private DSAContentSignerBuilder(SignAlgo signAlgo) throws NoSuchAlgorithmException {
+    private DSAContentSignerBuilder(SignAlgo signAlgo) {
       super(signAlgo.getAlgorithmIdentifier(), signAlgo.getHashAlgo().getAlgorithmIdentifier());
       this.signAlgo = signAlgo;
     }
@@ -87,7 +84,7 @@ public class P12ContentSignerBuilder {
 
     private final SignAlgo signAlgo;
 
-    private ECDSAContentSignerBuilder(SignAlgo signAlgo) throws NoSuchAlgorithmException {
+    private ECDSAContentSignerBuilder(SignAlgo signAlgo) {
       super(signAlgo.getAlgorithmIdentifier(), signAlgo.getHashAlgo().getAlgorithmIdentifier());
       this.signAlgo = signAlgo;
     }
@@ -110,7 +107,7 @@ public class P12ContentSignerBuilder {
 
     private final SignAlgo signAlgo;
 
-    private SM2ContentSignerBuilder(SignAlgo signAlgo) throws NoSuchAlgorithmException {
+    private SM2ContentSignerBuilder(SignAlgo signAlgo) {
       super(signAlgo.getAlgorithmIdentifier(), signAlgo.getHashAlgo().getAlgorithmIdentifier());
       this.signAlgo = signAlgo;
     }
@@ -130,15 +127,13 @@ public class P12ContentSignerBuilder {
   private final X509Cert[] certificateChain;
 
   public P12ContentSignerBuilder(PrivateKey privateKey, PublicKey publicKey) {
-    this.key = notNull(privateKey, "privateKey");
-    this.publicKey = notNull(publicKey, "publicKey");
+    this.key = Args.notNull(privateKey, "privateKey");
+    this.publicKey = Args.notNull(publicKey, "publicKey");
     this.certificateChain = null;
   }
 
-  public P12ContentSignerBuilder(KeypairWithCert keypairWithCert)
-      throws XiSecurityException {
-    notNull(keypairWithCert, "keypairWithCert");
-    this.key = keypairWithCert.getKey();
+  public P12ContentSignerBuilder(KeypairWithCert keypairWithCert) {
+    this.key = Args.notNull(keypairWithCert, "keypairWithCert").getKey();
     this.publicKey = keypairWithCert.getPublicKey();
     this.certificateChain = keypairWithCert.getCertificateChain();
   }
@@ -157,9 +152,7 @@ public class P12ContentSignerBuilder {
 
   public ContentSigner createContentSigner(SignAlgo signAlgo, SecureRandom random)
           throws XiSecurityException {
-    notNull(signAlgo, "signAlgo");
-
-    String provName = getProviderName(signAlgo);
+    String provName = getProviderName(Args.notNull(signAlgo, "signAlgo"));
 
     if (provName != null && Security.getProvider(provName) != null) {
       try {
@@ -182,13 +175,9 @@ public class P12ContentSignerBuilder {
   } // method createContentSigner
 
   public ConcurrentContentSigner createSigner(SignAlgo signAlgo, int parallelism, SecureRandom random)
-      throws XiSecurityException, NoSuchPaddingException {
-    notNull(signAlgo, "signAlgo");
-    positive(parallelism, "parallelism");
-
-    List<XiContentSigner> signers = new ArrayList<>(parallelism);
-
-    String provName = getProviderName(signAlgo);
+      throws XiSecurityException {
+    List<XiContentSigner> signers = new ArrayList<>(Args.positive(parallelism, "parallelism"));
+    String provName = getProviderName(Args.notNull(signAlgo, "signAlgo"));
     if (provName != null && Security.getProvider(provName) != null) {
       try {
         for (int i = 0; i < parallelism; i++) {

@@ -79,7 +79,7 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
         throw new InvalidConfException("module '" + P11CryptServiceFactory.DEFAULT_P11MODULE_NAME + "' is not defined");
       }
       this.moduleConfs = Collections.unmodifiableMap(confs);
-      this.moduleNames = Collections.unmodifiableSet(new HashSet<>(confs.keySet()));
+      this.moduleNames = Set.copyOf(confs.keySet());
     } catch (RuntimeException ex) {
       throw new InvalidConfException("could not create P11Conf: " + ex.getMessage(), ex);
     }

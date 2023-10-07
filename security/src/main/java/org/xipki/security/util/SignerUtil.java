@@ -24,6 +24,7 @@ import org.xipki.security.bc.XiECContentVerifierProviderBuilder;
 import org.xipki.security.bc.XiEdDSAContentVerifierProvider;
 import org.xipki.security.bc.XiRSAContentVerifierProviderBuilder;
 import org.xipki.security.bc.XiXDHContentVerifierProvider;
+import org.xipki.util.Args;
 
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -33,8 +34,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * utility class for converting java.security RSA objects into their
@@ -55,7 +54,7 @@ public class SignerUtil {
   }
 
   public static RSAKeyParameters generateRSAPrivateKeyParameter(RSAPrivateKey key) {
-    notNull(key, "key");
+    Args.notNull(key, "key");
     if (key instanceof RSAPrivateCrtKey) {
       RSAPrivateCrtKey rsaKey = (RSAPrivateCrtKey) key;
 
@@ -68,8 +67,7 @@ public class SignerUtil {
   }
 
   public static Signer createPSSRSASigner(SignAlgo sigAlgo) throws XiSecurityException {
-    notNull(sigAlgo, "sigAlgo");
-    if (!sigAlgo.isRSAPSSSigAlgo()) {
+    if (!Args.notNull(sigAlgo, "sigAlgo").isRSAPSSSigAlgo()) {
       throw new XiSecurityException(sigAlgo + " is not an RSAPSS algorithm");
     }
 
@@ -79,8 +77,8 @@ public class SignerUtil {
   } // method createPSSRSASigner
 
   public static byte[] dsaSigPlainToX962(byte[] signature) throws XiSecurityException {
-    notNull(signature, "signature");
-    byte[] x962Sig = Functions.dsaSigPlainToX962(signature);
+    byte[] x962Sig = Functions.dsaSigPlainToX962(
+                        Args.notNull(signature, "signature"));
     if (Arrays.equals(x962Sig, signature)) {
       throw new XiSecurityException("signature is not correctly encoded.");
     }
@@ -89,8 +87,8 @@ public class SignerUtil {
 
   public static byte[] dsaSigX962ToPlain(byte[] x962Signature, int orderBitLen)
       throws XiSecurityException {
-    notNull(x962Signature, "x962Signature");
-    byte[] plainSig = Functions.dsaSigX962ToPlain(x962Signature, (orderBitLen + 7) / 8);
+    byte[] plainSig = Functions.dsaSigX962ToPlain(
+                          Args.notNull(x962Signature, "x962Signature"), (orderBitLen + 7) / 8);
     if (Arrays.equals(x962Signature, plainSig)) {
       throw new XiSecurityException("x962Signature is not correctly encoded.");
     }
@@ -99,8 +97,8 @@ public class SignerUtil {
 
   public static byte[] dsaSigToPlain(BigInteger sigR, BigInteger sigS, int orderBitLen) throws XiSecurityException {
     final int blockSize = (orderBitLen + 7) / 8;
-    int bitLenOfR = notNull(sigR, "sigR").bitLength();
-    int bitLenOfS = notNull(sigS, "sigS").bitLength();
+    int bitLenOfR = Args.notNull(sigR, "sigR").bitLength();
+    int bitLenOfS = Args.notNull(sigS, "sigS").bitLength();
     int bitLen = Math.max(bitLenOfR, bitLenOfS);
     if ((bitLen + 7) / 8 > blockSize) {
       throw new XiSecurityException("signature is too large");
@@ -125,9 +123,7 @@ public class SignerUtil {
 
   public static ContentVerifierProvider getContentVerifierProvider(
       PublicKey publicKey, DHSigStaticKeyCertPair ownerKeyAndCert) throws InvalidKeyException {
-    notNull(publicKey, "publicKey");
-
-    String keyAlg = publicKey.getAlgorithm().toUpperCase();
+    String keyAlg = Args.notNull(publicKey, "publicKey").getAlgorithm().toUpperCase();
     if ("ED25519".equals(keyAlg) || "ED448".equals(keyAlg)) {
       return new XiEdDSAContentVerifierProvider(publicKey);
     } else if ("X25519".equals(keyAlg) || "X448".equals(keyAlg)) {

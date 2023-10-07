@@ -3,7 +3,7 @@
 
 package org.xipki.security;
 
-import static org.xipki.util.Args.notNull;
+import org.xipki.util.Args;
 
 /**
  * Certificate key usage enum.
@@ -54,8 +54,7 @@ public enum KeyUsage {
   }
 
   public static KeyUsage getKeyUsage(String usage) {
-    notNull(usage, "usage");
-    String u = usage.trim();
+    String u = Args.notNull(usage, "usage").trim();
 
     for (KeyUsage ku : KeyUsage.values()) {
       for (String name : ku.names) {

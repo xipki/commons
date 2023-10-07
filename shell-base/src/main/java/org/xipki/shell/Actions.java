@@ -77,13 +77,7 @@ public class Actions {
       }
 
       File destDir = new File(dest);
-      if (destDir.exists()) {
-        if (destDir.isFile()) {
-          throw new IllegalCmdParamException(dest + " is not a directory");
-        }
-      } else {
-        destDir.mkdirs();
-      }
+      IoUtil.mkdirs(destDir);
 
       FileUtils.copyDirectory(sourceDir, destDir);
 
@@ -371,13 +365,10 @@ public class Actions {
     @Override
     protected Object execute0() throws Exception {
       File target = new File(expandFilepath(dirName));
-      if (target.exists()) {
-        if (!target.isDirectory()) {
-          System.err.println(dirName + " exists but is not a directory, cannot override it");
-          return null;
-        }
-      } else {
-        target.mkdirs();
+      try {
+        IoUtil.mkdirs(target);
+      } catch (IOException ex) {
+        System.err.println(ex.getMessage());
       }
 
       return null;
@@ -417,7 +408,7 @@ public class Actions {
           throw new IllegalCmdParamException(dest + " is not a directory");
         }
       } else {
-        destDir.mkdirs();
+        IoUtil.mkdirs(destDir);
       }
 
       FileUtils.copyDirectory(sourceDir, destDir);

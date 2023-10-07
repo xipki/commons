@@ -8,8 +8,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static org.xipki.util.Args.*;
-
 /**
  * Validity like the certificate validity, e.g. 3 years.
  *
@@ -56,12 +54,12 @@ public class Validity implements Comparable<Validity> {
   }
 
   public Validity(int validity, Unit unit) {
-    this.validity = positive(validity, "validity");
-    this.unit = notNull(unit, "unit");
+    this.validity = Args.positive(validity, "validity");
+    this.unit = Args.notNull(unit, "unit");
   }
 
   public static Validity getInstance(String validityS) {
-    final int len = notBlank(validityS, "validityS").length();
+    final int len = Args.notBlank(validityS, "validityS").length();
     final char suffix = validityS.charAt(len - 1);
     Unit unit;
     String numValdityS;
@@ -95,7 +93,7 @@ public class Validity implements Comparable<Validity> {
   } // method getInstance
 
   public void setValidity(int validity) {
-    this.validity = positive(validity, "validity");
+    this.validity = Args.positive(validity, "validity");
   }
 
   public int getValidity() {
@@ -103,7 +101,7 @@ public class Validity implements Comparable<Validity> {
   }
 
   public void setUnit(Unit unit) {
-    this.unit = notNull(unit, "unit");
+    this.unit = Args.notNull(unit, "unit");
   }
 
   public Unit getUnit() {
@@ -139,8 +137,7 @@ public class Validity implements Comparable<Validity> {
 
   @Override
   public int compareTo(Validity obj) {
-    notNull(obj, "obj");
-    if (unit == obj.unit) {
+    if (unit == Args.notNull(obj, "obj").unit) {
       if (validity == obj.validity) {
         return 0;
       }

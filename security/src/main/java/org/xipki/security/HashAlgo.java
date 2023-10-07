@@ -118,8 +118,7 @@ public enum HashAlgo {
   }
 
   public static HashAlgo getInstance(AlgorithmIdentifier id) throws NoSuchAlgorithmException {
-    Args.notNull(id, "id");
-    ASN1Encodable params = id.getParameters();
+    ASN1Encodable params = Args.notNull(id, "id").getParameters();
     if (params != null && !DERNull.INSTANCE.equals(params)) {
       throw new NoSuchAlgorithmException("params is present but is not NULL");
     }

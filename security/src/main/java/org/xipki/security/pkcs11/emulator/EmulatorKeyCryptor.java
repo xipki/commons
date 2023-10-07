@@ -11,6 +11,7 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.security.EdECConstants;
+import org.xipki.util.Args;
 import org.xipki.util.StringUtil;
 
 import javax.crypto.Cipher;
@@ -23,8 +24,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Encrypts and decrypts private key in the emulator.
@@ -50,8 +49,6 @@ class EmulatorKeyCryptor {
   private final SecureRandom rnd;
 
   EmulatorKeyCryptor(char[] password) {
-    notNull(password, "password");
-
     /*
      * @param P     the bytes of the pass phrase.
      * @param S     the salt to use for this invocation.
@@ -62,7 +59,7 @@ class EmulatorKeyCryptor {
      *              <code>Integer.MAX_VALUE / (128 * r * 8)</code>.
      * @param dkLen the length of the key to generate.
      */
-    byte[] P = StringUtil.toUtf8Bytes(new String(password)); // password
+    byte[] P = StringUtil.toUtf8Bytes(new String(Args.notNull(password, "password"))); // password
     byte[] S = new byte[8];
     byte[] dkey = SCrypt.generate(P, S, 16384, 8, 1, 16); //N: 16384, r: 8, p: 1, dkLen: 16
     this.key = new SecretKeySpec(dkey, "AES");
@@ -71,8 +68,7 @@ class EmulatorKeyCryptor {
   } // constructor
 
   PrivateKey decryptPrivateKey(byte[] encryptedPrivateKeyInfo) throws TokenException {
-    notNull(encryptedPrivateKeyInfo, "encryptedPrivateKeyInfo");
-    byte[] plain = decrypt(encryptedPrivateKeyInfo);
+    byte[] plain = decrypt(Args.notNull(encryptedPrivateKeyInfo, "encryptedPrivateKeyInfo"));
 
     PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(plain);
     AlgorithmIdentifier keyAlg = privateKeyInfo.getPrivateKeyAlgorithm();
@@ -103,9 +99,7 @@ class EmulatorKeyCryptor {
   } // method decryptPrivateKey
 
   byte[] decrypt(byte[] cipherBlob) throws TokenException {
-    notNull(cipherBlob, "cipherBlob");
-
-    if (cipherBlob[0] != ALG_SCRYPT1_AESGCMNopadding_128) {
+    if (Args.notNull(cipherBlob, "cipherBlob")[0] != ALG_SCRYPT1_AESGCMNopadding_128) {
       throw new TokenException("unknown encryption algorithm");
     }
 
@@ -131,7 +125,7 @@ class EmulatorKeyCryptor {
   } // method decrypt
 
   byte[] encrypt(PrivateKey privateKey) throws TokenException {
-    return encrypt(notNull(privateKey, "privateKey").getEncoded());
+    return encrypt(Args.notNull(privateKey, "privateKey").getEncoded());
   }
 
   byte[] encrypt(SecretKey secretKey) throws TokenException {

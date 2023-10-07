@@ -20,7 +20,7 @@ public interface AuditService extends AutoCloseable {
 
   int PCI_AUDIT_EVENT = 2;
 
-  void init(String conf);
+  void init(String conf) throws InvalidConfException;
 
   /**
    * @since 6.0.0

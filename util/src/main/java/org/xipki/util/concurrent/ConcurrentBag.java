@@ -28,13 +28,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 import java.util.stream.Collectors;
-
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.locks.LockSupport.parkNanos;
-import static org.xipki.util.concurrent.ClockSource.currentTime;
-import static org.xipki.util.concurrent.ClockSource.elapsedNanos;
 
 /**
  * This is a specialized concurrent bag that achieves superior performance
@@ -68,10 +63,10 @@ public class ConcurrentBag<T extends ConcurrentBagEntry> implements AutoCloseabl
 
   private final SynchronousQueue<T> handoffQueue;
 
-  int STATE_NOT_IN_USE = 0;
-  int STATE_IN_USE = 1;
-  int STATE_REMOVED = -1;
-  int STATE_RESERVED = -2;
+  private static final int STATE_NOT_IN_USE = 0;
+  private static final int STATE_IN_USE = 1;
+  private static final int STATE_REMOVED = -1;
+  private static final int STATE_RESERVED = -2;
 
   /**
    * Construct a ConcurrentBag with the specified listener.
@@ -119,13 +114,13 @@ public class ConcurrentBag<T extends ConcurrentBagEntry> implements AutoCloseabl
 
       timeout = timeUnit.toNanos(timeout);
       do {
-        final long start = currentTime();
-        final T bagEntry = handoffQueue.poll(timeout, NANOSECONDS);
+        final long start = ClockSource.currentTime();
+        final T bagEntry = handoffQueue.poll(timeout, TimeUnit.NANOSECONDS);
         if (bagEntry == null || bagEntry.compareAndSet(STATE_NOT_IN_USE, STATE_IN_USE)) {
           return bagEntry;
         }
 
-        timeout -= elapsedNanos(start);
+        timeout -= ClockSource.elapsedNanos(start);
       } while (timeout > 10_000);
 
       return null;
@@ -150,7 +145,7 @@ public class ConcurrentBag<T extends ConcurrentBagEntry> implements AutoCloseabl
       if (bagEntry.getState() != STATE_NOT_IN_USE || handoffQueue.offer(bagEntry)) {
         return;
       } else if ((i & 0xff) == 0xff) {
-        parkNanos(MICROSECONDS.toNanos(10));
+        LockSupport.parkNanos(TimeUnit.MICROSECONDS.toNanos(10));
       } else {
         Thread.yield();
       }

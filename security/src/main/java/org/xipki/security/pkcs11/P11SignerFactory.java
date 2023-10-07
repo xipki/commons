@@ -11,7 +11,10 @@ import org.xipki.util.exception.ObjectCreationException;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * {@link SignerFactory} for PKCS#11 token.
@@ -24,7 +27,7 @@ public class P11SignerFactory implements SignerFactory {
 
   private static final String TYPE = "pkcs11";
 
-  private static final Set<String> types = Collections.unmodifiableSet(new HashSet<>(Collections.singletonList(TYPE)));
+  private static final Set<String> types = Set.copyOf(Collections.singletonList(TYPE));
 
   private P11CryptServiceFactory p11CryptServiceFactory;
 

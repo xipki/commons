@@ -26,7 +26,7 @@ public class ConfigurableProperties {
     map = new ConcurrentHashMap<>(8);
   }
 
-  public synchronized void load(Properties props) throws IOException {
+  public synchronized void load(Properties props) {
     Objects.requireNonNull(props, "props parameter is null");
     for (String name : props.stringPropertyNames()) {
       setProperty(name, props.getProperty(name));

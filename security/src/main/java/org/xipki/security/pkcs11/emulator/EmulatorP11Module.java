@@ -11,14 +11,13 @@ import org.xipki.security.pkcs11.P11Module;
 import org.xipki.security.pkcs11.P11ModuleConf;
 import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.pkcs11.P11SlotId;
+import org.xipki.util.Args;
 import org.xipki.util.IoUtil;
 import org.xipki.util.StringUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * {@link P11Module} for PKCS#11 emulator.
@@ -162,8 +161,7 @@ class EmulatorP11Module extends P11Module {
   } // constructor
 
   public static P11Module getInstance(P11ModuleConf moduleConf) throws TokenException {
-    notNull(moduleConf, "moduleConf");
-    return new EmulatorP11Module(moduleConf);
+    return new EmulatorP11Module(Args.notNull(moduleConf, "moduleConf"));
   }
 
   @Override
@@ -179,7 +177,7 @@ class EmulatorP11Module extends P11Module {
   private void createExampleRepository(File dir) throws IOException {
     for (int i = 0; i < 2; i++) {
       File slotDir = new File(dir, i + "-" + (800000 + i));
-      slotDir.mkdirs();
+      IoUtil.mkdirs(slotDir);
 
       File slotInfoFile = new File(slotDir, "slot.info");
       IoUtil.save(slotInfoFile, StringUtil.toUtf8Bytes("namedCurveSupported=true\n"));

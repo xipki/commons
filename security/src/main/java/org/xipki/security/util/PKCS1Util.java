@@ -6,15 +6,13 @@ package org.xipki.security.util;
 import org.bouncycastle.crypto.Xof;
 import org.xipki.security.HashAlgo;
 import org.xipki.security.XiSecurityException;
+import org.xipki.util.Args;
 import org.xipki.util.Hex;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.xipki.util.Args.notNull;
-import static org.xipki.util.Args.range;
 
 /**
  * PKCS#1 utility class.
@@ -44,9 +42,8 @@ public class PKCS1Util {
 
     public static byte[] EMSA_PKCS1_v1_5_encoding(byte[] hashValue, int modulusBigLength, HashAlgo hashAlgo)
         throws XiSecurityException {
-        notNull(hashValue, "hashValue");
-        final int hashLen = notNull(hashAlgo, "hashAlgo").getLength();
-        range(hashValue.length, "hashValue.length", hashLen, hashLen);
+        final int hashLen = Args.notNull(hashAlgo, "hashAlgo").getLength();
+        Args.range(Args.notNull(hashValue, "hashValue").length, "hashValue.length", hashLen, hashLen);
 
         int blockSize = (modulusBigLength + 7) / 8;
         byte[] prefix = digestPkcsPrefix.get(hashAlgo);
@@ -77,9 +74,7 @@ public class PKCS1Util {
 
     public static byte[] EMSA_PKCS1_v1_5_encoding(byte[] encodedDigestInfo, int modulusBigLength)
             throws XiSecurityException {
-        notNull(encodedDigestInfo, "encodedDigestInfo");
-
-        int msgLen = encodedDigestInfo.length;
+        int msgLen = Args.notNull(encodedDigestInfo, "encodedDigestInfo").length;
         int blockSize = (modulusBigLength + 7) / 8;
 
         if (msgLen + 3 > blockSize) {

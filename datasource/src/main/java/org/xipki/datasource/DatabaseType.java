@@ -38,13 +38,11 @@ public enum DatabaseType {
   }
 
   public static DatabaseType forDriver(String driverClass) {
-    Args.notNull(driverClass, "driverClass");
-    return getDatabaseType(driverClass);
+    return getDatabaseType(Args.notNull(driverClass, "driverClass"));
   }
 
   public static DatabaseType forDataSourceClass(String datasourceClass) {
-    Args.notNull(datasourceClass, "datasourceClass");
-    return getDatabaseType(datasourceClass);
+    return getDatabaseType(Args.notNull(datasourceClass, "datasourceClass"));
   }
 
   public static DatabaseType forJdbcUrl(String url) {

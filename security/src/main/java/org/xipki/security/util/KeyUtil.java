@@ -20,6 +20,7 @@ import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
 import org.xipki.pkcs11.wrapper.Functions;
 import org.xipki.security.EdECConstants;
+import org.xipki.util.Args;
 import org.xipki.util.CompareUtil;
 import org.xipki.util.StringUtil;
 
@@ -29,9 +30,6 @@ import java.security.*;
 import java.security.interfaces.*;
 import java.security.spec.*;
 import java.util.Arrays;
-
-import static org.xipki.util.Args.notBlank;
-import static org.xipki.util.Args.notNull;
 
 /**
  * Key utility class.
@@ -62,8 +60,7 @@ public class KeyUtil {
   }
 
   private static KeyStore getKeyStore(String storeType, String pkcs12Provider) throws KeyStoreException {
-    notBlank(storeType, "storeType");
-    if (StringUtil.orEqualsIgnoreCase(storeType, "PKCS12", "PKCS#12")) {
+    if (StringUtil.orEqualsIgnoreCase(Args.notBlank(storeType, "storeType"), "PKCS12", "PKCS#12")) {
       try {
         return KeyStore.getInstance(storeType, pkcs12Provider);
       } catch (KeyStoreException | NoSuchProviderException ex) {
@@ -135,13 +132,13 @@ public class KeyUtil {
   }
 
   public static DSAPublicKey generateDSAPublicKey(DSAPublicKeySpec keySpec) throws InvalidKeySpecException {
-    notNull(keySpec, "keySpec");
+    Args.notNull(keySpec, "keySpec");
     return (DSAPublicKey) getKeyFactory("DSA").generatePublic(keySpec);
   }
 
   public static KeyPair generateEdECKeypair(ASN1ObjectIdentifier curveId, SecureRandom random)
-      throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-    String algorithm = EdECConstants.getName(notNull(curveId, "curveId"));
+      throws NoSuchAlgorithmException, NoSuchProviderException {
+    String algorithm = EdECConstants.getName(Args.notNull(curveId, "curveId"));
     if (algorithm == null) {
       throw new IllegalArgumentException("unknown curve " + curveId);
     }
@@ -155,7 +152,7 @@ public class KeyUtil {
 
   public static KeyPair generateECKeypair(ASN1ObjectIdentifier curveId, SecureRandom random)
       throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-    ECGenParameterSpec spec = new ECGenParameterSpec(notNull(curveId, "curveId").getId());
+    ECGenParameterSpec spec = new ECGenParameterSpec(Args.notNull(curveId, "curveId").getId());
     KeyPairGenerator kpGen = getKeyPairGenerator("EC");
     if (random == null) {
       kpGen.initialize(spec);
@@ -245,7 +242,7 @@ public class KeyUtil {
 
   public static PrivateKey generatePrivateKey(PrivateKeyInfo pkInfo) throws InvalidKeySpecException {
     try {
-      PKCS8EncodedKeySpec keyspec = new PKCS8EncodedKeySpec(notNull(pkInfo, "pkInfo").getEncoded());
+      PKCS8EncodedKeySpec keyspec = new PKCS8EncodedKeySpec(Args.notNull(pkInfo, "pkInfo").getEncoded());
       return getKeyFactory(pkInfo.getPrivateKeyAlgorithm()).generatePrivate(keyspec);
     } catch (IOException ex) {
       throw new InvalidKeySpecException(ex.getMessage(), ex);
@@ -254,7 +251,7 @@ public class KeyUtil {
 
   public static PublicKey generatePublicKey(SubjectPublicKeyInfo pkInfo) throws InvalidKeySpecException {
     try {
-      X509EncodedKeySpec keyspec = new X509EncodedKeySpec(notNull(pkInfo, "pkInfo").getEncoded());
+      X509EncodedKeySpec keyspec = new X509EncodedKeySpec(Args.notNull(pkInfo, "pkInfo").getEncoded());
       return getKeyFactory(pkInfo.getAlgorithm()).generatePublic(keyspec);
     } catch (IOException ex) {
       throw new InvalidKeySpecException(ex.getMessage(), ex);
@@ -262,12 +259,12 @@ public class KeyUtil {
   } // method generatePublicKey
 
   public static RSAPublicKey generateRSAPublicKey(RSAPublicKeySpec keySpec) throws InvalidKeySpecException {
-    notNull(keySpec, "keySpec");
+    Args.notNull(keySpec, "keySpec");
     return (RSAPublicKey) getKeyFactory("RSA").generatePublic(keySpec);
   }
 
   public static AsymmetricKeyParameter generatePrivateKeyParameter(PrivateKey key) throws InvalidKeyException {
-    notNull(key, "key");
+    Args.notNull(key, "key");
 
     if (key instanceof RSAPrivateCrtKey) {
       RSAPrivateCrtKey rsaKey = (RSAPrivateCrtKey) key;
@@ -293,7 +290,7 @@ public class KeyUtil {
   } // method generatePrivateKeyParameter
 
   public static AsymmetricKeyParameter generatePublicKeyParameter(PublicKey key) throws InvalidKeyException {
-    notNull(key, "key");
+    Args.notNull(key, "key");
 
     if (key instanceof RSAPublicKey) {
       RSAPublicKey rsaKey = (RSAPublicKey) key;
@@ -323,7 +320,7 @@ public class KeyUtil {
   } // method generatePublicKeyParameter
 
   public static SubjectPublicKeyInfo createSubjectPublicKeyInfo(PublicKey publicKey) throws InvalidKeyException {
-    notNull(publicKey, "publicKey");
+    Args.notNull(publicKey, "publicKey");
 
     if (publicKey instanceof DSAPublicKey) {
       DSAPublicKey dsaPubKey = (DSAPublicKey) publicKey;
@@ -424,8 +421,8 @@ public class KeyUtil {
 
   public static ECPublicKey createECPublicKey(byte[] encodedAlgorithmIdParameters, byte[] encodedPoint)
       throws InvalidKeySpecException {
-    notNull(encodedAlgorithmIdParameters, "encodedAlgorithmIdParameters");
-    notNull(encodedPoint, "encodedPoint");
+    Args.notNull(encodedAlgorithmIdParameters, "encodedAlgorithmIdParameters");
+    Args.notNull(encodedPoint, "encodedPoint");
 
     ASN1Encodable algParams = (encodedAlgorithmIdParameters[0] == 6)
         ? ASN1ObjectIdentifier.getInstance(encodedAlgorithmIdParameters)
@@ -435,7 +432,7 @@ public class KeyUtil {
 
   public static ECPublicKey createECPublicKey(ASN1ObjectIdentifier curveOid, byte[] encodedPoint)
       throws InvalidKeySpecException {
-    return doCreateECPublicKey(notNull(curveOid, "curveOid"), notNull(encodedPoint, "encodedPoint"));
+    return doCreateECPublicKey(Args.notNull(curveOid, "curveOid"), Args.notNull(encodedPoint, "encodedPoint"));
   }
 
   private static ECPublicKey doCreateECPublicKey(ASN1Encodable algParams, byte[] encodedPoint)

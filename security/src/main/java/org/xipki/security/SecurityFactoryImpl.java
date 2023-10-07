@@ -14,14 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.security.util.SignerUtil;
+import org.xipki.util.Args;
 import org.xipki.util.LogUtil;
 import org.xipki.util.exception.ObjectCreationException;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Set;
-
-import static org.xipki.util.Args.positive;
 
 /**
  * An implementation of {@link SecurityFactory}.
@@ -149,7 +148,7 @@ public class SecurityFactoryImpl extends AbstractSecurityFactory {
   }
 
   public void setDefaultSignerParallelism(int defaultSignerParallelism) {
-    this.defaultSignerParallelism = positive(defaultSignerParallelism, "defaultSignerParallelism");
+    this.defaultSignerParallelism = Args.positive(defaultSignerParallelism, "defaultSignerParallelism");
   }
 
   public void setSignerFactoryRegister(SignerFactoryRegister signerFactoryRegister) {

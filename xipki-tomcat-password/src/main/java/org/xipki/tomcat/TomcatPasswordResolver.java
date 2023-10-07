@@ -21,7 +21,7 @@ import java.util.*;
  */
 public class TomcatPasswordResolver {
 
-  public static TomcatPasswordResolver INSTANCE = new TomcatPasswordResolver();
+  public static final TomcatPasswordResolver INSTANCE = new TomcatPasswordResolver();
 
   private boolean passwordResolverInitialized = false;
   private boolean passwordResolverInitFailed = false;

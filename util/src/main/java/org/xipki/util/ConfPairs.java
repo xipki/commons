@@ -6,9 +6,6 @@ package org.xipki.util;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static org.xipki.util.Args.notBlank;
-import static org.xipki.util.Args.notNull;
-
 /**
  * Container of name-value pairs.
  *
@@ -238,10 +235,9 @@ public class ConfPairs {
   }
 
   public ConfPairs putPair(String name, String value) {
-    notBlank(name, "name");
-    notNull(value, "value");
+    Args.notNull(value, "value");
 
-    char ch = name.charAt(0);
+    char ch = Args.notBlank(name, "name").charAt(0);
     if (ch >= '0' && ch <= '9') {
       throw new IllegalArgumentException("name begin with " + ch);
     }
@@ -250,15 +246,15 @@ public class ConfPairs {
   }
 
   public void removePair(String name) {
-    pairs.remove(notBlank(name, "name"));
+    pairs.remove(Args.notBlank(name, "name"));
   }
 
   public String value(String name) {
-    return pairs.get(notBlank(name, "name"));
+    return pairs.get(Args.notBlank(name, "name"));
   }
 
   public String value(String name, String defaultValue) {
-    String value = pairs.get(notBlank(name, "name"));
+    String value = pairs.get(Args.notBlank(name, "name"));
     return value == null ? defaultValue : value;
   }
 

@@ -9,13 +9,12 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.xipki.security.SignAlgo;
 import org.xipki.security.XiContentSigner;
 import org.xipki.security.XiSecurityException;
+import org.xipki.util.Args;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * HMAC signer.
@@ -56,8 +55,8 @@ public class HmacContentSigner implements XiContentSigner {
   private final int outLen;
 
   public HmacContentSigner(SignAlgo algorithm, SecretKey signingKey) throws XiSecurityException {
-    this.algorithm = notNull(algorithm, "algorithm");
-    notNull(signingKey, "signingKey");
+    this.algorithm = Args.notNull(algorithm, "algorithm");
+    Args.notNull(signingKey, "signingKey");
     try {
       this.encodedAlgorithmIdentifier = algorithm.getAlgorithmIdentifier().getEncoded();
     } catch (IOException ex) {

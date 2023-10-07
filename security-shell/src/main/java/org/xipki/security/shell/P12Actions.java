@@ -355,8 +355,8 @@ public class P12Actions {
     protected String passwordHint;
 
     protected void saveKey(KeyStoreWrapper keyGenerationResult) throws IOException {
-      Args.notNull(keyGenerationResult, "keyGenerationResult");
-      saveVerbose("saved PKCS#12 keystore to file", keyOutFile, keyGenerationResult.keystore());
+      saveVerbose("saved PKCS#12 keystore to file", keyOutFile,
+          Args.notNull(keyGenerationResult, "keyGenerationResult").keystore());
     }
 
     protected KeystoreGenerationParameters getKeyGenParameters() throws IOException, PasswordResolverException {

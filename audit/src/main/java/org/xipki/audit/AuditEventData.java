@@ -19,9 +19,8 @@ public class AuditEventData {
   private String value;
 
   public AuditEventData(String name, Object value) {
-    Args.notBlank(name, "name");
+    this.name = Args.notBlank(name, "name");
     Args.notNull(value, "value");
-    this.name = name;
     this.value = (value instanceof String) ? (String) value : value.toString();
   } // constructor
 

@@ -27,6 +27,7 @@ import org.xipki.security.pkcs11.P11Params;
 import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.util.PKCS1Util;
 import org.xipki.security.util.SignerUtil;
+import org.xipki.util.Args;
 import org.xipki.util.concurrent.ConcurrentBag;
 import org.xipki.util.concurrent.ConcurrentBagEntry;
 
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
 import static org.xipki.security.HashAlgo.*;
-import static org.xipki.util.Args.notNull;
 
 /**
  * {@link P11Key} for PKCS#11 emulator.
@@ -160,8 +160,8 @@ class EmulatorP11Key extends P11Key {
   public EmulatorP11Key(
       P11Slot slot, PKCS11KeyId keyId, Key signingKey, int maxSessions, SecureRandom random) {
     super(slot, keyId);
-    this.signingKey = notNull(signingKey, "signingKey");
-    this.random = notNull(random, "random");
+    this.signingKey = Args.notNull(signingKey, "signingKey");
+    this.random = Args.notNull(random, "random");
     this.maxSessions = maxSessions;
   } // constructor
 

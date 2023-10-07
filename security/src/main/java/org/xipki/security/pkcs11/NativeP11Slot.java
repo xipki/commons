@@ -22,6 +22,8 @@ import org.xipki.security.EdECConstants;
 import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
 import org.xipki.security.util.KeyUtil;
+import org.xipki.util.Args;
+import org.xipki.util.CollectionUtil;
 import org.xipki.util.LogUtil;
 import org.xipki.util.StringUtil;
 
@@ -37,11 +39,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 
-import static org.xipki.pkcs11.wrapper.AttributeVector.newSecretKey;
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
-import static org.xipki.util.Args.notNull;
-import static org.xipki.util.CollectionUtil.isEmpty;
-import static org.xipki.util.CollectionUtil.isNotEmpty;
 
 /**
  * {@link P11Slot} based on the ipkcs11wrapper or jpkcs11wrapper.
@@ -72,7 +70,7 @@ class NativeP11Slot extends P11Slot {
       throw new IllegalArgumentException("slotId != token.getTokenId");
     }
 
-    this.token = notNull(token, "slot");
+    this.token = Args.notNull(token, "slot");
 
     ModuleInfo moduleInfo = token.getModule().getInfo();
     libDesc = moduleInfo.getLibraryDescription();
@@ -154,14 +152,14 @@ class NativeP11Slot extends P11Slot {
       throw new TokenException("digestSecretKey could not be applied to non-SecretKey");
     }
 
-    long keyHandle = notNull(identity, "identity").getKeyId().getHandle();
+    long keyHandle = Args.notNull(identity, "identity").getKeyId().getHandle();
     assertMechanismSupported(mech, CKF_DIGEST);
 
     return token.digestKey(new Mechanism(mech), keyHandle);
   }
 
   byte[] sign(long mech, P11Params parameters, byte[] content, NativeP11Key identity) throws TokenException {
-    notNull(content, "content");
+    Args.notNull(content, "content");
     assertMechanismSupported(mech, CKF_SIGN);
 
     long signingKeyHandle = identity.getKeyId().getHandle();
@@ -421,7 +419,7 @@ class NativeP11Slot extends P11Slot {
 
     byte[] id = control.getId();
 
-    AttributeVector template = newSecretKey(keyType);
+    AttributeVector template = AttributeVector.newSecretKey(keyType);
     setKeyAttributes(control, template, label);
     if (hasValueLen) {
       if (keysize == null) {
@@ -449,7 +447,7 @@ class NativeP11Slot extends P11Slot {
   @Override
   protected PKCS11KeyId doImportSecretKey(long keyType, byte[] keyValue, P11NewKeyControl control)
       throws TokenException {
-    AttributeVector template = newSecretKey(keyType);
+    AttributeVector template = AttributeVector.newSecretKey(keyType);
     String label;
     if (newObjectConf.isIgnoreLabel()) {
       if (control.getLabel() != null) {
@@ -883,9 +881,9 @@ class NativeP11Slot extends P11Slot {
   }
 
   private boolean labelExists(String keyLabel) throws TokenException {
-    notNull(keyLabel, "keyLabel");
+    Args.notNull(keyLabel, "keyLabel");
     AttributeVector template = new AttributeVector().label(keyLabel);
-    return !isEmpty(getObjects(template, 1));
+    return CollectionUtil.isNotEmpty(getObjects(template, 1));
   } // method labelExists
 
   private static void setPrivateKeyAttrsOtf(AttributeVector privateKeyTemplate) {
@@ -998,7 +996,7 @@ class NativeP11Slot extends P11Slot {
     }
 
     Set<P11KeyUsage> usages = control.getUsages();
-    if (isNotEmpty(usages)) {
+    if (CollectionUtil.isNotEmpty(usages)) {
       for (P11KeyUsage usage : usages) {
         switch (usage) {
           case DECRYPT:
@@ -1048,7 +1046,7 @@ class NativeP11Slot extends P11Slot {
     }
 
     Set<P11KeyUsage> usages = control.getUsages();
-    if (isNotEmpty(usages)) {
+    if (CollectionUtil.isNotEmpty(usages)) {
       for (P11KeyUsage usage : usages) {
         switch (usage) {
           case DECRYPT:

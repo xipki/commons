@@ -4,13 +4,11 @@
 package org.xipki.security;
 
 import org.xipki.security.util.X509Util;
+import org.xipki.util.Args;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.ConfPairs;
 
 import java.util.List;
-
-import static org.xipki.util.Args.notBlank;
-import static org.xipki.util.Args.notNull;
 
 /**
  * Configuration of {@link ConcurrentContentSigner}.
@@ -32,16 +30,16 @@ public class SignerConf {
   public SignerConf(String conf) {
     this.hashAlgo = null;
     this.signatureAlgoControl = null;
-    this.confPairs = new ConfPairs(notBlank(conf, "conf"));
+    this.confPairs = new ConfPairs(Args.notBlank(conf, "conf"));
     if (getConfValue("algo") == null) {
       throw new IllegalArgumentException("conf must contain the entry 'algo'");
     }
   }
 
   public SignerConf(String confWithoutAlgo, HashAlgo hashAlgo, SignatureAlgoControl signatureAlgoControl) {
-    this.hashAlgo = notNull(hashAlgo, "hashAlgo");
+    this.hashAlgo = Args.notNull(hashAlgo, "hashAlgo");
     this.signatureAlgoControl = signatureAlgoControl;
-    this.confPairs = new ConfPairs(notBlank(confWithoutAlgo, "confWithoutAlgo"));
+    this.confPairs = new ConfPairs(Args.notBlank(confWithoutAlgo, "confWithoutAlgo"));
     if (getConfValue("algo") != null) {
       throw new IllegalArgumentException("confWithoutAlgo may not contain the entry 'algo'");
     }

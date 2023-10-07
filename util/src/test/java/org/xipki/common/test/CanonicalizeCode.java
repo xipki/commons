@@ -67,9 +67,8 @@ public class CanonicalizeCode {
 
     for (String arg : args) {
       try {
-        String baseDir = arg;
-        System.out.println("Canonicalize dir " + baseDir);
-        CanonicalizeCode canonicalizer = new CanonicalizeCode(baseDir);
+        System.out.println("Canonicalize dir " + arg);
+        CanonicalizeCode canonicalizer = new CanonicalizeCode(arg);
         canonicalizer.canonicalize();
         canonicalizer.checkWarnings();
       } catch (Exception ex) {
@@ -158,8 +157,8 @@ public class CanonicalizeCode {
 
     if (!Arrays.equals(oldBytes, newBytes)) {
       File newFile = new File(file.getPath() + "-new");
-      IoUtil.save(file, newBytes);
-      newFile.renameTo(file);
+      IoUtil.save(newFile, newBytes);
+      IoUtil.renameTo(newFile, file);
       System.out.println(file.getPath().substring(baseDirLen));
     }
   } // method canonicalizeFile
@@ -182,8 +181,8 @@ public class CanonicalizeCode {
     byte[] oldBytes = IoUtil.read(file);
     if (!Arrays.equals(oldBytes, newBytes)) {
       File newFile = new File(file.getPath() + "-new");
-      IoUtil.save(file, newBytes);
-      newFile.renameTo(file);
+      IoUtil.save(newFile, newBytes);
+      IoUtil.renameTo(newFile, file);
       System.out.println(file.getPath().substring(baseDirLen));
     }
   } // method canonicalizeTextFile

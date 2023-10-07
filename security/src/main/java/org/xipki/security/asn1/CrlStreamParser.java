@@ -16,6 +16,7 @@ import org.xipki.security.CrlReason;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.security.util.SignerUtil;
 import org.xipki.security.util.X509Util;
+import org.xipki.util.Args;
 import org.xipki.util.LogUtil;
 
 import java.io.*;
@@ -27,8 +28,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Iterator;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Both BouncyCastle and JDK read the whole CRL during the initialization. The
@@ -258,7 +257,7 @@ public class CrlStreamParser extends Asn1StreamParser {
   private final int tbsCertListEndIndex;
 
   public CrlStreamParser(File crlFile) throws IOException {
-    this.crlFile = notNull(crlFile, "crlFile");
+    this.crlFile = Args.notNull(crlFile, "crlFile");
     // Round 1
     try (BufferedInputStream instream = new BufferedInputStream(Files.newInputStream(crlFile.toPath()))) {
       int offset = 0;

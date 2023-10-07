@@ -7,8 +7,6 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static org.xipki.util.Args.notNull;
-
 /**
  * Utility class for String.
  *
@@ -172,7 +170,7 @@ public class StringUtil {
 
   public static boolean isNumber(String str, int radix) {
     try {
-      Integer.parseInt(notNull(str, "str"), radix);
+      Integer.parseInt(Args.notNull(str, "str"), radix);
       return true;
     } catch (NumberFormatException ex) {
       return false;
@@ -180,18 +178,12 @@ public class StringUtil {
   }
 
   public static String formatText(String text, int minLen) {
-    notNull(text, "text");
-    int len = text.length();
+    int len = Args.notNull(text, "text").length();
     if (len >= minLen) {
       return text;
     }
 
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < minLen - len; i++) {
-      sb.append(" ");
-    }
-    sb.append(text);
-    return sb.toString();
+    return " ".repeat(minLen - len) + text;
   }
 
   public static String formatAccount(long account, boolean withPrefix) {

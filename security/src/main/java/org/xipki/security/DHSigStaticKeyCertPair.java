@@ -4,12 +4,11 @@
 package org.xipki.security;
 
 import org.bouncycastle.asn1.x500.X500Name;
+import org.xipki.util.Args;
 
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.util.Arrays;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Specifies private key and certificate pair for the DHSig-static defined in RFC 6955.
@@ -33,9 +32,8 @@ public class DHSigStaticKeyCertPair {
   private final byte[] encodedSubject;
 
   public DHSigStaticKeyCertPair(PrivateKey privateKey, X509Cert certificate) {
-    this.privateKey = notNull(privateKey, "privateKey");
-    notNull(certificate, "certificate");
-    this.serialNumber = certificate.getSerialNumber();
+    this.privateKey = Args.notNull(privateKey, "privateKey");
+    this.serialNumber = Args.notNull(certificate, "certificate").getSerialNumber();
     try {
       this.encodedIssuer = certificate.getIssuer().getEncoded();
       this.encodedSubject = certificate.getSubject().getEncoded();

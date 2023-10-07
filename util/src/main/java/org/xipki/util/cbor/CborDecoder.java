@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides a decoder capable of handling CBOR encoded data from a {@link InputStream}.
@@ -336,7 +337,7 @@ public class CborDecoder implements AutoCloseable {
         if (len > Integer.MAX_VALUE) {
             fail("String length too long!");
         }
-        return new String(readFully(new byte[(int) len]), "UTF-8");
+        return new String(readFully(new byte[(int) len]), StandardCharsets.UTF_8);
     }
 
     /**

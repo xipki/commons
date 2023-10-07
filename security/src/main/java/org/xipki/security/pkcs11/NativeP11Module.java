@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.pkcs11.wrapper.*;
+import org.xipki.util.Args;
 import org.xipki.util.IoUtil;
 import org.xipki.util.LogUtil;
 import org.xipki.util.StringUtil;
@@ -15,8 +16,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * {@link P11Module} based on the ipkcs11wrapper or jpkcs11wrapper.
@@ -37,7 +36,7 @@ public class NativeP11Module extends P11Module {
 
   private NativeP11Module(PKCS11Module module, P11ModuleConf moduleConf) throws TokenException {
     super(moduleConf);
-    this.module = notNull(module, "module");
+    this.module = Args.notNull(module, "module");
 
     try {
       ModuleInfo info = module.getInfo();
@@ -143,9 +142,7 @@ public class NativeP11Module extends P11Module {
   } // constructor
 
   public static P11Module getInstance(P11ModuleConf moduleConf) throws TokenException {
-    notNull(moduleConf, "moduleConf");
-
-    String userTypeStr = moduleConf.getUserType();
+    String userTypeStr = Args.notNull(moduleConf, "moduleConf").getUserType();
     Long userType = PKCS11Constants.nameToCode(PKCS11Constants.Category.CKU, userTypeStr);
 
     if (userType != null) {

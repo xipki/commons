@@ -9,11 +9,10 @@ import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.*;
 import org.xipki.security.util.SignerUtil;
+import org.xipki.util.Args;
 
 import java.io.IOException;
 import java.math.BigInteger;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Plain-DSA signer. The signature is not encoded as ASN.1 structure, but just the
@@ -45,7 +44,7 @@ public class DSAPlainDigestSigner implements Signer {
         ? (AsymmetricKeyParameter) ((ParametersWithRandom) parameters).getParameters()
         : (AsymmetricKeyParameter) parameters;
 
-    notNull(param, "param");
+    Args.notNull(param, "param");
     if (param instanceof ECPublicKeyParameters) {
       keyBitLen = ((ECPublicKeyParameters) param).getParameters().getCurve().getFieldSize();
     } else if (param instanceof ECPrivateKeyParameters) {

@@ -29,6 +29,8 @@
 
 package org.xipki.util.http;
 
+import org.xipki.util.Args;
+
 import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
@@ -40,8 +42,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Builder for {@link javax.net.ssl.SSLContext} instances.
@@ -193,7 +193,7 @@ public class SslContextBuilder {
 
   public SslContextBuilder loadTrustMaterial(File file, char[] storePassword)
       throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-    notNull(file, "Truststore file");
+    Args.notNull(file, "Truststore file");
     try (InputStream is = Files.newInputStream(file.toPath())) {
       return loadTrustMaterial(is, storePassword);
     }
@@ -204,7 +204,7 @@ public class SslContextBuilder {
    */
   public SslContextBuilder loadTrustMaterial(InputStream instream, char[] storePassword)
       throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-    notNull(instream, "Truststore instream");
+    Args.notNull(instream, "Truststore instream");
     final KeyStore trustStore = KeyStore.getInstance(keyStoreType);
     trustStore.load(instream, storePassword);
     return loadTrustMaterial(trustStore);
@@ -225,7 +225,7 @@ public class SslContextBuilder {
 
   public SslContextBuilder loadKeyMaterial(File file, char[] storePassword, char[] keyPassword)
       throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, CertificateException, IOException {
-    notNull(file, "Keystore file");
+    Args.notNull(file, "Keystore file");
     try (InputStream is = Files.newInputStream(file.toPath())) {
       return loadKeyMaterial(is, storePassword, keyPassword);
     }
@@ -233,7 +233,7 @@ public class SslContextBuilder {
 
   public SslContextBuilder loadKeyMaterial(InputStream instream, char[] storePassword, char[] keyPassword)
       throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, CertificateException, IOException {
-    notNull(instream, "Keystore instream");
+    Args.notNull(instream, "Keystore instream");
     final KeyStore identityStore = KeyStore.getInstance(keyStoreType);
     identityStore.load(instream, storePassword);
     return loadKeyMaterial(identityStore, keyPassword);

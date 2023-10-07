@@ -3,9 +3,8 @@
 
 package org.xipki.security.pkcs11;
 
+import org.xipki.util.Args;
 import org.xipki.util.StringUtil;
-
-import static org.xipki.util.Args.notNegative;
 
 /**
  * Identifier of a {@link P11Slot}.
@@ -20,8 +19,8 @@ public class P11SlotId {
   private final long id;
 
   public P11SlotId(int index, long id) {
-    this.index = notNegative(index, "index");
-    this.id = notNegative(id, "id");
+    this.index = Args.notNegative(index, "index");
+    this.id = Args.notNegative(id, "id");
   }
 
   public int getIndex() {

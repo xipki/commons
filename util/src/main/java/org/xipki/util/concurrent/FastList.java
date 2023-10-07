@@ -188,7 +188,7 @@ public final class FastList<T> implements List<T>, RandomAccess, Serializable {
 
   @Override
   public Iterator<T> iterator() {
-    return new Iterator<T>() {
+    return new Iterator<>() {
       private int index;
 
       @Override

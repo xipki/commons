@@ -28,10 +28,9 @@ public class DataSourceFactory {
 
   public DataSourceWrapper createDataSource(String name, FileOrValue conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {
-    Args.notNull(conf, "conf");
-
-    ConfigurableProperties props = new ConfigurableProperties();
-    try (Reader reader = new StringReader(conf.readContent())) {
+    ConfigurableProperties props;
+    try (Reader reader = new StringReader(Args.notNull(conf, "conf").readContent())) {
+      props = new ConfigurableProperties();
       props.load(reader);
     }
 
@@ -43,17 +42,15 @@ public class DataSourceFactory {
    */
   public DataSourceWrapper createDataSource(String name, InputStream conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {
-    Args.notNull(conf, "conf");
     ConfigurableProperties config = new ConfigurableProperties();
-    config.load(conf);
+    config.load(Args.notNull(conf, "conf"));
     return createDataSource(name, config, passwordResolver);
   } // method createDataSource
 
   public DataSourceWrapper createDataSource(String name, ConfigurableProperties conf, PasswordResolver passwordResolver)
       throws PasswordResolverException {
-    Args.notNull(conf, "conf");
     DatabaseType databaseType;
-    String className = conf.getProperty("dataSourceClassName");
+    String className = Args.notNull(conf, "conf").getProperty("dataSourceClassName");
     if (className != null) {
       databaseType = DatabaseType.forDataSourceClass(className);
     } else {
@@ -120,8 +117,8 @@ public class DataSourceFactory {
 
   public DataSourceWrapper createDataSourceForFile(String name, String confFile, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {
-    Args.notBlank(confFile, "confFile");
-    try (InputStream fileIn = Files.newInputStream(Paths.get(IoUtil.expandFilepath(confFile)))) {
+    String path = IoUtil.expandFilepath(Args.notBlank(confFile, "confFile"));
+    try (InputStream fileIn = Files.newInputStream(Paths.get(path))) {
       return createDataSource(name, fileIn, passwordResolver);
     }
   }

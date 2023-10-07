@@ -6,6 +6,7 @@ package org.xipki.security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
+import org.xipki.util.Args;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.LogUtil;
 import org.xipki.util.concurrent.ConcurrentBag;
@@ -20,8 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.xipki.util.Args.notEmpty;
 
 /**
  * An implementation of {@link ConcurrentContentSigner}.
@@ -76,7 +75,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
   public DfltConcurrentContentSigner(boolean mac, List<XiContentSigner> signers, Key signingKey)
       throws NoSuchAlgorithmException {
-    notEmpty(signers, "signers");
+    Args.notEmpty(signers, "signers");
 
     this.mac = mac;
     this.algorithm = SignAlgo.getInstance(signers.get(0).getAlgorithmIdentifier());

@@ -6,7 +6,9 @@ package org.xipki.security;
 import org.xipki.util.Args;
 
 import java.security.cert.CRLReason;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The CRLReason enumeration specifies the reason that a certificate
@@ -80,10 +82,9 @@ public enum CrlReason {
    */
   AA_COMPROMISE(10, "aACompromise");
 
-  public static final List<CrlReason> PERMITTED_CLIENT_CRLREASONS = Collections.unmodifiableList(
-      Arrays.asList(CrlReason.UNSPECIFIED, CrlReason.KEY_COMPROMISE,
-          CrlReason.AFFILIATION_CHANGED, CrlReason.SUPERSEDED, CrlReason.CESSATION_OF_OPERATION,
-          CrlReason.CERTIFICATE_HOLD, CrlReason.PRIVILEGE_WITHDRAWN));
+  public static final List<CrlReason> PERMITTED_CLIENT_CRLREASONS = List.of(
+      CrlReason.UNSPECIFIED, CrlReason.KEY_COMPROMISE, CrlReason.AFFILIATION_CHANGED, CrlReason.SUPERSEDED,
+      CrlReason.CESSATION_OF_OPERATION, CrlReason.CERTIFICATE_HOLD, CrlReason.PRIVILEGE_WITHDRAWN);
 
   private static final Map<Integer, CrlReason> REASONS = new HashMap<>();
 

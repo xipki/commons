@@ -12,7 +12,9 @@ import org.xipki.security.EdECConstants;
 import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
 import org.xipki.security.util.DSAParameterCache;
+import org.xipki.util.Args;
 import org.xipki.util.Hex;
+import org.xipki.util.StringUtil;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -26,8 +28,6 @@ import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.*;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
-import static org.xipki.util.Args.*;
-import static org.xipki.util.StringUtil.concat;
 
 /**
  * PKCS#11 slot.
@@ -46,7 +46,7 @@ public abstract class P11Slot implements Closeable {
 
     public P11NewObjectControl(byte[] id, String label) {
       this.id = id;
-      this.label = notBlank(label, "label");
+      this.label = Args.notBlank(label, "label");
     }
 
     public byte[] getId() {
@@ -127,11 +127,10 @@ public abstract class P11Slot implements Closeable {
 
   protected P11Slot(
       String moduleName, P11SlotId slotId, boolean readOnly,
-      List<Long> secretKeyTypes, List<Long> keyPairTypes, P11NewObjectConf newObjectConf)
-      throws TokenException {
-    this.newObjectConf = notNull(newObjectConf, "newObjectConf");
-    this.moduleName = notBlank(moduleName, "moduleName");
-    this.slotId = notNull(slotId, "slotId");
+      List<Long> secretKeyTypes, List<Long> keyPairTypes, P11NewObjectConf newObjectConf) {
+    this.newObjectConf = Args.notNull(newObjectConf, "newObjectConf");
+    this.moduleName = Args.notBlank(moduleName, "moduleName");
+    this.slotId = Args.notNull(slotId, "slotId");
     this.readOnly = readOnly;
     this.secretKeyTypes = secretKeyTypes;
     this.keyPairTypes = keyPairTypes;
@@ -158,7 +157,7 @@ public abstract class P11Slot implements Closeable {
   }
 
   protected static String getDescription(byte[] keyId, String keyLabel) {
-    return concat("id ", (keyId == null ? "null" : hex(keyId)), " and label ", keyLabel);
+    return StringUtil.concat("id ", (keyId == null ? "null" : hex(keyId)), " and label ", keyLabel);
   }
 
   public abstract PKCS11KeyId getKeyId(byte[] keyId, String keyLabel) throws TokenException;
@@ -475,8 +474,7 @@ public abstract class P11Slot implements Closeable {
   public PKCS11KeyId generateSecretKey(long keyType, Integer keysize, P11NewKeyControl control)
       throws TokenException {
     assertWritable("generateSecretKey");
-    notNull(control, "control");
-    assertNoObjects(control.getId(), control.getLabel());
+    assertNoObjects(Args.notNull(control, "control").getId(), control.getLabel());
     assertSecretKeyAllowed(keyType);
 
     if (keysize == null) {
@@ -507,9 +505,8 @@ public abstract class P11Slot implements Closeable {
    */
   public PKCS11KeyId importSecretKey(long keyType, byte[] keyValue, P11NewKeyControl control)
       throws TokenException {
-    notNull(control, "control");
     assertWritable("createSecretKey");
-    assertNoObjects(control.getId(), control.getLabel());
+    assertNoObjects(Args.notNull(control, "control").getId(), control.getLabel());
     assertSecretKeyAllowed(keyType);
 
     PKCS11KeyId keyId = doImportSecretKey(keyType, keyValue, control);
@@ -540,7 +537,7 @@ public abstract class P11Slot implements Closeable {
    */
   public PrivateKeyInfo generateRSAKeypairOtf(int keysize, BigInteger publicExponent)
       throws TokenException {
-    min(keysize, "keysize", 1024);
+    Args.min(keysize, "keysize", 1024);
     if (keysize % 1024 != 0) {
       throw new IllegalArgumentException("key size is not multiple of 1024: " + keysize);
     }
@@ -572,8 +569,7 @@ public abstract class P11Slot implements Closeable {
    */
   public PKCS11KeyId generateRSAKeypair(int keysize, BigInteger publicExponent, P11NewKeyControl control)
       throws TokenException {
-    min(keysize, "keysize", 1024);
-    if (keysize % 1024 != 0) {
+    if (Args.min(keysize, "keysize", 1024) % 1024 != 0) {
       throw new IllegalArgumentException("key size is not multiple of 1024: " + keysize);
     }
     assertCanGenKeypair("generateRSAKeypair", control, CKK_RSA,
@@ -598,12 +594,8 @@ public abstract class P11Slot implements Closeable {
    *         if PKCS#11 token exception occurs.
    */
   public PrivateKeyInfo generateDSAKeypairOtf(BigInteger p, BigInteger q, BigInteger g) throws TokenException {
-    notNull(p, "p");
-    notNull(q, "q");
-    notNull(g, "g");
-
     assertMechanismSupported(CKM_DSA_KEY_PAIR_GEN, CKF_GENERATE_KEY_PAIR);
-    return generateDSAKeypairOtf0(p, q, g);
+    return generateDSAKeypairOtf0(Args.notNull(p, "p"), Args.notNull(q, "q"), Args.notNull(g, "g"));
   }
 
   protected abstract PrivateKeyInfo generateDSAKeypairOtf0(BigInteger p, BigInteger q, BigInteger g)
@@ -624,8 +616,7 @@ public abstract class P11Slot implements Closeable {
    */
   public PKCS11KeyId generateDSAKeypair(int plength, int qlength, P11NewKeyControl control)
       throws TokenException {
-    min(plength, "plength", 1024);
-    if (plength % 1024 != 0) {
+    if (Args.min(plength, "plength", 1024) % 1024 != 0) {
       throw new IllegalArgumentException("key size is not multiple of 1024: " + plength);
     }
     DSAParameterSpec dsaParams = DSAParameterCache.getDSAParameterSpec(plength, qlength, random);
@@ -650,7 +641,11 @@ public abstract class P11Slot implements Closeable {
   public PKCS11KeyId generateDSAKeypair(BigInteger p, BigInteger q, BigInteger g, P11NewKeyControl control)
       throws TokenException {
     assertCanGenKeypair("generateDSAKeypair", control, CKK_DSA, CKM_DSA_KEY_PAIR_GEN);
-    PKCS11KeyId keyId = doGenerateDSAKeypair(notNull(p, "p"), notNull(q, "q"), notNull(g, "g"), control);
+    PKCS11KeyId keyId = doGenerateDSAKeypair(
+        Args.notNull(p, "p"),
+        Args.notNull(q, "q"),
+        Args.notNull(g, "g"),
+        control);
     LOG.info("generated DSA keypair {}", keyId);
     return keyId;
   }
@@ -665,9 +660,7 @@ public abstract class P11Slot implements Closeable {
    *         if PKCS#11 token exception occurs.
    */
   public PrivateKeyInfo generateECKeypairOtf(ASN1ObjectIdentifier curveOid) throws TokenException {
-    notNull(curveOid, "curveOid");
-
-    if (EdECConstants.isEdwardsCurve(curveOid)) {
+    if (EdECConstants.isEdwardsCurve(Args.notNull(curveOid, "curveOid"))) {
       assertMechanismSupported(CKM_EC_EDWARDS_KEY_PAIR_GEN, CKF_GENERATE_KEY_PAIR);
       return doGenerateECEdwardsKeypairOtf(curveOid);
     } else if (EdECConstants.isMontgomeryCurve(curveOid)) {
@@ -692,10 +685,8 @@ public abstract class P11Slot implements Closeable {
    */
   public PKCS11KeyId generateECKeypair(ASN1ObjectIdentifier curveOid, P11NewKeyControl control)
       throws TokenException {
-    notNull(curveOid, "curveOid");
-
     PKCS11KeyId keyId;
-    if (EdECConstants.isEdwardsCurve(curveOid)) {
+    if (EdECConstants.isEdwardsCurve(Args.notNull(curveOid, "curveOid"))) {
       assertCanGenKeypair("generateECKeypair", control, CKK_EC_EDWARDS, CKM_EC_EDWARDS_KEY_PAIR_GEN);
       keyId = doGenerateECEdwardsKeypair(curveOid, control);
     } else if (EdECConstants.isMontgomeryCurve(curveOid)) {
@@ -740,7 +731,6 @@ public abstract class P11Slot implements Closeable {
 
   private void assertCanGenKeypair(String methodName, P11NewKeyControl control, long keyType, long... orMechanisms)
       throws TokenException {
-    notNull(control, "control");
     assertWritable(methodName);
     if (orMechanisms.length < 2) {
       assertMechanismSupported(orMechanisms[0], CKF_GENERATE_KEY_PAIR);
@@ -758,7 +748,7 @@ public abstract class P11Slot implements Closeable {
       }
     }
 
-    assertNoObjects(control.getId(), control.getLabel());
+    assertNoObjects(Args.notNull(control, "control").getId(), control.getLabel());
 
     if (keyPairTypes == null) {
       return;
@@ -784,7 +774,7 @@ public abstract class P11Slot implements Closeable {
    * The specified stream remains open after this method returns.
    */
   protected void printSupportedMechanism(OutputStream stream) throws IOException {
-    notNull(stream, "stream");
+    Args.notNull(stream, "stream");
 
     StringBuilder sb = new StringBuilder();
     sb.append("\nSupported mechanisms:\n");

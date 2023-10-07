@@ -9,6 +9,7 @@ import org.bouncycastle.util.Arrays;
 import org.xipki.security.SignAlgo;
 import org.xipki.security.XiContentSigner;
 import org.xipki.security.XiSecurityException;
+import org.xipki.util.Args;
 import org.xipki.util.IoUtil;
 
 import javax.crypto.*;
@@ -16,8 +17,6 @@ import javax.crypto.spec.GCMParameterSpec;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.*;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * AES GMAC signer.
@@ -67,8 +66,8 @@ public class AESGmacContentSigner implements XiContentSigner {
   private final int nonceOffset;
 
   public AESGmacContentSigner(SignAlgo signAlgo, SecretKey signingKey) throws XiSecurityException {
-    this.signAlgo = notNull(signAlgo, "signAlgo");
-    this.signingKey = notNull(signingKey, "signingKey");
+    this.signAlgo = Args.notNull(signAlgo, "signAlgo");
+    this.signingKey = Args.notNull(signingKey, "signingKey");
 
     Cipher cipher0;
     try {

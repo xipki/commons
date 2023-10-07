@@ -5,6 +5,7 @@ package org.xipki.security.jce;
 
 import org.xipki.security.*;
 import org.xipki.security.util.X509Util;
+import org.xipki.util.Args;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -12,9 +13,6 @@ import java.security.Provider;
 import java.security.PublicKey;
 import java.security.cert.CertPathBuilderException;
 import java.util.*;
-
-import static org.xipki.util.Args.notNull;
-import static org.xipki.util.Args.positive;
 
 /**
  * Builder of {@link ConcurrentContentSigner} for PKCS#11 token.
@@ -48,8 +46,8 @@ public class JceSignerBuilder {
   private JceSignerBuilder(PrivateKey privateKey, PublicKey publicKey, X509Cert[] certificateChain,
                            String providerName, Provider provider)
       throws XiSecurityException {
-    this.privateKey = notNull(privateKey, "privateKey");
-    this.publicKey = notNull(publicKey, "publicKey");
+    this.privateKey = Args.notNull(privateKey, "privateKey");
+    this.publicKey = Args.notNull(publicKey, "publicKey");
     this.providerName = providerName;
     this.provider = provider;
 
@@ -74,9 +72,7 @@ public class JceSignerBuilder {
 
   public ConcurrentContentSigner createSigner(SignAlgo signAlgo, int parallelism)
       throws XiSecurityException {
-    positive(parallelism, "parallelism");
-
-    List<XiContentSigner> signers = new ArrayList<>(parallelism);
+    List<XiContentSigner> signers = new ArrayList<>(Args.positive(parallelism, "parallelism"));
 
     for (int i = 0; i < parallelism; i++) {
       XiContentSigner signer = new JceSigner(privateKey, signAlgo, providerName, provider);

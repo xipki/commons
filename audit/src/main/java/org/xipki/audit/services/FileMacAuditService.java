@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
 import org.xipki.util.*;
+import org.xipki.util.exception.InvalidConfException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -84,7 +85,8 @@ public class FileMacAuditService extends MacAuditService {
   }
 
   @Override
-  protected void doExtraInit(ConfPairs confPairs, PasswordResolver passwordResolver) {
+  protected void doExtraInit(ConfPairs confPairs, PasswordResolver passwordResolver)
+      throws InvalidConfException {
     String filePath = confPairs.value(KEY_FILE);
     if (StringUtil.isBlank(filePath)) {
       throw new IllegalArgumentException("property " + KEY_FILE + " not defined");
@@ -93,7 +95,11 @@ public class FileMacAuditService extends MacAuditService {
 
     File logFile = new File(filePath).getAbsoluteFile();
     this.logDir = logFile.getParentFile();
-    this.logDir.mkdirs();
+    try {
+      IoUtil.mkdirs(this.logDir);
+    } catch (IOException e) {
+      throw new InvalidConfException("error mkdirs for " + this.logDir.getPath());
+    }
 
     String fileName = logFile.getName();
     int idx = fileName.lastIndexOf('.');

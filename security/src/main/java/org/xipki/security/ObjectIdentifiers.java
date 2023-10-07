@@ -10,12 +10,11 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.xipki.util.Args;
 import org.xipki.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Collection of OBJECT IDENFIFIERS.
@@ -588,17 +587,6 @@ public class ObjectIdentifiers {
     public static final ASN1ObjectIdentifier id_ccc_VehicleOEM_CA_Cert_M = id_ccc_extn.branch("10");
   }
 
-  /*
-  public static final ASN1ObjectIdentifier id_aes128_cbc_in_ecies = id_secg_scheme.branch("20.0");
-
-  public static final ASN1ObjectIdentifier id_ecies_specifiedParameters =
-      id_secg_scheme.branch("8");
-
-  public static final ASN1ObjectIdentifier id_hmac_full_ecies = id_secg_scheme.branch("22");
-
-  public static final ASN1ObjectIdentifier id_iso18033_kdf2 =
-      new ASN1ObjectIdentifier("1.0.18033.2.5.2");
-   */
   public static final class Secg {
     private static final ASN1ObjectIdentifier id_secg_scheme = new ASN1ObjectIdentifier("1.3.132.1");
 
@@ -771,14 +759,12 @@ public class ObjectIdentifiers {
   }
 
   public static String oidToDisplayName(ASN1ObjectIdentifier type) {
-    notNull(type, "type");
-    String name = getName(type);
+    String name = getName(Args.notNull(type, "type"));
     return (name == null) ? type.getId() : type.getId() + " (" + name + ")";
   }
 
   public static String getName(ASN1ObjectIdentifier type) {
-    notNull(type, "type");
-    String name = OidNameMap.oidNameMap.get(type);
+    String name = OidNameMap.oidNameMap.get(Args.notNull(type, "type"));
 
     if (StringUtil.isBlank(name)) {
       try {
@@ -790,7 +776,7 @@ public class ObjectIdentifiers {
   }
 
   public static ASN1ObjectIdentifier nameToOid(String name) {
-    notNull(name, "name");
+    Args.notNull(name, "name");
     for (ASN1ObjectIdentifier oid : OidNameMap.oidNameMap.keySet()) {
       if (OidNameMap.oidNameMap.get(oid).equalsIgnoreCase(name)) {
         return oid;

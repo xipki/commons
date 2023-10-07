@@ -3,6 +3,7 @@
 
 package org.xipki.security.pkcs11;
 
+import org.xipki.util.Args;
 import org.xipki.util.ValidatableConf;
 import org.xipki.util.exception.InvalidConfException;
 
@@ -346,7 +347,7 @@ public class Pkcs11conf extends ValidatableConf {
 
     @Override
     public void validate() throws InvalidConfException {
-      notNull(path, "path");
+      Args.notNull(path, "path");
     }
 
   } // class NativeLibrary

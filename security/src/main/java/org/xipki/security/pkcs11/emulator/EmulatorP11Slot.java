@@ -29,10 +29,7 @@ import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.pkcs11.P11SlotId;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.security.util.KeyUtil;
-import org.xipki.util.Hex;
-import org.xipki.util.IoUtil;
-import org.xipki.util.LogUtil;
-import org.xipki.util.StringUtil;
+import org.xipki.util.*;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -49,7 +46,6 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
-import static org.xipki.util.Args.*;
 
 /**
  * {@link P11Slot} for PKCS#11 emulator.
@@ -192,23 +188,18 @@ class EmulatorP11Slot extends P11Slot {
       throws TokenException {
     super(moduleName, slotId, readOnly, secretKeyTypes, keypairTypes, newObjectConf);
 
-    this.keyCryptor = notNull(keyCryptor, "privateKeyCryptor");
-    this.maxSessions = numSessions == null ? 20 : positive(numSessions, "numSessions");
-
-    notNull(slotDir, "slotDir");
-    this.privKeyDir = new File(slotDir, DIR_PRIV_KEY);
-    if (!this.privKeyDir.exists()) {
-      this.privKeyDir.mkdirs();
-    }
-
+    this.keyCryptor = Args.notNull(keyCryptor, "privateKeyCryptor");
+    this.maxSessions = numSessions == null ? 20 : Args.positive(numSessions, "numSessions");
+    this.privKeyDir = new File(Args.notNull(slotDir, "slotDir"), DIR_PRIV_KEY);
     this.pubKeyDir = new File(slotDir, DIR_PUB_KEY);
-    if (!this.pubKeyDir.exists()) {
-      this.pubKeyDir.mkdirs();
-    }
-
     this.secKeyDir = new File(slotDir, DIR_SEC_KEY);
-    if (!this.secKeyDir.exists()) {
-      this.secKeyDir.mkdirs();
+
+    try {
+      IoUtil.mkdirs(this.privKeyDir);
+      IoUtil.mkdirs(this.pubKeyDir);
+      IoUtil.mkdirs(this.secKeyDir);
+    } catch (IOException ex) {
+      throw new TokenException(ex);
     }
 
     File slotInfoFile = new File(slotDir, FILE_SLOTINFO);
@@ -521,14 +512,13 @@ class EmulatorP11Slot extends P11Slot {
   private PKCS11KeyId savePkcs11Entry(
       long objectClass, long handle, byte[] id, String label, long keyType, String algo, byte[] value, String keyspec)
       throws TokenException {
-    notBlank(label, "label");
-    notNull(value, "value");
+    Args.notNull(value, "value");
 
-    String hexId = hex(notNull(id, "id"));
+    String hexId = hex(Args.notNull(id, "id"));
 
     StringBuilder str = new StringBuilder();
     str.append(propertyToString(PROP_ID, hexId))
-        .append(propertyToString(PROP_LABEL, label))
+        .append(propertyToString(PROP_LABEL, Args.notBlank(label, "label")))
         .append(propertyToString(PROP_KEYTYPE, Long.toString(keyType)));
 
     if (algo != null) {
@@ -772,8 +762,7 @@ class EmulatorP11Slot extends P11Slot {
     }
     assertMechanismSupported(mech, CKF_GENERATE_KEY_PAIR);
 
-    notNull(keysize, "keysize");
-    byte[] keyBytes = new byte[keysize / 8];
+    byte[] keyBytes = new byte[Args.notNull(keysize, "keysize") / 8];
     random.nextBytes(keyBytes);
     SecretKey key = new SecretKeySpec(keyBytes, getSecretKeyAlgorithm(keyType));
     return saveSecretP11Entity(keyType, key, control);
@@ -881,7 +870,7 @@ class EmulatorP11Slot extends P11Slot {
       }
 
       keypair = KeyUtil.generateEdECKeypair(curveOid, random);
-    } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException ex) {
+    } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
       throw new TokenException(ex.getMessage(), ex);
     }
     return saveKeyPairP11Entity(CKK_EC_EDWARDS, keypair, control, EdECConstants.getName(curveOid));
@@ -893,7 +882,7 @@ class EmulatorP11Slot extends P11Slot {
     try {
       KeyPair kp = KeyUtil.generateEdECKeypair(curveId, random);
       return PrivateKeyInfo.getInstance(kp.getPrivate().getEncoded());
-    } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException ex) {
+    } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
       throw new TokenException(ex.getMessage(), ex);
     }
   }
@@ -908,7 +897,7 @@ class EmulatorP11Slot extends P11Slot {
       }
 
       keypair = KeyUtil.generateEdECKeypair(curveOid, random);
-    } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException ex) {
+    } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
       throw new TokenException(ex.getMessage(), ex);
     }
     return saveKeyPairP11Entity(CKK_EC_MONTGOMERY, keypair, control, EdECConstants.getName(curveOid));
@@ -920,7 +909,7 @@ class EmulatorP11Slot extends P11Slot {
     try {
       KeyPair kp = KeyUtil.generateEdECKeypair(curveId, random);
       return PrivateKeyInfo.getInstance(kp.getPrivate().getEncoded());
-    } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException ex) {
+    } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
       throw new TokenException(ex.getMessage(), ex);
     }
   }

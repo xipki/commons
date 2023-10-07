@@ -16,9 +16,6 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.xipki.util.Args.notBlank;
-import static org.xipki.util.Args.notNull;
-
 /**
  * IO utility class.
  *
@@ -121,6 +118,24 @@ public class IoUtil {
     }
   }
 
+  public static void mkdirs(File dir) throws IOException {
+    if (dir.exists()) {
+      if (!dir.isDirectory()) {
+        throw new IOException("Path " + dir.getPath() + " exists but is not a directory");
+      }
+    } else {
+      if (!dir.mkdirs()) {
+        throw new IOException("Could not mkdirs for " + dir.getPath());
+      }
+    }
+  }
+
+  public static void renameTo(File srcFile, File destFile) throws IOException {
+    if (!srcFile.renameTo(destFile)) {
+      throw new IOException("Could not rename " + srcFile.getPath() + " to " + destFile.getPath());
+    }
+  }
+
   public static String getHostAddress() throws SocketException {
     List<String> addresses = new LinkedList<>();
 
@@ -199,8 +214,7 @@ public class IoUtil {
   }
 
   public static String expandFilepath(String path, boolean prependBaseDir) {
-    notBlank(path, "path");
-    if (path.startsWith("~")) {
+    if (Args.notBlank(path, "path").startsWith("~")) {
       return USER_HOME + path.substring(1);
     }
 
@@ -289,7 +303,7 @@ public class IoUtil {
   }
 
   public static HttpURLConnection openHttpConn(URL url) throws IOException {
-    URLConnection conn = notNull(url, "url").openConnection();
+    URLConnection conn = Args.notNull(url, "url").openConnection();
     if (conn instanceof HttpURLConnection) {
       return (HttpURLConnection) conn;
     }

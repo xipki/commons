@@ -31,14 +31,10 @@ import java.util.Map;
 
 import static org.bouncycastle.asn1.bsi.BSIObjectIdentifiers.*;
 import static org.bouncycastle.asn1.cms.CMSObjectIdentifiers.*;
-import static org.bouncycastle.asn1.gm.GMObjectIdentifiers.sm2sign_with_sm3;
 import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.*;
 import static org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers.*;
 import static org.bouncycastle.asn1.x9.X9ObjectIdentifiers.*;
-import static org.xipki.security.EdECConstants.id_ED25519;
-import static org.xipki.security.EdECConstants.id_ED448;
 import static org.xipki.security.HashAlgo.*;
-import static org.xipki.util.Args.notNull;
 
 /**
  * Hash algorithm enum.
@@ -103,7 +99,7 @@ public enum SignAlgo {
   ECDSA_SHA3_512("SHA3-512WITHECDSA", 0x39, id_ecdsa_with_sha3_512, SHA3_512, false),
 
   // SM2
-  SM2_SM3("SM3WITHSM2", 0x3A, sm2sign_with_sm3, SM3, false),
+  SM2_SM3("SM3WITHSM2", 0x3A, GMObjectIdentifiers.sm2sign_with_sm3, SM3, false),
 
   // ECDSA with SHAKE
   ECDSA_SHAKE128("SHAKE128WITHECDSA", 0x3B, id_ecdsa_with_shake128, SHAKE128, false),
@@ -117,9 +113,9 @@ public enum SignAlgo {
   PLAINECDSA_SHA512("SHA512WITHPLAINECDSA", 0x45, ecdsa_plain_SHA512, SHA512, false),
 
   // EdDSA
-  ED25519("ED25519", 0x46, id_ED25519, null, false),
+  ED25519("ED25519", 0x46, EdECConstants.id_ED25519, null, false),
 
-  ED448("ED448", 0x47, id_ED448, null, false),
+  ED448("ED448", 0x47, EdECConstants.id_ED448, null, false),
 
   // HMAC
   HMAC_SHA1("HMACSHA1",     0x51, id_hmacWithSHA1,   SHA1,   true),
@@ -302,7 +298,7 @@ public enum SignAlgo {
   } // method isPlainECDSASigAlg
 
   public boolean isSM2SigAlgo() {
-    ASN1ObjectIdentifier oid = notNull(algId, "algId").getAlgorithm();
+    ASN1ObjectIdentifier oid = Args.notNull(algId, "algId").getAlgorithm();
     return GMObjectIdentifiers.sm2sign_with_sm3.equals(oid);
     // other algorithms not supported yet.
   } // method isSM2SigAlg
@@ -400,7 +396,7 @@ public enum SignAlgo {
   }
 
   public static SignAlgo getInstance(P11Key p11Key, SignerConf signerConf) throws NoSuchAlgorithmException {
-    if (notNull(signerConf, "signerConf").getHashAlgo() == null) {
+    if (Args.notNull(signerConf, "signerConf").getHashAlgo() == null) {
       return getInstance(signerConf.getConfValue("algo"));
     }
 
@@ -432,7 +428,7 @@ public enum SignAlgo {
   } // method getInstance
 
   public static SignAlgo getInstance(Key key, SignerConf signerConf) throws NoSuchAlgorithmException {
-    if (notNull(signerConf, "signerConf").getHashAlgo() == null) {
+    if (Args.notNull(signerConf, "signerConf").getHashAlgo() == null) {
       return getInstance(signerConf.getConfValue("algo"));
     }
 
@@ -464,8 +460,8 @@ public enum SignAlgo {
 
   public static SignAlgo getInstance(Key key, HashAlgo hashAlgo, SignatureAlgoControl algoControl)
       throws NoSuchAlgorithmException {
-    notNull(hashAlgo, "hashAlgo");
-    notNull(key, "key");
+    Args.notNull(hashAlgo, "hashAlgo");
+    Args.notNull(key, "key");
 
     if (key instanceof RSAPublicKey || key instanceof RSAPrivateKey) {
       boolean rsaPss = algoControl != null && algoControl.isRsaPss();
@@ -491,7 +487,7 @@ public enum SignAlgo {
   } // method getInstance
 
   private static SignAlgo getRSAInstance(HashAlgo hashAlgo, boolean rsaPss) throws NoSuchAlgorithmException {
-    notNull(hashAlgo, "hashAlgo");
+    Args.notNull(hashAlgo, "hashAlgo");
     switch (hashAlgo) {
       case SHAKE128:
         return RSAPSS_SHAKE128;
@@ -521,7 +517,7 @@ public enum SignAlgo {
   } // method getRSAInstance
 
   private static SignAlgo getDSASigAlgo(HashAlgo hashAlgo) throws NoSuchAlgorithmException {
-    notNull(hashAlgo, "hashAlgo");
+    Args.notNull(hashAlgo, "hashAlgo");
     switch (hashAlgo) {
       case SHAKE128:
         return RSAPSS_SHAKE128;
@@ -552,7 +548,7 @@ public enum SignAlgo {
 
   private static SignAlgo getECSigAlgo(HashAlgo hashAlgo, boolean plainSignature, boolean gm)
       throws NoSuchAlgorithmException {
-    notNull(hashAlgo, "hashAlgo");
+    Args.notNull(hashAlgo, "hashAlgo");
     if (gm && plainSignature) {
       throw new IllegalArgumentException("plainSignature and gm cannot be both true");
     }

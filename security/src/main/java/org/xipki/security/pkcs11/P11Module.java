@@ -4,10 +4,9 @@
 package org.xipki.security.pkcs11;
 
 import org.xipki.pkcs11.wrapper.TokenException;
+import org.xipki.util.Args;
 
 import java.util.*;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * PKCS#11 module.
@@ -25,7 +24,7 @@ public abstract class P11Module {
   private final List<P11SlotId> slotIds = new ArrayList<>();
 
   public P11Module(P11ModuleConf conf) {
-    this.conf = notNull(conf, "conf");
+    this.conf = Args.notNull(conf, "conf");
   }
 
   public abstract void close();
@@ -63,8 +62,7 @@ public abstract class P11Module {
    *         if PKCS#11 token error occurs
    */
   public P11Slot getSlot(P11SlotId slotId) throws TokenException {
-    notNull(slotId, "slotId");
-    P11Slot slot = slots.get(slotId);
+    P11Slot slot = slots.get(Args.notNull(slotId, "slotId"));
     if (slot == null) {
       throw new TokenException("unknown slot " + slotId);
     }

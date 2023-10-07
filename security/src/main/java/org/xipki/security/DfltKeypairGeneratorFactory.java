@@ -8,9 +8,6 @@ import org.xipki.security.pkcs11.P11KeypairGenerator;
 import org.xipki.security.pkcs12.SoftwareKeypairGenerator;
 import org.xipki.util.exception.ObjectCreationException;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -26,8 +23,7 @@ public class DfltKeypairGeneratorFactory implements KeypairGeneratorFactory {
 
   private static final String TYPE_PKCS11 = "pkcs11";
 
-  private static final Set<String> types = Collections.unmodifiableSet(
-      new HashSet<>(Arrays.asList(TYPE_SOFTWARE, TYPE_PKCS11)));
+  private static final Set<String> types = Set.of(TYPE_SOFTWARE, TYPE_PKCS11);
 
   private P11CryptServiceFactory p11CryptServiceFactory;
 

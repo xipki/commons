@@ -174,13 +174,7 @@ public abstract class XiAction implements Action {
     File tmpFile = expandFilepath(file);
     File parent = tmpFile.getParentFile();
     if (parent != null) {
-      if (parent.exists()) {
-        if (!parent.isDirectory()) {
-          throw new IOException("The path " + parent.getPath() + " is not a directory.");
-        }
-      } else {
-        parent.mkdirs();
-      }
+      IoUtil.mkdirs(parent);
     }
 
     try (InputStream is = new ByteArrayInputStream(encoded)) {

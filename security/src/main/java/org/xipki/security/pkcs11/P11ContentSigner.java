@@ -17,6 +17,7 @@ import org.xipki.security.XiSecurityException;
 import org.xipki.security.util.GMUtil;
 import org.xipki.security.util.PKCS1Util;
 import org.xipki.security.util.SignerUtil;
+import org.xipki.util.Args;
 import org.xipki.util.LogUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -32,7 +33,6 @@ import java.util.Map;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
 import static org.xipki.security.SignAlgo.*;
-import static org.xipki.util.Args.notNull;
 
 /**
  * PKCS#11 {@link XiContentSigner}.
@@ -51,8 +51,8 @@ abstract class P11ContentSigner implements XiContentSigner {
   protected final byte[] encodedAlgorithmIdentifier;
 
   private P11ContentSigner(P11Key identity, SignAlgo signAlgo) throws XiSecurityException {
-    this.identity = notNull(identity, "identity");
-    this.signAlgo = notNull(signAlgo, "signAlgo");
+    this.identity = Args.notNull(identity, "identity");
+    this.signAlgo = Args.notNull(signAlgo, "signAlgo");
     try {
       this.encodedAlgorithmIdentifier = signAlgo.getAlgorithmIdentifier().getEncoded();
     } catch (IOException ex) {
@@ -178,7 +178,7 @@ abstract class P11ContentSigner implements XiContentSigner {
       }
     }
 
-    private byte[] getPlainSignature() throws XiSecurityException, TokenException {
+    private byte[] getPlainSignature() throws TokenException {
       byte[] dataToSign;
       if (outputStream instanceof ByteArrayOutputStream) {
         dataToSign = ((ByteArrayOutputStream) outputStream).toByteArray();
@@ -259,7 +259,7 @@ abstract class P11ContentSigner implements XiContentSigner {
       }
     }
 
-    private byte[] getPlainSignature() throws XiSecurityException, TokenException {
+    private byte[] getPlainSignature() throws TokenException {
       byte[] dataToSign;
       if (outputStream instanceof ByteArrayOutputStream) {
         dataToSign = ((ByteArrayOutputStream) outputStream).toByteArray();
@@ -499,7 +499,7 @@ abstract class P11ContentSigner implements XiContentSigner {
         throw new XiSecurityException("not an RSA PSS algorithm: " + signAlgo);
       }
 
-      this.random = notNull(random, "random");
+      this.random = Args.notNull(random, "random");
       HashAlgo hashAlgo = signAlgo.getHashAlgo();
 
       Long mech = algoMechMap.get(signAlgo);
@@ -655,7 +655,7 @@ abstract class P11ContentSigner implements XiContentSigner {
       }
     }
 
-    private byte[] getPlainSignature() throws XiSecurityException, TokenException {
+    private byte[] getPlainSignature() throws TokenException {
       byte[] dataToSign;
       P11Params.P11ByteArrayParams params;
       if (outputStream instanceof ByteArrayOutputStream) {

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.xipki.pkcs11.wrapper.Functions;
 import org.xipki.pkcs11.wrapper.PKCS11KeyId;
 import org.xipki.pkcs11.wrapper.TokenException;
-import org.xipki.security.XiSecurityException;
+import org.xipki.util.Args;
 import org.xipki.util.LogUtil;
 
 import java.io.IOException;
@@ -17,7 +17,6 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
-import static org.xipki.util.Args.notNull;
 
 /**
  * PKCS#11 key.
@@ -55,8 +54,8 @@ public abstract class P11Key {
   private PublicKey publicKey;
 
   protected P11Key(P11Slot slot, PKCS11KeyId keyId) {
-    this.slot = notNull(slot, "slot");
-    this.keyId = notNull(keyId, "keyId");
+    this.slot = Args.notNull(slot, "slot");
+    this.keyId = Args.notNull(keyId, "keyId");
   }
 
   public P11Key sign(Boolean sign) {
@@ -118,7 +117,7 @@ public abstract class P11Key {
   }
 
   public byte[] sign(long mechanism, P11Params parameters, byte[] content) throws TokenException {
-    notNull(content, "content");
+    Args.notNull(content, "content");
 
     if (!supportsSign(mechanism)) {
       throw new TokenException("this identity is not suitable for sign with " + ckmCodeToName(mechanism));
@@ -150,7 +149,7 @@ public abstract class P11Key {
    */
   protected abstract byte[] sign0(long mechanism, P11Params parameters, byte[] content) throws TokenException;
 
-  public byte[] digestSecretKey(long mechanism) throws TokenException, XiSecurityException {
+  public byte[] digestSecretKey(long mechanism) throws TokenException {
     if (!supportsDigest(mechanism)) {
       throw new TokenException("cannot digest this identity with " + ckmCodeToName(mechanism));
     }

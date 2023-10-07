@@ -3,7 +3,7 @@
 
 package org.xipki.security.pkcs11;
 
-import static org.xipki.util.Args.notNull;
+import org.xipki.util.Args;
 
 /**
  * PKCS#11 cryptographic service.
@@ -17,7 +17,7 @@ public class P11CryptService {
   private final P11Module module;
 
   public P11CryptService(P11Module module) {
-    this.module = notNull(module, "module");
+    this.module = Args.notNull(module, "module");
   }
 
   public P11Module getModule() {

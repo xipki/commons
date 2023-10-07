@@ -77,9 +77,7 @@ public class ProcessLog {
     final int lineLength = getLineLength();
 
     // first header line
-    for (int i = 0; i < lineLength; i++) {
-      sb.append('-');
-    }
+    sb.append("-".repeat(Math.max(0, lineLength)));
     sb.append('\n');
 
     // second header line
@@ -127,9 +125,7 @@ public class ProcessLog {
     StringBuilder sb = new StringBuilder().append('\n');
 
     final int lineLength = getLineLength();
-    for (int i = 0; i < lineLength; i++) {
-      sb.append('-');
-    }
+    sb.append("-".repeat(Math.max(0, lineLength)));
 
     System.out.println(sb);
     System.out.flush();

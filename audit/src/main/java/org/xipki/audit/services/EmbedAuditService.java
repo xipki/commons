@@ -10,7 +10,6 @@ import org.xipki.audit.AuditLevel;
 import org.xipki.audit.AuditService;
 import org.xipki.audit.PciAuditEvent;
 import org.xipki.password.PasswordResolver;
-import org.xipki.password.PasswordResolverException;
 import org.xipki.util.*;
 import org.xipki.util.exception.InvalidConfException;
 
@@ -71,14 +70,13 @@ public class EmbedAuditService implements AuditService {
   public void init(String conf) {
     try {
       init(conf, null);
-    } catch (PasswordResolverException | InvalidConfException ex) {
+    } catch (InvalidConfException ex) {
       throw new IllegalStateException(ex);
     }
   }
 
   @Override
-  public void init(String conf, PasswordResolver passwordResolver)
-      throws PasswordResolverException, InvalidConfException {
+  public void init(String conf, PasswordResolver passwordResolver) throws InvalidConfException {
     ConfPairs confPairs = new ConfPairs(conf);
     String str = confPairs.value(KEY_SIZE);
 
@@ -112,7 +110,11 @@ public class EmbedAuditService implements AuditService {
 
     File logFile = new File(logFilePath).getAbsoluteFile();
     this.logDir = logFile.getParentFile();
-    this.logDir.mkdirs();
+    try {
+      IoUtil.mkdirs(this.logDir);
+    } catch (IOException e) {
+      throw new InvalidConfException("error mkdirs for " + this.logDir.getPath());
+    }
 
     String fileName = logFile.getName();
     int idx = fileName.lastIndexOf('.');
@@ -158,7 +160,7 @@ public class EmbedAuditService implements AuditService {
           for (int i = 1; ;i++) {
             File renameTo = new File(logDir, writerFileCoreName + "-" + i + logFileNameSuffix);
             if (!renameTo.exists()) {
-              writerPath.toFile().renameTo(renameTo);
+              IoUtil.renameTo(writerPath.toFile(), renameTo);
               break;
             }
           }

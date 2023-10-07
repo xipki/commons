@@ -5,6 +5,7 @@ package org.xipki.security.pkcs12;
 
 import org.xipki.security.*;
 import org.xipki.security.util.KeyUtil;
+import org.xipki.util.Args;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -18,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import static org.xipki.util.Args.notNull;
-import static org.xipki.util.Args.positive;
-
 /**
  * Builder of PKCS#12 MAC signers.
  *
@@ -33,7 +31,7 @@ public class P12MacContentSignerBuilder {
   private final SecretKey key;
 
   public P12MacContentSignerBuilder(SecretKey key) {
-    this.key = notNull(key, "key");
+    this.key = Args.notNull(key, "key");
   }
 
   /**
@@ -45,9 +43,10 @@ public class P12MacContentSignerBuilder {
     if (!"JCEKS".equalsIgnoreCase(keystoreType)) {
       throw new IllegalArgumentException("unsupported keystore type: " + keystoreType);
     }
-    notNull(keystoreStream, "keystoreStream");
-    notNull(keystorePassword, "keystorePassword");
-    notNull(keyPassword, "keyPassword");
+
+    Args.notNull(keystoreStream, "keystoreStream");
+    Args.notNull(keystorePassword, "keystorePassword");
+    Args.notNull(keyPassword, "keyPassword");
 
     try {
       KeyStore ks = KeyUtil.getInKeyStore(keystoreType);
@@ -78,10 +77,8 @@ public class P12MacContentSignerBuilder {
 
   public ConcurrentContentSigner createSigner(SignAlgo sigAlgo, int parallelism)
       throws XiSecurityException {
-    notNull(sigAlgo, "sigAlgo");
-    positive(parallelism, "parallelism");
-
-    List<XiContentSigner> signers = new ArrayList<>(parallelism);
+    Args.notNull(sigAlgo, "sigAlgo");
+    List<XiContentSigner> signers = new ArrayList<>(Args.positive(parallelism, "parallelism"));
 
     for (int i = 0; i < parallelism; i++) {
       XiContentSigner signer = sigAlgo.isGmac()

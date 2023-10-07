@@ -4,7 +4,6 @@
 package org.xipki.security.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,7 +37,7 @@ public class JSON {
 
     @Override
     public Instant deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-        throws IOException, JacksonException {
+        throws IOException {
       return Instant.parse(jsonParser.getValueAsString());
     }
 
@@ -46,7 +45,7 @@ public class JSON {
 
   public static class XiJsonModule extends SimpleModule {
 
-    public  static XiJsonModule INSTANCE = new XiJsonModule();
+    public static final XiJsonModule INSTANCE = new XiJsonModule();
     public XiJsonModule() {
       addSerializer(Instant.class,   new InstantSerializer());
       addDeserializer(Instant.class, new InstantDeserializer());

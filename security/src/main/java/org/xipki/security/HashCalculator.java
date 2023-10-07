@@ -5,6 +5,7 @@ package org.xipki.security;
 
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.operator.RuntimeOperatorException;
+import org.xipki.util.Args;
 import org.xipki.util.Base64;
 import org.xipki.util.Hex;
 import org.xipki.util.concurrent.ConcurrentBag;
@@ -12,8 +13,6 @@ import org.xipki.util.concurrent.ConcurrentBagEntry;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Utility class to calculate hash values.
@@ -111,10 +110,9 @@ class HashCalculator {
   }
 
   public static byte[] hash(HashAlgo hashAlgo, byte[]... datas) {
-    notNull(hashAlgo, "hashAlgo");
-    notNull(datas, "datas");
+    Args.notNull(datas, "datas");
 
-    if (!MDS_MAP.containsKey(hashAlgo)) {
+    if (!MDS_MAP.containsKey(Args.notNull(hashAlgo, "hashAlgo"))) {
       throw new IllegalArgumentException("unknown hash algo " + hashAlgo);
     }
 
@@ -151,10 +149,9 @@ class HashCalculator {
   } // method hash
 
   public static byte[] hash(HashAlgo hashAlgo, byte[] data, int offset, int len) {
-    notNull(hashAlgo, "hashAlgo");
-    notNull(data, "data");
+    Args.notNull(hashAlgo, "hashAlgo");
 
-    if (data.length - offset < len) {
+    if (Args.notNull(data, "data").length - offset < len) {
       throw new IndexOutOfBoundsException("data.length - offset < len");
     }
 

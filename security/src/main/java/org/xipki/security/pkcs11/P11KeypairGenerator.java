@@ -12,6 +12,7 @@ import org.xipki.security.EdECConstants;
 import org.xipki.security.KeypairGenerator;
 import org.xipki.security.XiSecurityException;
 import org.xipki.security.util.DSAParameterCache;
+import org.xipki.util.Args;
 import org.xipki.util.ConfPairs;
 
 import java.io.IOException;
@@ -21,7 +22,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
-import static org.xipki.util.Args.notNull;
 
 /**
  * PKCS#11 {@link P11KeypairGenerator}.
@@ -37,14 +37,12 @@ public class P11KeypairGenerator extends KeypairGenerator {
   protected P11Slot slot;
 
   public P11KeypairGenerator(P11CryptServiceFactory cryptServiceFactory) {
-    this.cryptServiceFactory = notNull(cryptServiceFactory, "cryptService");
+    this.cryptServiceFactory = Args.notNull(cryptServiceFactory, "cryptService");
   }
 
   @Override
   public void initialize0(ConfPairs conf, PasswordResolver passwordResolver) throws XiSecurityException {
-    notNull(conf, "conf");
-
-    String moduleName = conf.value("module");
+    String moduleName = Args.notNull(conf, "conf").value("module");
     String str = conf.value("slot");
     Integer slotIndex = (str == null) ? null : Integer.parseInt(str);
 

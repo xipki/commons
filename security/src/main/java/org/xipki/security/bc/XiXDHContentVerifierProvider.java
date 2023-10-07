@@ -15,6 +15,7 @@ import org.xipki.security.DHSigStaticKeyCertPair;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.HashAlgo;
 import org.xipki.security.ObjectIdentifiers.Xipki;
+import org.xipki.util.Args;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
@@ -27,8 +28,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.util.Arrays;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * {@link ContentVerifierProvider} for the algorithm X25519 static HMAC (XiPKI own
@@ -110,10 +109,9 @@ public class XiXDHContentVerifierProvider implements ContentVerifierProvider {
 
   public XiXDHContentVerifierProvider(PublicKey verifyKey, DHSigStaticKeyCertPair ownerKeyAndCert)
       throws InvalidKeyException {
-    notNull(verifyKey, "verifyKey");
-    notNull(ownerKeyAndCert, "ownerKeyAndCert");
+    Args.notNull(ownerKeyAndCert, "ownerKeyAndCert");
 
-    String keyAlgName = verifyKey.getAlgorithm();
+    String keyAlgName = Args.notNull(verifyKey, "verifyKey").getAlgorithm();
 
     HashAlgo hash;
     if (EdECConstants.X25519.equalsIgnoreCase(keyAlgName)) {

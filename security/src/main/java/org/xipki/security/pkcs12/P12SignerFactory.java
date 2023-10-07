@@ -12,7 +12,6 @@ import org.xipki.util.IoUtil;
 import org.xipki.util.StringUtil;
 import org.xipki.util.exception.ObjectCreationException;
 
-import javax.crypto.NoSuchPaddingException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +19,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 /**
  * {@link SignerFactory} for the types pkcs12 and jceks.
@@ -34,8 +34,7 @@ public class P12SignerFactory implements SignerFactory {
   private static final String TYPE_PKCS12 = "pkcs12";
   private static final String TYPE_JCEKS = "jceks";
 
-  private static final Set<String> types = Collections.unmodifiableSet(
-      new HashSet<>(Arrays.asList(TYPE_PKCS12, TYPE_JCEKS)));
+  private static final Set<String> types = Set.of(TYPE_PKCS12, TYPE_JCEKS);
 
   private SecurityFactory securityFactory;
 
@@ -141,7 +140,7 @@ public class P12SignerFactory implements SignerFactory {
           return signerBuilder.createSigner(sigAlgo, parallelism, securityFactory.getRandom4Sign());
         }
       }
-    } catch (NoSuchAlgorithmException | NoSuchPaddingException | XiSecurityException | IOException ex) {
+    } catch (NoSuchAlgorithmException | XiSecurityException | IOException ex) {
       throw new ObjectCreationException(String.format("%s: %s", ex.getClass().getName(), ex.getMessage()));
     }
   } // method newSigner

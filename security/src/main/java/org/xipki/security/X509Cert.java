@@ -11,6 +11,7 @@ import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.security.util.X509Util;
+import org.xipki.util.Args;
 import org.xipki.util.Hex;
 
 import java.io.IOException;
@@ -22,8 +23,6 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.util.Arrays;
-
-import static org.xipki.util.Args.notNull;
 
 /**
  * Wrapper to an {@link X509Certificate}.
@@ -90,7 +89,7 @@ public class X509Cert {
 
   public X509Cert(X509Certificate cert, byte[] encoded) {
     this.bcInstance = null;
-    this.jceInstance = notNull(cert, "cert");
+    this.jceInstance = Args.notNull(cert, "cert");
     this.encoded = encoded;
 
     this.notBefore = cert.getNotBefore().toInstant();
@@ -112,7 +111,7 @@ public class X509Cert {
   }
 
   public X509Cert(X509CertificateHolder cert, byte[] encoded) {
-    this.bcInstance = notNull(cert, "cert");
+    this.bcInstance = Args.notNull(cert, "cert");
     this.jceInstance = null;
     this.encoded = encoded;
 
