@@ -33,8 +33,8 @@ public class CborDecoder implements AutoCloseable {
         m_is = (is instanceof PushbackInputStream) ? (PushbackInputStream) is : new PushbackInputStream(is);
     }
 
-    private static void fail(String msg, Object... args) throws IOException {
-        throw new IOException(String.format(msg, args));
+    private static void fail(String msg, Object... args) throws DecodeException {
+        throw new DecodeException(String.format(msg, args));
     }
 
     private static String lengthToString(int len) {
@@ -71,7 +71,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the number of elements in the array to read, or -1 in case of infinite-length arrays.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public long readArrayLength() throws IOException {
+    public long readArrayLength() throws IOException, DecodeException {
         return readMajorTypeWithSize(CborConstants.TYPE_ARRAY);
     }
 
@@ -81,7 +81,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read boolean.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public boolean readBoolean() throws IOException {
+    public boolean readBoolean() throws IOException, DecodeException {
         int b = readMajorType(CborConstants.TYPE_FLOAT_SIMPLE);
         if (b != CborConstants.FALSE && b != CborConstants.TRUE) {
             fail("Unexpected boolean value: %d!", b);
@@ -95,10 +95,8 @@ public class CborDecoder implements AutoCloseable {
      * @return always <code>null</code>.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public Object readBreak() throws IOException {
+    public void readBreak() throws IOException, DecodeException {
         readMajorTypeExact(CborConstants.TYPE_FLOAT_SIMPLE, CborConstants.BREAK);
-
-        return null;
     }
 
     /**
@@ -107,7 +105,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read byte string, or <code>null</code>.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public byte[] readByteString() throws IOException {
+    public byte[] readByteString() throws IOException, DecodeException {
         CborType type = peekType();
         if (isNull(type)) {
             read1Byte();
@@ -130,7 +128,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the number of bytes in the string to read, or -1 in case of infinite-length strings.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public long readByteStringLength() throws IOException {
+    public long readByteStringLength() throws IOException, DecodeException {
         return readMajorTypeWithSize(CborConstants.TYPE_BYTE_STRING);
     }
 
@@ -140,7 +138,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read double value, values from {@link Float#MIN_VALUE} to {@link Float#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public double readDouble() throws IOException {
+    public double readDouble() throws IOException, DecodeException {
         readMajorTypeExact(CborConstants.TYPE_FLOAT_SIMPLE, CborConstants.DOUBLE_PRECISION_FLOAT);
 
         return Double.longBitsToDouble(readUInt64());
@@ -152,7 +150,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read float value, values from {@link Float#MIN_VALUE} to {@link Float#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public float readFloat() throws IOException {
+    public float readFloat() throws IOException, DecodeException {
         readMajorTypeExact(CborConstants.TYPE_FLOAT_SIMPLE, CborConstants.SINGLE_PRECISION_FLOAT);
 
         return Float.intBitsToFloat((int) readUInt32());
@@ -164,7 +162,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read half-precision float value, values from {@link Float#MIN_VALUE} to {@link Float#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public double readHalfPrecisionFloat() throws IOException {
+    public double readHalfPrecisionFloat() throws IOException, DecodeException {
         readMajorTypeExact(CborConstants.TYPE_FLOAT_SIMPLE, CborConstants.HALF_PRECISION_FLOAT);
 
         int half = readUInt16();
@@ -191,7 +189,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read integer value, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public long readLong() throws IOException {
+    public long readLong() throws IOException, DecodeException {
         int ib = m_is.read();
 
         // in case of negative integers, extends the sign to all bits; otherwise zero...
@@ -206,7 +204,7 @@ public class CborDecoder implements AutoCloseable {
      * read the small integer value, values from [-65536..65535] are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
      */
-    public int readInt16() throws IOException {
+    public int readInt16() throws IOException, DecodeException {
         int ib = m_is.read();
 
         // in case of negative integers, extends the sign to all bits; otherwise zero...
@@ -221,7 +219,7 @@ public class CborDecoder implements AutoCloseable {
      * read the small integer value, values in the range [-4294967296..4294967295] are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
      */
-    public long readInt32() throws IOException {
+    public long readInt32() throws IOException, DecodeException {
         int ib = m_is.read();
 
         // in case of negative integers, extends the sign to all bits; otherwise zero...
@@ -236,7 +234,7 @@ public class CborDecoder implements AutoCloseable {
      * read the small integer value, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
      */
-    public long readInt64() throws IOException {
+    public long readInt64() throws IOException, DecodeException {
         int ib = m_is.read();
 
         // in case of negative integers, extends the sign to all bits; otherwise zero...
@@ -251,7 +249,7 @@ public class CborDecoder implements AutoCloseable {
      * read the small integer value, values in the range [-256..255] are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
      */
-    public int readInt8() throws IOException {
+    public int readInt8() throws IOException, DecodeException {
         int ib = m_is.read();
 
         // in case of negative integers, extends the sign to all bits; otherwise zero...
@@ -266,7 +264,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the number of entries in the map, &gt;= 0.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public long readMapLength() throws IOException {
+    public long readMapLength() throws IOException, DecodeException {
         return readMajorTypeWithSize(CborConstants.TYPE_MAP);
     }
 
@@ -276,9 +274,8 @@ public class CborDecoder implements AutoCloseable {
      * @return always <code>null</code>.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public Object readNull() throws IOException {
+    public void readNull() throws IOException, DecodeException {
         readMajorTypeExact(CborConstants.TYPE_FLOAT_SIMPLE, CborConstants.NULL);
-        return null;
     }
 
     /**
@@ -287,7 +284,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read byte value.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public byte readSimpleValue() throws IOException {
+    public byte readSimpleValue() throws IOException, DecodeException {
         readMajorTypeExact(CborConstants.TYPE_FLOAT_SIMPLE, CborConstants.ONE_BYTE);
         return (byte) readUInt8();
     }
@@ -298,7 +295,7 @@ public class CborDecoder implements AutoCloseable {
      * read the small integer value, values in the range [-24..23] are supported.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
      */
-    public int readSmallInt() throws IOException {
+    public int readSmallInt() throws IOException, DecodeException {
         int ib = m_is.read();
 
         // in case of negative integers, extends the sign to all bits; otherwise zero...
@@ -313,7 +310,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read tag value.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public long readTag() throws IOException {
+    public long readTag() throws IOException, DecodeException {
         return readUInt(readMajorType(CborConstants.TYPE_TAG), false /* breakAllowed */);
     }
 
@@ -323,7 +320,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read UTF-8 encoded string, or <code>null</code>.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public String readTextString() throws IOException {
+    public String readTextString() throws IOException, DecodeException {
         CborType type = peekType();
         if (isNull(type)) {
             read1Byte();
@@ -346,7 +343,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the length of the string to read, or -1 in case of infinite-length strings.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public long readTextStringLength() throws IOException {
+    public long readTextStringLength() throws IOException, DecodeException {
         return readMajorTypeWithSize(CborConstants.TYPE_TEXT_STRING);
     }
 
@@ -356,9 +353,8 @@ public class CborDecoder implements AutoCloseable {
      * @return always <code>null</code>.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    public Object readUndefined() throws IOException {
+    public void readUndefined() throws IOException, DecodeException {
         readMajorTypeExact(CborConstants.TYPE_FLOAT_SIMPLE, CborConstants.UNDEFINED);
-        return null;
     }
 
     /**
@@ -368,7 +364,7 @@ public class CborDecoder implements AutoCloseable {
      * @return either -1 if the major type was an signed integer, or 0 otherwise.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    protected long expectIntegerType(int ib) throws IOException {
+    protected long expectIntegerType(int ib) throws DecodeException {
         int majorType = ((ib & 0xFF) >>> 5);
         if ((majorType != CborConstants.TYPE_UNSIGNED_INTEGER) && (majorType != CborConstants.TYPE_NEGATIVE_INTEGER)) {
             fail("Unexpected type: %s, expected type %s or %s!", CborType.getName(majorType), CborType.getName(CborConstants.TYPE_UNSIGNED_INTEGER),
@@ -384,7 +380,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read subtype, or payload, of the read major type.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    protected int readMajorType(int majorType) throws IOException {
+    protected int readMajorType(int majorType) throws IOException, DecodeException {
         int ib = m_is.read();
         if (majorType != ((ib >>> 5) & 0x07)) {
             fail("Unexpected type: %s, expected: %s!", CborType.getName(ib), CborType.getName(majorType));
@@ -399,7 +395,7 @@ public class CborDecoder implements AutoCloseable {
      * @param subtype the expected subtype.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    protected void readMajorTypeExact(int majorType, int subtype) throws IOException {
+    protected void readMajorTypeExact(int majorType, int subtype) throws IOException, DecodeException {
         int st = readMajorType(majorType);
         if ((st ^ subtype) != 0) {
             fail("Unexpected subtype: %d, expected: %d!", st, subtype);
@@ -413,7 +409,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the number of succeeding bytes, &gt;= 0, or -1 if an infinite-length type is read.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying input stream.
      */
-    protected long readMajorTypeWithSize(int majorType) throws IOException {
+    protected long readMajorTypeWithSize(int majorType) throws IOException, DecodeException {
         return readUInt(readMajorType(majorType), true /* breakAllowed */);
     }
 
@@ -424,7 +420,7 @@ public class CborDecoder implements AutoCloseable {
      * @return the read unsigned integer, as long value.
      * @throws IOException in case of I/O problems reading the unsigned integer from the underlying input stream.
      */
-    protected long readUInt(int length, boolean breakAllowed) throws IOException {
+    protected long readUInt(int length, boolean breakAllowed) throws IOException, DecodeException {
         long result = -1;
         if (length < CborConstants.ONE_BYTE) {
             result = length;
@@ -496,8 +492,9 @@ public class CborDecoder implements AutoCloseable {
      * @return the read unsigned integer, as long value.
      * @throws IOException in case of I/O problems reading the unsigned integer from the underlying input stream.
      */
-    protected long readUIntExact(int expectedLength, int length) throws IOException {
-        if (((expectedLength == -1) && (length >= CborConstants.ONE_BYTE)) || ((expectedLength >= 0) && (length != expectedLength))) {
+    protected long readUIntExact(int expectedLength, int length) throws IOException, DecodeException {
+        if ((expectedLength == -1 && length >= CborConstants.ONE_BYTE)
+            || (expectedLength >= 0 && length != expectedLength)) {
             fail("Unexpected payload/length! Expected %s, but got %s.", lengthToString(expectedLength),
                 lengthToString(length));
         }
@@ -525,18 +522,18 @@ public class CborDecoder implements AutoCloseable {
      * @return whether it is null.
      * @throws IOException if cannot decode the stream or is not an array with given length.
      */
-    public boolean readNullOrArrayLength(int expectedLen) throws IOException {
+    public boolean readNullOrArrayLength(int expectedLen) throws DecodeException, IOException {
         Integer len = readNullOrArrayLength();
         if (len == null) {
             return true;
         } else if (len != expectedLen) {
-            throw new IOException("stream has an array but the length != " + expectedLen +": " + len);
+            throw new DecodeException("stream has an array but the length != " + expectedLen +": " + len);
         } else {
             return false;
         }
     }
 
-    public Integer readNullOrArrayLength() throws IOException {
+    public Integer readNullOrArrayLength() throws IOException, DecodeException {
         CborType type = peekType();
         if (isNull(type)) {
             read1Byte();
@@ -544,7 +541,7 @@ public class CborDecoder implements AutoCloseable {
         } else if (type.getMajorType() == CborConstants.TYPE_ARRAY) {
             return (int) readArrayLength();
         } else {
-            throw new IOException("stream does not have an array");
+            throw new DecodeException("stream does not have an array");
         }
     }
 
@@ -561,7 +558,7 @@ public class CborDecoder implements AutoCloseable {
             && type.getAdditionalInfo() == CborConstants.NULL;
     }
 
-    public Boolean readBooleanObj() throws IOException {
+    public Boolean readBooleanObj() throws IOException, DecodeException {
         CborType type = peekType();
         if (isNull(type)) {
             read1Byte();
@@ -569,11 +566,11 @@ public class CborDecoder implements AutoCloseable {
         } else if (type.getMajorType() == CborConstants.TYPE_FLOAT_SIMPLE) {
             return readBoolean();
         } else {
-            throw new IOException("stream does not have integer");
+            throw new DecodeException("stream does not have integer");
         }
     }
 
-    public Long readLongObj() throws IOException {
+    public Long readLongObj() throws IOException, DecodeException {
         CborType type = peekType();
         if (isNull(type)) {
             read1Byte();
@@ -582,11 +579,11 @@ public class CborDecoder implements AutoCloseable {
             || type.getMajorType() == CborConstants.TYPE_NEGATIVE_INTEGER) {
             return readLong();
         } else {
-            throw new IOException("stream does not have integer");
+            throw new DecodeException("stream does not have integer");
         }
     }
 
-    public Integer readIntObj() throws IOException {
+    public Integer readIntObj() throws IOException, DecodeException {
         CborType type = peekType();
         if (isNull(type)) {
             read1Byte();
@@ -595,16 +592,16 @@ public class CborDecoder implements AutoCloseable {
             || type.getMajorType() == CborConstants.TYPE_NEGATIVE_INTEGER) {
             return readInt();
         } else {
-            throw new IOException("stream does not have integer");
+            throw new DecodeException("stream does not have integer");
         }
     }
 
-    public BigInteger readBigInt() throws IOException {
+    public BigInteger readBigInt() throws IOException, DecodeException {
         byte[] bytes = readByteString();
         return bytes == null ? null : new BigInteger(bytes);
     }
 
-    public String[] readTextStrings() throws IOException {
+    public String[] readTextStrings() throws IOException, DecodeException {
         Integer arrayLen = readNullOrArrayLength();
         if (arrayLen == null) {
             return null;
@@ -618,7 +615,7 @@ public class CborDecoder implements AutoCloseable {
         return ret;
     }
 
-    public byte[][] readByteStrings() throws IOException {
+    public byte[][] readByteStrings() throws IOException, DecodeException {
         Integer arrayLen = readNullOrArrayLength();
         if (arrayLen == null) {
             return null;
@@ -632,7 +629,7 @@ public class CborDecoder implements AutoCloseable {
         return ret;
     }
 
-    public BigInteger[] readBigInts() throws IOException {
+    public BigInteger[] readBigInts() throws IOException, DecodeException {
         byte[][] bytes = readByteStrings();
         if (bytes == null) {
             return null;
@@ -646,10 +643,10 @@ public class CborDecoder implements AutoCloseable {
         return ret;
     }
 
-    public int readInt() throws IOException {
+    public int readInt() throws IOException, DecodeException {
         long v = readLong();
         if (v < Integer.MIN_VALUE || v > Integer.MAX_VALUE) {
-            throw new IOException("value is out of range of int32");
+            throw new DecodeException("value is out of range of int32");
         }
         return (int) v;
     }
