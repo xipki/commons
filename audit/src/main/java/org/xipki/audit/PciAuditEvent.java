@@ -204,11 +204,9 @@ public class PciAuditEvent {
   } // method isBlank
 
   private static String replaceDelimiter(String fieldValue) {
-    if (fieldValue == null || fieldValue.isEmpty()) {
-      return fieldValue;
-    }
-
-    return fieldValue.replace(DEFAULT_DELIMITER, DEFAULT_REPLACE_DELIMITER);
+    return (fieldValue == null || fieldValue.isEmpty())
+        ? fieldValue
+        : fieldValue.replace(DEFAULT_DELIMITER, DEFAULT_REPLACE_DELIMITER);
   } // method replaceDelimiter
 
   private static String getHostAddress() {

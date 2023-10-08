@@ -95,22 +95,15 @@ public class ScriptRunner {
     this.connection = connection;
     this.stopOnError = stopOnError;
     File logFile = new File("create_db.log");
-    File errorLogFile = new File("create_db_error.log");
     try {
-      if (logFile.exists()) {
-        logWriter = new PrintWriter(new FileWriter(logFile, true));
-      } else {
-        logWriter = new PrintWriter(new FileWriter(logFile, false));
-      }
+      logWriter = new PrintWriter(new FileWriter(logFile, logFile.exists()));
     } catch(IOException e){
       System.err.println("Unable to access or create the db_create log");
     }
+
+    File errorLogFile = new File("create_db_error.log");
     try {
-      if (errorLogFile.exists()) {
-        errorLogWriter = new PrintWriter(new FileWriter(errorLogFile, true));
-      } else {
-        errorLogWriter = new PrintWriter(new FileWriter(errorLogFile, false));
-      }
+      errorLogWriter = new PrintWriter(new FileWriter(errorLogFile, errorLogFile.exists()));
     } catch(IOException e){
       System.err.println("Unable to access or create the db_create error log");
     }
@@ -148,8 +141,7 @@ public class ScriptRunner {
    * @param filepath - the filepath of the script to run. May be relative to the userDirectory.
    */
   public void runScript(String filepath) throws IOException, SQLException {
-    File file = new File(filepath);
-    this.runScript(new BufferedReader(new FileReader(file)));
+    this.runScript(new BufferedReader(new FileReader(new File(filepath))));
   }
 
   /**
@@ -317,8 +309,6 @@ public class ScriptRunner {
   private String getDelimiter() {
     return delimiter;
   }
-
-  @SuppressWarnings("UseOfSystemOutOrSystemErr")
 
   private void print(Object o) {
     if (logWriter != null) {

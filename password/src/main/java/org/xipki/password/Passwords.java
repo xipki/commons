@@ -66,7 +66,7 @@ public class Passwords {
 
     List<String> singlePasswordResolvers = conf.getSinglePasswordResolvers();
     // register additional SinglePasswordResolvers
-    if (Args.isNotEmpty(singlePasswordResolvers)) {
+    if (singlePasswordResolvers != null && !singlePasswordResolvers.isEmpty()) {
       for (String className : singlePasswordResolvers) {
         try {
           Class<?> clazz = Class.forName(className);

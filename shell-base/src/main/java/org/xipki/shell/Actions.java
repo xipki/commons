@@ -462,7 +462,7 @@ public class Actions {
       }
 
       FileUtils.copyFile(sourceFile, destFile, true);
-      sourceFile.delete();
+      IoUtil.deleteFile0(sourceFile);
 
       return null;
     }
@@ -566,7 +566,7 @@ public class Actions {
         }
       } else {
         if (force || confirm("Do you want to remove file " + targetPath, 3)) {
-          target.delete();
+          IoUtil.deleteFile0(target);
           println("removed file " + targetPath);
         }
       }

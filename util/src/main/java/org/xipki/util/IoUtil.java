@@ -186,6 +186,12 @@ public class IoUtil {
     return deleteFile(file, false);
   }
 
+  public static void deleteFile0(File file) throws IOException {
+    if (!deleteFile(file)) {
+      throw new IOException("Could not delete " + file.getPath());
+    }
+  }
+
   public static boolean deleteFile(File file, boolean prependBaseDir) {
     file = expandFilepath(file, prependBaseDir);
     if (file.exists()) {

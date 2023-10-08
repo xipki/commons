@@ -132,7 +132,7 @@ public class FileUtils {
    * @throws FileNotFoundException if the file was not found
    * @throws IOException in case deletion is unsuccessful
    */
-  private static void forceDelete(File file) throws IOException {
+  static void forceDelete(File file) throws IOException {
     if (file.isDirectory()) {
       deleteDirectory(file);
       return;

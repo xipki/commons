@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Callback to get password.
@@ -68,11 +69,9 @@ public interface PasswordCallback {
         throw new PasswordResolverException("no password is specified in file " + passwordFile);
       }
 
-      if (Args.startsWithIgnoreCase(passwordHint, OBFPasswordService.PROTOCOL_OBF + ":")) {
-        return OBFPasswordService.deobfuscate(passwordHint).toCharArray();
-      } else {
-        return passwordHint.toCharArray();
-      }
+      return (Args.startsWithIgnoreCase(passwordHint, OBFPasswordService.PROTOCOL_OBF + ":"))
+          ? OBFPasswordService.deobfuscate(passwordHint).toCharArray()
+          : passwordHint.toCharArray();
     } // method getPassword
 
     @Override
@@ -107,18 +106,14 @@ public interface PasswordCallback {
       for (int i = 0; i < tries; i++) {
         char[] password;
         if (quorum == 1) {
-          password = SecurePasswordInputPanel.readPassword(tmpPrompt);
-          if (password == null) {
-            throw new PasswordResolverException("user has cancelled");
-          }
+          password = Optional.ofNullable(SecurePasswordInputPanel.readPassword(tmpPrompt))
+              .orElseThrow(() -> new PasswordResolverException("user has cancelled"));
         } else {
           char[][] passwordParts = new char[quorum][];
           for (int j = 0; j < quorum; j++) {
             String promptPart = tmpPrompt + " (part " + (j + 1) + "/" + quorum + ")";
-            passwordParts[j] = SecurePasswordInputPanel.readPassword(promptPart);
-            if (passwordParts[j] == null) {
-              throw new PasswordResolverException("user has cancelled");
-            }
+            passwordParts[j] = Optional.ofNullable(SecurePasswordInputPanel.readPassword(promptPart))
+                .orElseThrow(() -> new PasswordResolverException("user has cancelled"));
           }
           password = Args.merge(passwordParts);
         }
@@ -162,11 +157,8 @@ public interface PasswordCallback {
 
     @Override
     public char[] getPassword(String prompt, String testToken) throws PasswordResolverException {
-      if (password == null) {
-        throw new PasswordResolverException("please initialize me first");
-      }
-
-      return password;
+      return Optional.ofNullable(password)
+          .orElseThrow(() -> new PasswordResolverException("please initialize me first"));
     }
 
     @Override

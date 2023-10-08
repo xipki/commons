@@ -105,7 +105,10 @@ public interface SinglePasswordResolver {
     }
 
     public void setIterationCount(int iterationCount) {
-      this.iterationCount = Args.min(iterationCount, "iterationCount", 1000);
+      if (iterationCount < 1000) {
+        throw new IllegalArgumentException("iterationCount may not be less than 1000: " + iterationCount);
+      }
+      this.iterationCount = iterationCount;
     }
 
   } // class PBE

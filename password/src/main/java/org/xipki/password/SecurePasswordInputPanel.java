@@ -5,6 +5,7 @@ package org.xipki.password;
 
 import javax.swing.*;
 import java.awt.*;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -57,8 +58,9 @@ public class SecurePasswordInputPanel extends Panel {
     Set<Integer> rows = new HashSet<>(KEYS_MAP.keySet());
     final int n = rows.size();
 
+
     while (!rows.isEmpty()) {
-      int row = Args.nextInt(n);
+      int row = PBEPasswordService.random.nextInt(n);
       if (!rows.contains(row)) {
         continue;
       }

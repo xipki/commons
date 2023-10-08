@@ -4,8 +4,6 @@
 package org.xipki.password;
 
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -16,8 +14,6 @@ import java.util.Objects;
  */
 
 class Args {
-
-  private static final SecureRandom random = new SecureRandom();
 
   private Args() {
   }
@@ -70,20 +66,6 @@ class Args {
     return ret;
   }
 
-  static int nextInt(int bound) {
-    return random.nextInt(bound);
-  }
-
-  static byte[] nextBytes(int num) {
-    byte[] bytes = new byte[num];
-    random.nextBytes(bytes);
-    return bytes;
-  }
-
-  static boolean isNotEmpty(Collection<?> col) {
-    return col != null && !col.isEmpty();
-  }
-
   static int positive(int argument, String name) {
     if (argument < 1) {
       throw new IllegalArgumentException(String.format("%s may not be non-positive: %d", name, argument));
@@ -91,23 +73,8 @@ class Args {
     return argument;
   }
 
-  static int min(int argument, String name, int min) {
-    if (argument < min) {
-      throw new IllegalArgumentException(String.format("%s may not be less than %d: %d", name, min, argument));
-    }
-    return argument;
-  }
-
-  static int range(int argument, String name, int min, int max) {
-    if (argument < min || argument > max) {
-      throw new IllegalArgumentException(String.format(
-          "%s may not be out of the range [%d, %d]: %d", name, min, max, argument));
-    }
-    return argument;
-  }
-
-  static <T> T notNull(T argument, String name) {
-    return Objects.requireNonNull(argument, name + " may not be null");
+  static <T> void notNull(T argument, String name) {
+    Objects.requireNonNull(argument, name + " may not be null");
   }
 
   static String notBlank(String argument, String name) {

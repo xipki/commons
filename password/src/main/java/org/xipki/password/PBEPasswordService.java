@@ -5,6 +5,7 @@ package org.xipki.password;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -15,6 +16,8 @@ import java.util.Base64;
  * @since 2.0.0
  */
 public class PBEPasswordService {
+
+  static final SecureRandom random = new SecureRandom();
 
   public static final String PROTOCOL_PBE = "PBE";
 
@@ -84,7 +87,10 @@ public class PBEPasswordService {
 
   public static String encryptPassword(PBEAlgo algo, int iterationCount, char[] masterPassword, char[] password)
       throws PasswordResolverException {
-    Args.range(iterationCount, "iterationCount", 1, 65535);
+    if (iterationCount < 1 || iterationCount > 65535) {
+      throw new IllegalArgumentException("iterationCount may not be out of the range [1, 65535]: " + iterationCount);
+    }
+
     Args.notNull(masterPassword, "masterPassword");
     Args.notNull(password, "password");
 
@@ -92,7 +98,8 @@ public class PBEPasswordService {
     iterationCountBytes[0] = (byte) (iterationCount >>> 8);
     iterationCountBytes[1] = (byte) (iterationCount & 0xFF);
 
-    byte[] salt = Args.nextBytes(16);
+    byte[] salt = new byte[16];
+    random.nextBytes(salt);
     byte[] encrypted;
     try {
       encrypted = PasswordBasedEncryption.encrypt(algo,
