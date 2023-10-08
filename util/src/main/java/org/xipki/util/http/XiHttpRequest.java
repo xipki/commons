@@ -4,6 +4,7 @@ package org.xipki.util.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.cert.X509Certificate;
 
 /**
  * HTTP request.
@@ -32,4 +33,5 @@ public interface XiHttpRequest {
 
   String getContextPath();
 
+  X509Certificate[] getCertificateChain();
 }

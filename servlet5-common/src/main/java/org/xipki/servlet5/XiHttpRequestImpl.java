@@ -7,6 +7,7 @@ import org.xipki.util.http.XiHttpRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.cert.X509Certificate;
 
 /**
  * HTTP request wrapper.
@@ -54,6 +55,11 @@ public class XiHttpRequestImpl implements XiHttpRequest {
   @Override
   public String getContextPath() {
     return req.getContextPath();
+  }
+
+  @Override
+  public X509Certificate[] getCertificateChain() {
+    return (X509Certificate[]) req.getAttribute("jakarta.servlet.request.X509Certificate");
   }
 
   @Override
