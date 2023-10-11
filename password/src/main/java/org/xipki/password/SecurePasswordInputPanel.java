@@ -5,7 +5,6 @@ package org.xipki.password;
 
 import javax.swing.*;
 import java.awt.*;
-import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -58,7 +57,6 @@ public class SecurePasswordInputPanel extends Panel {
     Set<Integer> rows = new HashSet<>(KEYS_MAP.keySet());
     final int n = rows.size();
 
-
     while (!rows.isEmpty()) {
       int row = PBEPasswordService.random.nextInt(n);
       if (!rows.contains(row)) {
@@ -71,7 +69,7 @@ public class SecurePasswordInputPanel extends Panel {
       JPanel panel = new JPanel();
       for (String text : keys) {
         JButton button = new JButton(text);
-        button.setFont(button.getFont().deriveFont(Font.TRUETYPE_FONT));
+        button.setFont(button.getFont().deriveFont(Font.PLAIN));
         if (CLEAR.equalsIgnoreCase(text)) {
           button.setBackground(Color.red);
         } else if (Args.orEqualsIgnoreCase(text, CAPS, BACKSPACE)) {
@@ -134,7 +132,7 @@ public class SecurePasswordInputPanel extends Panel {
         tmpPrompt = "Password required";
       }
 
-      int option = JOptionPane.showOptionDialog(null, gui, tmpPrompt, JOptionPane.OK_OPTION,
+      int option = JOptionPane.showOptionDialog(null, gui, tmpPrompt, JOptionPane.DEFAULT_OPTION,
           JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
       if (option == 0) { // pressing OK button
