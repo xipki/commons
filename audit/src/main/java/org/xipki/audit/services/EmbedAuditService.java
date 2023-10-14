@@ -154,6 +154,7 @@ public class EmbedAuditService implements AuditService {
         ZonedDateTime now = ZonedDateTime.ofInstant(date, ZoneId.systemDefault());
         int yyyyMMddNow = DateUtil.getYyyyMMdd(now);
         lastMsOfToday = DateUtil.getLastMsOfDay(now);
+        writer.flush();
         writer.close();
 
         if (oldLastOfToday == lastMsOfToday) {

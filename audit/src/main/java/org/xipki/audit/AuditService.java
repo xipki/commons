@@ -14,7 +14,7 @@ import org.xipki.util.exception.InvalidConfException;
  * @since 2.0.0
  */
 
-public interface AuditService extends AutoCloseable {
+public interface AuditService {
 
   int AUDIT_EVENT = 1;
 
@@ -42,5 +42,7 @@ public interface AuditService extends AutoCloseable {
    *          Audit event. Must not be {@code null}-
    */
   void logEvent(PciAuditEvent event);
+
+  void close() throws Exception;
 
 }
