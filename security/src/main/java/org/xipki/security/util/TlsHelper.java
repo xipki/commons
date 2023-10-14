@@ -56,7 +56,11 @@ public class TlsHelper {
   private static final LruCache<String, X509Cert> clientCerts = new LruCache<>(50);
   private static final LruCache<Reference, X509Cert> clientCerts0 = new LruCache<>(50);
 
-  private static final String reverseProxyMode;
+  private static final int PROXY_MODE_GENERAL = 1;
+
+  private static final int PROXY_MODE_NO = 0;
+
+  private static final int reverseProxyMode;
 
   static {
     String propName = "org.xipki.reverseproxy.mode";
@@ -66,12 +70,12 @@ public class TlsHelper {
     }
 
     if (mode == null || "NO".equals(mode)) {
-      reverseProxyMode = null;
-    } else if ("APACHE".equals(mode)) {
-      reverseProxyMode = "APACHE";
+      reverseProxyMode = PROXY_MODE_NO;
+    } else if ("APACHE".equals(mode) || "NGINX".equals(mode) || "GENERAL".equals(mode)) {
+      reverseProxyMode = PROXY_MODE_GENERAL;
     } else {
-      LOG.error("invalid value of property {}: {} is not one of [NO, APACHE]", propName, mode);
-      reverseProxyMode = null;
+      LOG.error("ignored invalid value of property {}: {} is not one of [NO, GENERAL, APACHE, NGINX]", propName, mode);
+      reverseProxyMode = PROXY_MODE_NO;
     }
 
     LOG.info("set reverseProxyMode to {}", reverseProxyMode);
@@ -79,7 +83,7 @@ public class TlsHelper {
 
   public static X509Cert getTlsClientCert(XiHttpRequest request)
       throws IOException {
-    if (reverseProxyMode == null) {
+    if (reverseProxyMode == PROXY_MODE_NO) {
       X509Certificate[] certs = request.getCertificateChain();
       if (certs == null || certs.length < 1) {
         return null;
@@ -93,7 +97,7 @@ public class TlsHelper {
         clientCerts0.put(ref, cert);
       }
       return cert;
-    } else if ("APACHE".equals(reverseProxyMode)) {
+    } else { // { if (reverseProxyMode == PROXY_MODE_GENERAL) {
       // check whether this application is behind a reverse proxy and the TLS client
       // certificate is forwarded.
       String clientVerify = request.getHeader("SSL_CLIENT_VERIFY");
@@ -128,10 +132,7 @@ public class TlsHelper {
 
       clientCerts.put(pemClientCert, clientCert);
       return clientCert;
-    } else {
-      throw new IllegalStateException("unknown reverseProxyMode " + reverseProxyMode);
     }
-
   }
 
 }
