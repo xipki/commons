@@ -35,7 +35,14 @@ public class P12MacContentSignerBuilder {
   }
 
   /**
+   * Constructor from keystore.
    * The specified stream remains open after this method returns.
+   * @param keystoreType the keysstore type.
+   * @param keystoreStream the inputstream containing the keystore.
+   * @param keyPassword the password to read the keystore.
+   * @param keyname alias of the key in the keystore.
+   * @param keystorePassword password to read the key.
+   * @throws XiSecurityException if security error occurs.
    */
   public P12MacContentSignerBuilder(
       String keystoreType, InputStream keystoreStream, char[] keystorePassword, String keyname, char[] keyPassword)

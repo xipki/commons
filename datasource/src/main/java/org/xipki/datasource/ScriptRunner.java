@@ -90,6 +90,8 @@ public class ScriptRunner {
 
   /**
    * Default constructor
+   * @param connection the SQL connection
+   * @param stopOnError whether the process stops when error occurs.
    */
   public ScriptRunner(Connection connection, boolean stopOnError) {
     this.connection = connection;
@@ -139,6 +141,8 @@ public class ScriptRunner {
    * Runs an SQL script (read in using the Reader parameter)
    *
    * @param filepath - the filepath of the script to run. May be relative to the userDirectory.
+   * @throws SQLException if any SQL errors occur
+   * @throws IOException if there is an error reading from the Reader
    */
   public void runScript(String filepath) throws IOException, SQLException {
     this.runScript(new BufferedReader(new FileReader(new File(filepath))));
@@ -148,6 +152,8 @@ public class ScriptRunner {
    * Runs an SQL script (read in using the Reader parameter)
    *
    * @param reader - the source of the script
+   * @throws SQLException if any SQL errors occur
+   * @throws IOException if there is an error reading from the Reader
    */
   public void runScript(Reader reader) throws IOException, SQLException {
     try {
@@ -169,7 +175,7 @@ public class ScriptRunner {
 
   /**
    * Runs an SQL script (read in using the Reader parameter) using the
-   * connection passed in
+   * connection passed in.
    *
    * @param conn - the connection to use for the script
    * @param reader - the source of the script

@@ -38,7 +38,14 @@ public class DataSourceFactory {
   } // method createDataSource
 
   /**
+   * Create a {@link DataSourceWrapper} from the configuration stored in the input stream.
    * The specified stream remains open after this method returns.
+   * @param name the datasource name
+   * @param conf the configuration
+   * @param passwordResolver the password resolver.
+   * @return the created datasource wrapper.
+   * @throws PasswordResolverException if error occurs while resolving password.
+   * @throws IOException if IO error occurs while reading the input sstream.
    */
   public DataSourceWrapper createDataSource(String name, InputStream conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, IOException {

@@ -771,7 +771,10 @@ public abstract class P11Slot implements Closeable {
   }
 
   /**
+   * Print supported mechanism to the specified output stream.
    * The specified stream remains open after this method returns.
+   * @param stream the output stream.
+   * @throws IOException if IO-error occurs while writing to the output stream.
    */
   protected void printSupportedMechanism(OutputStream stream) throws IOException {
     Args.notNull(stream, "stream");

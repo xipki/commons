@@ -200,7 +200,15 @@ public class SslContextBuilder {
   }
 
   /**
+   * Load trust material from keystore in input stream.
    * The specified stream remains open after this method returns.
+   * @param instream input stream that contains the keystore.
+   * @param storePassword Keystore password.
+   * @return an SslContextbuilder which trusts the certificates in the keystore.
+   * @throws NoSuchAlgorithmException If th keystore type or other algorithms is not supported.
+   * @throws KeyStoreException if error occurs when parsing the keystore.
+   * @throws CertificateException if error occurs when parsing the certificates.
+   * @throws IOException if error occurs when reading keystore from the input stream.
    */
   public SslContextBuilder loadTrustMaterial(InputStream instream, char[] storePassword)
       throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {

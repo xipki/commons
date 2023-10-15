@@ -22,9 +22,6 @@ public interface AuditService {
 
   void init(String conf) throws InvalidConfException;
 
-  /**
-   * @since 6.0.0
-   */
   void init(String conf, PasswordResolver passwordResolver)
       throws PasswordResolverException, InvalidConfException;
 

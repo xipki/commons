@@ -49,7 +49,17 @@ public class KeypairWithCert {
   }
 
   /**
+   * Read keypair and certificate from the keystore with external certificate.
    * The specified stream remains open after this method returns.
+   *
+   * @param keystoreType the keystore type.
+   * @param keystoreStream the inputstream containing the keystore.
+   * @param keystorePassword the password to read the keystore.
+   * @param keyname the alias of key entry in the keystore.
+   * @param keyPassword the password to read the key entry.
+   * @param cert external certificate.
+   * @return keypair and certificate pair read from the keystore.
+   * @throws XiSecurityException if Security error occurs.
    */
   public static KeypairWithCert fromKeystore(
       String keystoreType, InputStream keystoreStream, char[] keystorePassword,
@@ -60,7 +70,17 @@ public class KeypairWithCert {
   }
 
   /**
+   * Read keypair and certificate from the keystore with external certificate chain.
    * The specified stream remains open after this method returns.
+   *
+   * @param keystoreType the keystore type.
+   * @param keystoreStream the inputstream containing the keystore.
+   * @param keystorePassword the password to read the keystore.
+   * @param keyname the alias of key entry in the keystore.
+   * @param keyPassword the password to read the key entry.
+   * @param certchain external certificate chain.
+   * @return keypair and certificate pair read from the keystore.
+   * @throws XiSecurityException if Security error occurs.
    */
   public static KeypairWithCert fromKeystore(
       String keystoreType, InputStream keystoreStream, char[] keystorePassword,

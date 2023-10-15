@@ -91,7 +91,13 @@ public class JSON {
   }
 
   /**
+   * Deserialize the object from the input stream.
    * The specified stream remains open after this method returns.
+   * @param jsonInputStream the input stream containing the serialized object.
+   * @param classOfT the class of deserialized object.
+   * @param <T> the object type of serialized object.
+   * @return the serialized object
+   * @throws IOException if IO error occurs while reading the stream.
    */
   public static <T> T parseObject(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
     Reader noCloseReader = new InputStreamReader(jsonInputStream) {
@@ -104,7 +110,13 @@ public class JSON {
   }
 
   /**
+   * Deserialize the object from the input stream and closes the inputstream.
    * The specified stream is closed after this method returns.
+   * @param jsonInputStream the input stream containing the serialized object.
+   * @param classOfT the class of deserialized object.
+   * @param <T> the object type of serialized object.
+   * @return the serialized object
+   * @throws IOException if IO error occurs while reading the stream.
    */
   public static <T> T parseObjectAndClose(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
     // jackson closes the stream.
@@ -136,47 +148,47 @@ public class JSON {
   }
 
   /**
+   * Serialize the object to the output stream.
    * The specified stream remains open after this method returns.
+   * @param object object to be serialized.
+   * @param outputStream output stream to which the serialized object is written.
+   * @throws IOException if IO error occurs while writting to the stream.
    */
-  public static void writeJSON(Object object, OutputStream outputStream) {
-    try {
-      outputStream.write(toJSONBytes(object));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static void writeJSON(Object object, OutputStream outputStream) throws IOException {
+    outputStream.write(toJSONBytes(object));
   }
 
   /**
+   * Serialize the object to the output stream.
    * The specified stream is closed after this method returns.
+   * @param object object to be serialized.
+   * @param outputStream output stream to which the serialized object is written.
+   * @throws IOException if IO error occurs while writting to the stream.
    */
-  public static void writeJSONAndClose(Object object, OutputStream outputStream) {
-    try {
-      json.writeValue(outputStream, object);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static void writeJSONAndClose(Object object, OutputStream outputStream) throws IOException {
+    json.writeValue(outputStream, object);
   }
 
   /**
+   * Serialize the object in pretty format to the output stream.
    * The specified stream remains open after this method returns.
+   * @param object object to be serialized.
+   * @param outputStream output stream to which the serialized object is written.
+   * @throws IOException if IO error occurs while writting to the stream.
    */
-  public static void writePrettyJSON(Object object, OutputStream outputStream) {
-    try {
-      outputStream.write(toPrettyJson(object).getBytes(StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static void writePrettyJSON(Object object, OutputStream outputStream) throws IOException {
+    outputStream.write(toPrettyJson(object).getBytes(StandardCharsets.UTF_8));
   }
 
   /**
+   * Serialize the object in pretty format to the output stream.
    * The specified stream is closed after this method returns.
+   * @param object object to be serialized.
+   * @param outputStream output stream to which the serialized object is written.
+   * @throws IOException if IO error occurs while writting to the stream.
    */
-  public static void writePrettyJSONAndClose(Object object, OutputStream outputStream) {
-    try {
-      prettyJson.writeValue(outputStream, object);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public static void writePrettyJSONAndClose(Object object, OutputStream outputStream) throws IOException {
+    prettyJson.writeValue(outputStream, object);
   }
 
 }

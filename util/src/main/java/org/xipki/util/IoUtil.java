@@ -60,7 +60,11 @@ public class IoUtil {
   }
 
   /**
+   * Read all bytes from the input stream and close the stream.
    * The specified stream is closed after this method returns.
+   * @param in the input stream.
+   * @return the byte array contained in the input stream.
+   * @throws IOException if error occurs while reading the bytes.
    */
   public static byte[] readAllBytesAndClose(InputStream in) throws IOException {
     try {
@@ -75,7 +79,11 @@ public class IoUtil {
   }
 
   /**
+   * Read all bytes from the input stream.
    * The specified stream remains open after this method returns.
+   * @param in the input stream.
+   * @return the byte array contained in the input stream.
+   * @throws IOException if error occurs while reading the bytes.
    */
   public static byte[] readAllBytes(InputStream in) throws IOException {
     try (ByteArrayOutputStream bout = new ByteArrayOutputStream()) {

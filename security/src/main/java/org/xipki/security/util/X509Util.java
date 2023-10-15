@@ -123,7 +123,13 @@ public class X509Util {
   }
 
   /**
+   * Read a list of X.509 certificates from the input stream consisting of several
+   * PEM certificates.
    * The specified stream remains open after this method returns.
+   * @param certsStream the input stream of PEM certificates.
+   * @return a list of X.509 certificates.
+   * @throws IOException if IO error occurs while reading the input stream.
+   * @throws CertificateException if error occurs parsing the certificates.
    */
   private static List<X509Cert> parseCerts(InputStream certsStream)
       throws IOException, CertificateException {
@@ -436,8 +442,6 @@ public class X509Util {
    * @param certs collection of certificates.
    * @param includeTargetCert whether to include {@code targetCert} in the result.
    * @return the certificate path
-   * @throws CertPathBuilderException
-   *           If cannot build a valid certificate path.
    */
   public static X509Cert[] buildCertPath(X509Cert targetCert, Collection<X509Cert> certs, boolean includeTargetCert) {
     return buildCertPath(targetCert, certs, null, includeTargetCert);
