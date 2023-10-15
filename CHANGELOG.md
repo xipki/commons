@@ -2,24 +2,24 @@
 
 See also <https://github.com/xipki/commons/releases>
 
-## 6.3.1
+## 6.3.2
 - Release date: 2023/mm/dd
-- audit
-  - N/A
-- audit-extra
-  - N/A
-- datasource
-  - Feature: extend Properties to use the place holder ${env:name} for environment and ${sys:name} for system property.
-- password
-  - N/A
-- security
-  - N/A
-- util
-  - Feature: extend Properties to use the place holder ${env:name} for environment and ${sys:name} for system property.
-- xipki-tomcat-password
-  - N/A
+
+## 6.3.1
+- Release date: 2023/10/15
+- Features
+  - Extend Properties to use the place holder ${env:name} for environment and ${sys:name} for system property.
+  - Replace JSON backend from gson to jackson.
+  - Add method to read certificate fields without parsing it as complete Certificate object.
+  - Extend Properties to use the place holder ${env:name} for environment and ${sys:name} for system property.
+  - Add CBOR encoder / decoder
+  - Base64Url: add method to encode / decode without ending '='.
+  - Add modules servlet3-common and servlet5-common
+  - Remove the usa of Statement, replaced by PreparedStatement.
+  - Add always a new-line to the PEM encoded object.
 - Dependencies
-  - N/A
+  - Bouncycastle: 1.73 -> 1.76
+  - ipkcs11wrapper: 1.0.5 -> 1.0.7
 
 ## 6.3.0
 - Release date: 2023/04/29
@@ -44,4 +44,5 @@ See also <https://github.com/xipki/commons/releases>
 - Dependencies
   - ipkcs11wrapper: 1.0.4 --> 1.0.5
   - bouncycastle: 1.72 --> 1.73
+
 ## 6.2.0 (as in [xipki/xipki/CHANGELOG.md](https://github.com/xipki/xipki/blob/master/CHANGELOG.md))
