@@ -134,8 +134,6 @@ public class CborType {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getName(m_major)).append('(').append(m_additional).append(')');
-        return sb.toString();
+        return getName(m_major) + '(' + m_additional + ')';
     }
 }
