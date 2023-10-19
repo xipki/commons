@@ -7,9 +7,9 @@ import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.operator.RuntimeOperatorException;
 import org.xipki.util.Args;
 import org.xipki.util.Base64;
+import org.xipki.util.ConcurrentBag;
+import org.xipki.util.ConcurrentBag.BagEntry;
 import org.xipki.util.Hex;
-import org.xipki.util.concurrent.ConcurrentBag;
-import org.xipki.util.concurrent.ConcurrentBagEntry;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ class HashCalculator {
 
   private static final int PARALLELISM = 50;
 
-  private static final ConcurrentHashMap<HashAlgo, ConcurrentBag<ConcurrentBagEntry<Digest>>>
+  private static final ConcurrentHashMap<HashAlgo, ConcurrentBag<Digest>>
       MDS_MAP = new ConcurrentHashMap<>();
 
   static {
@@ -37,10 +37,10 @@ class HashCalculator {
   private HashCalculator() {
   }
 
-  private static ConcurrentBag<ConcurrentBagEntry<Digest>> getMessageDigests(HashAlgo hashAlgo) {
-    ConcurrentBag<ConcurrentBagEntry<Digest>> mds = new ConcurrentBag<>();
+  private static ConcurrentBag<Digest> getMessageDigests(HashAlgo hashAlgo) {
+    ConcurrentBag<Digest> mds = new ConcurrentBag<>();
     for (int i = 0; i < PARALLELISM; i++) {
-      mds.add(new ConcurrentBagEntry<>(hashAlgo.createDigest()));
+      mds.add(new BagEntry<>(hashAlgo.createDigest()));
     }
     return mds;
   }
@@ -116,9 +116,9 @@ class HashCalculator {
       throw new IllegalArgumentException("unknown hash algo " + hashAlgo);
     }
 
-    ConcurrentBag<ConcurrentBagEntry<Digest>> mds = MDS_MAP.get(hashAlgo);
+    ConcurrentBag<Digest> mds = MDS_MAP.get(hashAlgo);
 
-    ConcurrentBagEntry<Digest> md0 = null;
+    BagEntry<Digest> md0 = null;
     for (int i = 0; i < 3; i++) {
       try {
         md0 = mds.borrow(10, TimeUnit.SECONDS);
@@ -159,9 +159,9 @@ class HashCalculator {
       throw new IllegalArgumentException("unknown hash algo " + hashAlgo);
     }
 
-    ConcurrentBag<ConcurrentBagEntry<Digest>> mds = MDS_MAP.get(hashAlgo);
+    ConcurrentBag<Digest> mds = MDS_MAP.get(hashAlgo);
 
-    ConcurrentBagEntry<Digest> md0 = null;
+    BagEntry<Digest> md0 = null;
     for (int i = 0; i < 3; i++) {
       try {
         md0 = mds.borrow(10, TimeUnit.SECONDS);

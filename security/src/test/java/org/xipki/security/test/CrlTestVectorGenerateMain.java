@@ -9,6 +9,7 @@ import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.xipki.security.*;
+import org.xipki.util.ConcurrentBag.BagEntry;
 import org.xipki.util.ConfPairs;
 import org.xipki.util.IoUtil;
 
@@ -47,7 +48,7 @@ public class CrlTestVectorGenerateMain {
           "PKCS12", sconf, (X509Cert) null);
       X509Cert caCert = csigner.getCertificate();
 
-      ConcurrentBagEntrySigner signer = csigner.borrowSigner();
+      BagEntry<XiContentSigner> signer = csigner.borrowSigner();
       // no revoked certs
       X509v2CRLBuilder builder = getBuilder(caCert, true, true);
       buildCrl(builder, signer, "no-revoked-certs.crl");
@@ -81,7 +82,7 @@ public class CrlTestVectorGenerateMain {
     }
   }
 
-  private static void buildCrl(X509v2CRLBuilder builder, ConcurrentBagEntrySigner signer, String fn)
+  private static void buildCrl(X509v2CRLBuilder builder, BagEntry<XiContentSigner> signer, String fn)
       throws Exception {
     byte[] encoded = builder.build(signer.value()).getEncoded();
     IoUtil.save("output/" + fn, encoded);

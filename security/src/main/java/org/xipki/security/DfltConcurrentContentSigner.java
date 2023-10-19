@@ -8,8 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolver;
 import org.xipki.util.Args;
 import org.xipki.util.CollectionUtil;
+import org.xipki.util.ConcurrentBag;
+import org.xipki.util.ConcurrentBag.BagEntry;
 import org.xipki.util.LogUtil;
-import org.xipki.util.concurrent.ConcurrentBag;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,7 +38,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
   private static int defaultSignServiceTimeout = 10000; // 10 seconds
 
-  private final ConcurrentBag<ConcurrentBagEntrySigner> signers = new ConcurrentBag<>();
+  private final ConcurrentBag<XiContentSigner> signers = new ConcurrentBag<>();
 
   private final String name;
 
@@ -81,7 +82,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
     this.algorithm = SignAlgo.getInstance(signers.get(0).getAlgorithmIdentifier());
 
     for (XiContentSigner signer : signers) {
-      this.signers.add(new ConcurrentBagEntrySigner(signer));
+      this.signers.add(new BagEntry<>(signer));
     }
 
     this.signingKey = signingKey;
@@ -119,7 +120,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
   }
 
   @Override
-  public ConcurrentBagEntrySigner borrowSigner() throws NoIdleSignerException {
+  public BagEntry<XiContentSigner> borrowSigner() throws NoIdleSignerException {
     return borrowSigner(defaultSignServiceTimeout);
   }
 
@@ -129,8 +130,8 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
    * @param soTimeout timeout in milliseconds, 0 for infinitely.
    */
   @Override
-  public ConcurrentBagEntrySigner borrowSigner(int soTimeout) throws NoIdleSignerException {
-    ConcurrentBagEntrySigner signer = null;
+  public BagEntry<XiContentSigner> borrowSigner(int soTimeout) throws NoIdleSignerException {
+    BagEntry<XiContentSigner> signer = null;
     try {
       signer = signers.borrow(soTimeout, TimeUnit.MILLISECONDS);
     } catch (InterruptedException ex) {
@@ -144,7 +145,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
   }
 
   @Override
-  public void requiteSigner(ConcurrentBagEntrySigner signer) {
+  public void requiteSigner(BagEntry<XiContentSigner> signer) {
     signers.requite(signer);
   }
 
@@ -190,7 +191,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
   @Override
   public boolean isHealthy() {
-    ConcurrentBagEntrySigner signer = null;
+    BagEntry<XiContentSigner> signer = null;
     try {
       signer = borrowSigner();
       OutputStream stream = signer.value().getOutputStream();
@@ -213,7 +214,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
   @Override
   public byte[] sign(byte[] data) throws NoIdleSignerException, SignatureException {
-    ConcurrentBagEntrySigner signer = borrowSigner();
+    BagEntry<XiContentSigner> signer = borrowSigner();
     try {
       OutputStream signatureStream = signer.value().getOutputStream();
       try {
@@ -230,7 +231,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
   @Override
   public byte[][] sign(byte[][] data) throws NoIdleSignerException, SignatureException {
     byte[][] signatures = new byte[data.length][];
-    ConcurrentBagEntrySigner signer = borrowSigner();
+    BagEntry<XiContentSigner> signer = borrowSigner();
 
     try {
       XiContentSigner xiSigner = signer.value();

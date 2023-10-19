@@ -28,8 +28,8 @@ import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.util.PKCS1Util;
 import org.xipki.security.util.SignerUtil;
 import org.xipki.util.Args;
-import org.xipki.util.concurrent.ConcurrentBag;
-import org.xipki.util.concurrent.ConcurrentBagEntry;
+import org.xipki.util.ConcurrentBag;
+import org.xipki.util.ConcurrentBag.BagEntry;
 
 import javax.crypto.*;
 import java.math.BigInteger;
@@ -58,13 +58,13 @@ class EmulatorP11Key extends P11Key {
 
   private final Key signingKey;
 
-  private final ConcurrentBag<ConcurrentBagEntry<Cipher>> rsaCiphers = new ConcurrentBag<>();
+  private final ConcurrentBag<Cipher> rsaCiphers = new ConcurrentBag<>();
 
-  private final ConcurrentBag<ConcurrentBagEntry<Signature>> dsaSignatures = new ConcurrentBag<>();
+  private final ConcurrentBag<Signature> dsaSignatures = new ConcurrentBag<>();
 
-  private final ConcurrentBag<ConcurrentBagEntry<Signature>> eddsaSignatures = new ConcurrentBag<>();
+  private final ConcurrentBag<Signature> eddsaSignatures = new ConcurrentBag<>();
 
-  private final ConcurrentBag<ConcurrentBagEntry<EmulatorSM2Signer>> sm2Signers = new ConcurrentBag<>();
+  private final ConcurrentBag<EmulatorSM2Signer> sm2Signers = new ConcurrentBag<>();
 
   private final SecureRandom random;
 
@@ -207,7 +207,7 @@ class EmulatorP11Key extends P11Key {
             }
           }
           rsaCipher.init(Cipher.ENCRYPT_MODE, signingKey);
-          rsaCiphers.add(new ConcurrentBagEntry<>(rsaCipher));
+          rsaCiphers.add(new BagEntry<>(rsaCipher));
         }
       } else {
         String algorithm;
@@ -229,7 +229,7 @@ class EmulatorP11Key extends P11Key {
           for (int i = 0; i < maxSessions; i++) {
             Signature dsaSignature = Signature.getInstance(algorithm, "BC");
             dsaSignature.initSign((PrivateKey) signingKey, random);
-            dsaSignatures.add(new ConcurrentBagEntry<>(dsaSignature));
+            dsaSignatures.add(new BagEntry<>(dsaSignature));
           }
         } else if (keyType == CKK_EC_EDWARDS) {
           algorithm = EdECConstants.getName(getEcParams());
@@ -239,7 +239,7 @@ class EmulatorP11Key extends P11Key {
           for (int i = 0; i < maxSessions; i++) {
             Signature signature = Signature.getInstance(algorithm, "BC");
             signature.initSign((PrivateKey) signingKey);
-            eddsaSignatures.add(new ConcurrentBagEntry<>(signature));
+            eddsaSignatures.add(new BagEntry<>(signature));
           }
         } else if (keyType == CKK_EC_MONTGOMERY) {
           // do nothing. not suitable for sign.
@@ -247,7 +247,7 @@ class EmulatorP11Key extends P11Key {
           for (int i = 0; i < maxSessions; i++) {
             EmulatorSM2Signer sm2signer =
                 new EmulatorSM2Signer(ECUtil.generatePrivateKeyParameter((PrivateKey) signingKey));
-            sm2Signers.add(new ConcurrentBagEntry<>(sm2signer));
+            sm2Signers.add(new BagEntry<>(sm2signer));
           }
         }
       }
@@ -403,7 +403,7 @@ class EmulatorP11Key extends P11Key {
   } // method rsaPkcsSign
 
   private byte[] rsaX509Sign(byte[] dataToSign) throws TokenException {
-    ConcurrentBagEntry<Cipher> cipher;
+    BagEntry<Cipher> cipher;
     try {
       cipher = rsaCiphers.borrow(5000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException ex) {
@@ -428,7 +428,7 @@ class EmulatorP11Key extends P11Key {
   private byte[] dsaAndEcdsaSign(byte[] dataToSign, HashAlgo hashAlgo) throws TokenException {
     byte[] hash = (hashAlgo == null) ? dataToSign : hashAlgo.hash(dataToSign);
 
-    ConcurrentBagEntry<Signature> sig0;
+    BagEntry<Signature> sig0;
     try {
       sig0 = dsaSignatures.borrow(5000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException ex) {
@@ -458,7 +458,7 @@ class EmulatorP11Key extends P11Key {
       throw new TokenException("given signing key is not suitable for EdDSA sign");
     }
 
-    ConcurrentBagEntry<Signature> sig0;
+    BagEntry<Signature> sig0;
     try {
       sig0 = eddsaSignatures.borrow(5000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException ex) {
@@ -481,7 +481,7 @@ class EmulatorP11Key extends P11Key {
   } // method eddsaSign
 
   private byte[] sm2SignHash(byte[] hash) throws TokenException {
-    ConcurrentBagEntry<EmulatorSM2Signer> sig0;
+    BagEntry<EmulatorSM2Signer> sig0;
     try {
       sig0 = sm2Signers.borrow(5000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException ex) {
@@ -517,7 +517,7 @@ class EmulatorP11Key extends P11Key {
       throw new TokenException("params must be instanceof P11ByteArrayParams");
     }
 
-    ConcurrentBagEntry<EmulatorSM2Signer> sig0;
+    BagEntry<EmulatorSM2Signer> sig0;
     try {
       sig0 = sm2Signers.borrow(5000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException ex) {

@@ -5,6 +5,7 @@ package org.xipki.security;
 
 import org.bouncycastle.operator.ContentSigner;
 import org.xipki.password.PasswordResolver;
+import org.xipki.util.ConcurrentBag.BagEntry;
 
 import java.io.Closeable;
 import java.security.Key;
@@ -101,7 +102,7 @@ public interface ConcurrentContentSigner extends Closeable {
    * @throws NoIdleSignerException
    *         If no idle signer is available
    */
-  ConcurrentBagEntrySigner borrowSigner() throws NoIdleSignerException;
+  BagEntry<XiContentSigner> borrowSigner() throws NoIdleSignerException;
 
   /**
    * Borrows a signer with the given {@code soTimeout}.
@@ -110,9 +111,9 @@ public interface ConcurrentContentSigner extends Closeable {
    * @throws NoIdleSignerException
    *         If no idle signer is available
    */
-  ConcurrentBagEntrySigner borrowSigner(int soTimeout) throws NoIdleSignerException;
+  BagEntry<XiContentSigner> borrowSigner(int soTimeout) throws NoIdleSignerException;
 
-  void requiteSigner(ConcurrentBagEntrySigner signer);
+  void requiteSigner(BagEntry<XiContentSigner> signer);
 
   boolean isHealthy();
 

@@ -145,7 +145,7 @@ public class ScriptRunner {
    * @throws IOException if there is an error reading from the Reader
    */
   public void runScript(String filepath) throws IOException, SQLException {
-    this.runScript(new BufferedReader(new FileReader(new File(filepath))));
+    this.runScript(new BufferedReader(new FileReader(filepath)));
   }
 
   /**

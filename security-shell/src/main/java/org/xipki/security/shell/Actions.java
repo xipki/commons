@@ -823,7 +823,7 @@ public class Actions {
         }
       }
 
-      ConcurrentBagEntrySigner signer0;
+      ConcurrentBag.BagEntry<XiContentSigner> signer0;
       try {
         signer0 = signer.borrowSigner();
       } catch (NoIdleSignerException ex) {

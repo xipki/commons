@@ -88,12 +88,17 @@ public final class DSAParameterCache {
     boolean match = true;
     if (plen != p.bitLength()) {
       match = false;
-      LOG.error("plen and P does not match");
+      LOG.error("plen and P do not match");
     }
 
     if (qlen != q.bitLength()) {
       match = false;
-      LOG.error("qlen and Q does not match");
+      LOG.error("qlen and Q do not match");
+    }
+
+    if (qlen != g.bitLength()) {
+      match = false;
+      LOG.error("qlen and G do not match");
     }
 
     if (match) {
