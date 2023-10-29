@@ -7,14 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.pkcs11.wrapper.*;
-import org.xipki.util.Args;
-import org.xipki.util.IoUtil;
-import org.xipki.util.LogUtil;
-import org.xipki.util.StringUtil;
+import org.xipki.util.*;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -24,7 +22,7 @@ import java.util.Set;
  * @since 2.0.0
  */
 
-public class NativeP11Module extends P11Module {
+class NativeP11Module extends P11Module {
 
   public static final String TYPE = "native";
 
@@ -36,15 +34,24 @@ public class NativeP11Module extends P11Module {
 
   private NativeP11Module(PKCS11Module module, P11ModuleConf moduleConf) throws TokenException {
     super(moduleConf);
+
+    if (CollectionUtil.isNotEmpty(moduleConf.getNativeLibraryProperties())) {
+      throw new TokenException("nativeLibraries[i].properties is present but not allowed.");
+    }
+
     this.module = Args.notNull(module, "module");
 
     try {
       ModuleInfo info = module.getInfo();
-      this.description = StringUtil.concatObjects("PKCS#11 wrapper", "\n\tPath: ", moduleConf.getNativeLibrary(),
-          "\n\tCryptoki Version: ", info.getCryptokiVersion(), "\n\tManufacturerID: ", info.getManufacturerID(),
-          "\n\tLibrary Description: ", info.getLibraryDescription(), "\n\tLibrary Version: ", info.getLibraryVersion());
+      this.description = StringUtil.concatObjects("PKCS#11 wrapper",
+          "\n\tPath: ", moduleConf.getNativeLibrary(),
+          "\n\tCryptoki Version: ", info.getCryptokiVersion(),
+          "\n\tManufacturerID: ", info.getManufacturerID(),
+          "\n\tLibrary Description: ", info.getLibraryDescription(),
+          "\n\tLibrary Version: ", info.getLibraryVersion());
     } catch (TokenException ex) {
-      this.description = StringUtil.concatObjects("PKCS#11 wrapper", "\n\tPath ", moduleConf.getNativeLibrary());
+      this.description = StringUtil.concatObjects("PKCS#11 wrapper",
+          "\n\tPath ", moduleConf.getNativeLibrary());
     }
     LOG.info("PKCS#11 module\n{}", this.description);
 
@@ -117,10 +124,10 @@ public class NativeP11Module extends P11Module {
         throw new TokenException("PasswordResolverException: " + ex.getMessage(), ex);
       }
 
-      Long userType = slot.getModule().nameToCode(PKCS11Constants.Category.CKU, getConf().getUserType());
-      if (userType == null) {
-        throw new TokenException("Unknown user type " + getConf().getUserType());
-      }
+      long userType = Optional.ofNullable(
+          slot.getModule().nameToCode(PKCS11Constants.Category.CKU, getConf().getUserType())).orElseThrow(
+          () -> new TokenException("Unknown user type " + getConf().getUserType()));
+
       PKCS11Token token = new PKCS11Token(slot.getToken(), moduleConf.isReadOnly(), userType,
           moduleConf.getUserName(), pwd, moduleConf.getNumSessions());
       token.setMaxMessageSize(moduleConf.getMaxMessageSize());

@@ -9,6 +9,7 @@ import org.xipki.util.exception.InvalidConfException;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Configuration of PKCS#11.
@@ -313,7 +314,6 @@ public class Pkcs11conf extends ValidatableConf {
       notBlank(name, "name");
       notBlank(type, "type");
       notEmpty(nativeLibraries, "nativeLibraries");
-      notEmpty(mechanismFilters, "mechanismFilters");
 
       validate(nativeLibraries, includeSlots, excludeSlots, passwordSets, mechanismFilters);
     }
@@ -323,6 +323,8 @@ public class Pkcs11conf extends ValidatableConf {
   public static class NativeLibrary extends ValidatableConf {
 
     private String path;
+
+    private Map<String, String> properties;
 
     private List<String> operationSystems = new LinkedList<>();
 
@@ -343,6 +345,14 @@ public class Pkcs11conf extends ValidatableConf {
 
     public void setOperationSystems(List<String> operationSystems) {
       this.operationSystems = operationSystems;
+    }
+
+    public Map<String, String> getProperties() {
+      return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+      this.properties = properties;
     }
 
     @Override
@@ -489,7 +499,6 @@ public class Pkcs11conf extends ValidatableConf {
   @Override
   public void validate() throws InvalidConfException {
     notEmpty(modules, "modules");
-    notEmpty(mechanismSets, "mechanismSets");
     validate(modules, mechanismSets);
   }
 

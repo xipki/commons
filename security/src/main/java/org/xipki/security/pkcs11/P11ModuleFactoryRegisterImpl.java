@@ -80,7 +80,7 @@ public class P11ModuleFactoryRegisterImpl implements P11ModuleFactoryRegister {
     }
 
     return p11Module;
-  } // method getP11Module
+  }
 
   @Override
   public void close() {
@@ -94,6 +94,6 @@ public class P11ModuleFactoryRegisterImpl implements P11ModuleFactoryRegister {
     modules.clear();
 
     factories.clear();
-  } // method close
+  }
 
 }

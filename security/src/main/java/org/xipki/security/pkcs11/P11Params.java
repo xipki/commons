@@ -3,6 +3,9 @@
 
 package org.xipki.security.pkcs11;
 
+import org.xipki.pkcs11.wrapper.Mechanism;
+import org.xipki.pkcs11.wrapper.TokenException;
+import org.xipki.pkcs11.wrapper.params.*;
 import org.xipki.security.HashAlgo;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
@@ -14,6 +17,26 @@ import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
  */
 
 public interface P11Params {
+
+  default Mechanism toMechanism(long mechanism, ExtraParams extraParams)
+      throws TokenException {
+    CkParams paramObj;
+    if (this instanceof P11Params.P11RSAPkcsPssParams) {
+      P11Params.P11RSAPkcsPssParams param = (P11Params.P11RSAPkcsPssParams) this;
+      paramObj = new RSA_PKCS_PSS_PARAMS(param.getHashAlgorithm(),
+          param.getMaskGenerationFunction(), param.getSaltLength());
+    } else if (this instanceof P11Params.P11ByteArrayParams) {
+      paramObj = new ByteArrayParams(((P11Params.P11ByteArrayParams) this).getBytes());
+    } else {
+      throw new TokenException("unknown P11Parameters " + getClass().getName());
+    }
+
+    if (extraParams != null) {
+      paramObj = new CkParamsWithExtra(paramObj, extraParams);
+    }
+
+    return new Mechanism(mechanism, paramObj);
+  }
 
   class P11ByteArrayParams implements P11Params {
 

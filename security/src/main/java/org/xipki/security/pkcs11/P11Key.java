@@ -35,19 +35,19 @@ public abstract class P11Key {
 
   private boolean sign;
 
-  private ASN1ObjectIdentifier ecParams;
+  protected ASN1ObjectIdentifier ecParams;
 
-  private Integer ecOrderBitSize;
+  protected Integer ecOrderBitSize;
 
-  private BigInteger rsaModulus;
+  protected BigInteger rsaModulus;
 
-  private BigInteger rsaPublicExponent;
+  protected BigInteger rsaPublicExponent;
 
-  private BigInteger dsaP;
+  protected BigInteger dsaP;
 
-  private BigInteger dsaQ;
+  protected BigInteger dsaQ;
 
-  private BigInteger dsaG;
+  protected BigInteger dsaG;
 
   private boolean publicKeyInitialized;
 
@@ -64,6 +64,10 @@ public abstract class P11Key {
   }
 
   public abstract void destroy() throws TokenException;
+
+  public boolean isSign() {
+    return sign;
+  }
 
   public ASN1ObjectIdentifier getEcParams() {
     return ecParams;
@@ -165,6 +169,8 @@ public abstract class P11Key {
 
   protected abstract byte[] digestSecretKey0(long mechanism) throws TokenException;
 
+  protected abstract PublicKey getPublicKey0() throws TokenException;
+
   public P11SlotId getSlotId() {
     return slot.getSlotId();
   }
@@ -181,7 +187,7 @@ public abstract class P11Key {
     return keyId.getObjectCLass() == CKO_SECRET_KEY;
   }
 
-  public final synchronized PublicKey getPublicKey() {
+  public  PublicKey getPublicKey() {
     if (isSecretKey()) {
       return null;
     }
@@ -191,13 +197,14 @@ public abstract class P11Key {
     }
 
     try {
-      publicKey = slot.getPublicKey(this);
+      publicKey = getPublicKey0();
     } catch (Exception e) {
       LogUtil.error(LOG, e, "could not initialize public key for (private) key " + keyId
           + " on slot " + slot.getSlotId());
     } finally {
       publicKeyInitialized = true;
     }
+
     return publicKey;
   }
 

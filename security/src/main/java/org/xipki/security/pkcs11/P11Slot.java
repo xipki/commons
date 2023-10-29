@@ -8,6 +8,7 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.pkcs11.wrapper.*;
+import org.xipki.pkcs11.wrapper.params.ExtraParams;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
@@ -162,11 +163,14 @@ public abstract class P11Slot implements Closeable {
 
   public abstract PKCS11KeyId getKeyId(byte[] keyId, String keyLabel) throws TokenException;
 
+  public abstract byte[] sign(long mechanism, P11Params params, ExtraParams extraParams,
+                              long keyHandle, byte[] content) throws TokenException;
+
   public abstract P11Key getKey(PKCS11KeyId keyId) throws TokenException;
 
   public abstract P11Key getKey(byte[] keyId, String keyLabel) throws TokenException;
 
-  protected abstract PublicKey getPublicKey(P11Key key) throws TokenException;
+  public abstract PublicKey getPublicKey(long handle) throws TokenException;
 
   /**
    * Destroys objects.
@@ -190,6 +194,8 @@ public abstract class P11Slot implements Closeable {
    * @throws TokenException If PKCS#11 error happens.
    */
   public abstract int destroyObjectsByIdLabel(byte[] id, String label) throws TokenException;
+
+  public abstract byte[] digestSecretKey(long mechanism, long objectHandle) throws TokenException;
 
   public abstract boolean objectExistsByIdLabel(byte[] id, String label) throws TokenException;
 
@@ -233,8 +239,7 @@ public abstract class P11Slot implements Closeable {
    * @throws TokenException if PKCS#11 token exception occurs.
    */
   protected abstract PKCS11KeyId doGenerateDSAKeypair(
-      BigInteger p, BigInteger q, BigInteger g, P11NewKeyControl control)
-      throws TokenException;
+      BigInteger p, BigInteger q, BigInteger g, P11NewKeyControl control) throws TokenException;
 
   /**
    * Generates an EC Edwards keypair.
@@ -296,8 +301,7 @@ public abstract class P11Slot implements Closeable {
    * @return the ASN.1 encoded keypair.
    * @throws TokenException if PKCS#11 token exception occurs.
    */
-  protected abstract PrivateKeyInfo doGenerateECKeypairOtf(ASN1ObjectIdentifier curveId)
-      throws TokenException;
+  protected abstract PrivateKeyInfo doGenerateECKeypairOtf(ASN1ObjectIdentifier curveId) throws TokenException;
 
   /**
    * Generates an SM2p256v1 keypair.
@@ -306,8 +310,7 @@ public abstract class P11Slot implements Closeable {
    * @return the identifier of the key within the PKCS#P11 token.
    * @throws TokenException if PKCS#11 token exception occurs.
    */
-  protected abstract PKCS11KeyId doGenerateSM2Keypair(P11NewKeyControl control)
-      throws TokenException;
+  protected abstract PKCS11KeyId doGenerateSM2Keypair(P11NewKeyControl control) throws TokenException;
 
   /**
    * Generates an SM2p256v1 keypair on-the-fly.
@@ -327,8 +330,7 @@ public abstract class P11Slot implements Closeable {
    * @throws TokenException if PKCS#11 token exception occurs.
    */
   protected abstract PKCS11KeyId doGenerateRSAKeypair(
-      int keysize, BigInteger publicExponent, P11NewKeyControl control)
-      throws TokenException;
+      int keysize, BigInteger publicExponent, P11NewKeyControl control) throws TokenException;
 
   /**
    * Writes the token details to the given {@code stream}.
@@ -344,7 +346,9 @@ public abstract class P11Slot implements Closeable {
    */
   public abstract void showDetails(OutputStream stream, Long objectHandle, boolean verbose) throws IOException;
 
-  protected abstract PKCS11Module getPKCS11Module();
+  protected PKCS11Module getPKCS11Module() {
+    return null;
+  }
 
   @Override
   public abstract void close();
@@ -503,8 +507,7 @@ public abstract class P11Slot implements Closeable {
    * @throws TokenException
    *         if PKCS#11 token exception occurs.
    */
-  public PKCS11KeyId importSecretKey(long keyType, byte[] keyValue, P11NewKeyControl control)
-      throws TokenException {
+  public PKCS11KeyId importSecretKey(long keyType, byte[] keyValue, P11NewKeyControl control) throws TokenException {
     assertWritable("createSecretKey");
     assertNoObjects(Args.notNull(control, "control").getId(), control.getLabel());
     assertSecretKeyAllowed(keyType);
@@ -535,8 +538,7 @@ public abstract class P11Slot implements Closeable {
    * @throws TokenException
    *         if PKCS#11 token exception occurs.
    */
-  public PrivateKeyInfo generateRSAKeypairOtf(int keysize, BigInteger publicExponent)
-      throws TokenException {
+  public PrivateKeyInfo generateRSAKeypairOtf(int keysize, BigInteger publicExponent) throws TokenException {
     Args.min(keysize, "keysize", 1024);
     if (keysize % 1024 != 0) {
       throw new IllegalArgumentException("key size is not multiple of 1024: " + keysize);
@@ -614,8 +616,7 @@ public abstract class P11Slot implements Closeable {
    * @throws TokenException
    *         if PKCS#11 token exception occurs.
    */
-  public PKCS11KeyId generateDSAKeypair(int plength, int qlength, P11NewKeyControl control)
-      throws TokenException {
+  public PKCS11KeyId generateDSAKeypair(int plength, int qlength, P11NewKeyControl control) throws TokenException {
     if (Args.min(plength, "plength", 1024) % 1024 != 0) {
       throw new IllegalArgumentException("key size is not multiple of 1024: " + plength);
     }
@@ -683,8 +684,7 @@ public abstract class P11Slot implements Closeable {
    * @throws TokenException
    *         if PKCS#11 token exception occurs.
    */
-  public PKCS11KeyId generateECKeypair(ASN1ObjectIdentifier curveOid, P11NewKeyControl control)
-      throws TokenException {
+  public PKCS11KeyId generateECKeypair(ASN1ObjectIdentifier curveOid, P11NewKeyControl control) throws TokenException {
     PKCS11KeyId keyId;
     if (EdECConstants.isEdwardsCurve(Args.notNull(curveOid, "curveOid"))) {
       assertCanGenKeypair("generateECKeypair", control, CKK_EC_EDWARDS, CKM_EC_EDWARDS_KEY_PAIR_GEN);

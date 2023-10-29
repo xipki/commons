@@ -62,12 +62,9 @@ public abstract class P11Module {
    *         if PKCS#11 token error occurs
    */
   public P11Slot getSlot(P11SlotId slotId) throws TokenException {
-    P11Slot slot = slots.get(Args.notNull(slotId, "slotId"));
-    if (slot == null) {
-      throw new TokenException("unknown slot " + slotId);
-    }
-    return slot;
-  } // method getSlot
+    return Optional.ofNullable(slots.get(Args.notNull(slotId, "slotId"))).orElseThrow(
+        () -> new TokenException("unknown slot " + slotId));
+  }
 
   public List<P11SlotId> getSlotIds() {
     return slotIds;

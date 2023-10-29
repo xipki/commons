@@ -17,7 +17,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.pkcs11.wrapper.*;
-import org.xipki.pkcs11.wrapper.params.*;
+import org.xipki.pkcs11.wrapper.params.ExtraParams;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
@@ -33,7 +33,6 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
@@ -55,6 +54,10 @@ class NativeP11Slot extends P11Slot {
   private static final Logger LOG = LoggerFactory.getLogger(NativeP11Slot.class);
 
   private final PKCS11Token token;
+
+  private final TokenInfo tokenInfo;
+
+  private final SlotInfo slotInfo;
 
   private final SecureRandom random = new SecureRandom();
 
@@ -81,7 +84,27 @@ class NativeP11Slot extends P11Slot {
     initMechanisms(getSupportedMechanisms(), mechanismFilter);
     rsaKeyPairGenMech = supportsMechanism(CKM_RSA_X9_31_KEY_PAIR_GEN, CKF_GENERATE_KEY_PAIR)
         ? CKM_RSA_X9_31_KEY_PAIR_GEN : CKM_RSA_PKCS_KEY_PAIR_GEN;
+
+    TokenInfo ti = null;
+    try {
+      ti = token.getToken().getTokenInfo();
+    } catch (TokenException e) {
+      LOG.warn("error getting tokenInfo", e);
+    }
+    tokenInfo = ti;
+
+    SlotInfo si = null;
+    try {
+      si = token.getToken().getSlot().getSlotInfo();
+    } catch (TokenException e) {
+      LOG.warn("error getting slotInfo", e);
+    }
+    slotInfo = si;
   } // constructor
+
+  AttributeVector getAttrValues(long objectHandle, long... attrTypes) throws TokenException {
+    return token.getAttrValues(objectHandle, attrTypes);
+  }
 
   private Map<Long, MechanismInfo> getSupportedMechanisms() {
     Set<Long> mechanisms = token.getMechanisms();
@@ -147,23 +170,19 @@ class NativeP11Slot extends P11Slot {
     token.closeAllSessions();
   }
 
-  byte[] digestSecretKey(long mech, NativeP11Key identity) throws TokenException {
-    if (!identity.isSecretKey()) {
-      throw new TokenException("digestSecretKey could not be applied to non-SecretKey");
-    }
-
-    long keyHandle = Args.notNull(identity, "identity").getKeyId().getHandle();
+  @Override
+  public byte[] digestSecretKey(long mech, long handle) throws TokenException {
     assertMechanismSupported(mech, CKF_DIGEST);
-
-    return token.digestKey(new Mechanism(mech), keyHandle);
+    return token.digestKey(new Mechanism(mech), handle);
   }
 
-  byte[] sign(long mech, P11Params parameters, byte[] content, NativeP11Key identity) throws TokenException {
+  @Override
+  public byte[] sign(long mechanism, P11Params params, ExtraParams extraParams,
+                     long keyHandle, byte[] content) throws TokenException {
     Args.notNull(content, "content");
-    assertMechanismSupported(mech, CKF_SIGN);
-
-    long signingKeyHandle = identity.getKeyId().getHandle();
-    return token.sign(getMechanism(mech, parameters, identity), signingKeyHandle, content);
+    assertMechanismSupported(mechanism, CKF_SIGN);
+    Mechanism mech = (params == null) ? new Mechanism(mechanism) : params.toMechanism(mechanism, extraParams);
+    return token.sign(mech, keyHandle, content);
   }
 
   @Override
@@ -254,19 +273,31 @@ class NativeP11Slot extends P11Slot {
   }
 
   @Override
-  protected PublicKey getPublicKey(P11Key identity) throws TokenException {
-    Long publicKeyHandle = identity.getKeyId().getPublicKeyHandle();
-    if (publicKeyHandle == null) {
-      return null;
+  public PublicKey getPublicKey(long handle) throws TokenException {
+    AttributeVector attrs = getAttrValues(handle, CKA_KEY_TYPE, CKA_CLASS);
+    Long objClass = attrs.class_();
+    Long keyType = attrs.keyType();
+    boolean valid = objClass != null && keyType != null;
+    if (valid) {
+      valid = objClass == CKO_PUBLIC_KEY;
     }
 
-    long keyType = identity.getKeyType();
+    if (!valid) {
+      throw new TokenException("object with " +  handle + " is not a public key");
+    }
+
     if (keyType == CKK_RSA) {
-      return buildRSAKey(identity.getRsaModulus(), identity.getRsaPublicExponent());
+      attrs = getAttrValues(handle, CKA_MODULUS, CKA_PUBLIC_EXPONENT);
+      try {
+        return KeyUtil.generateRSAPublicKey(
+            new RSAPublicKeySpec(attrs.modulus(), attrs.publicExponent()));
+      } catch (InvalidKeySpecException ex) {
+        throw new TokenException(ex.getMessage(), ex);
+      }
     } else if (keyType == CKK_DSA) {
-      AttributeVector attrs = token.getAttrValues(publicKeyHandle, CKA_VALUE);
+      attrs = token.getAttrValues(handle, CKA_VALUE, CKA_PRIME, CKA_SUBPRIME, CKA_BASE);
       DSAPublicKeySpec keySpec = new DSAPublicKeySpec(
-          new BigInteger(1, attrs.value()), identity.getDsaP(), identity.getDsaQ(), identity.getDsaG());
+          new BigInteger(1, attrs.value()), attrs.prime(), attrs.subprime(), attrs.base());
       try {
         return KeyUtil.generateDSAPublicKey(keySpec);
       } catch (InvalidKeySpecException ex) {
@@ -274,8 +305,16 @@ class NativeP11Slot extends P11Slot {
       }
     } else if (keyType == CKK_EC || keyType == CKK_VENDOR_SM2
         || keyType == CKK_EC_EDWARDS || keyType == CKK_EC_MONTGOMERY) {
-      byte[] ecPoint = token.getAttrValues(publicKeyHandle, CKA_EC_POINT).ecPoint();
-      ASN1ObjectIdentifier curveOid = identity.getEcParams();
+      ASN1ObjectIdentifier curveOid;
+      if (keyType == CKK_VENDOR_SM2) {
+        attrs = getAttrValues(handle, CKA_EC_POINT);
+        curveOid = GMObjectIdentifiers.sm2p256v1;
+      } else {
+        attrs = getAttrValues(handle, CKA_EC_POINT, CKA_EC_PARAMS);
+        curveOid = ASN1ObjectIdentifier.getInstance(attrs.ecParams());
+      }
+
+      byte[] ecPoint = attrs.ecPoint();
 
       if (keyType == CKK_EC_EDWARDS || keyType == CKK_EC_MONTGOMERY) {
         if (keyType == CKK_EC_EDWARDS) {
@@ -379,7 +418,7 @@ class NativeP11Slot extends P11Slot {
     }
 
       return removeObjects0(template, "objects " + getDescription(id, label));
-  } // method removeObjects
+  }
 
   @Override
   protected PKCS11KeyId doGenerateSecretKey(long keyType, Integer keysize, P11NewKeyControl control)
@@ -442,7 +481,7 @@ class NativeP11Slot extends P11Slot {
     label = token.getAttrValues(keyHandle, CKA_LABEL).label();
 
     return new PKCS11KeyId(keyHandle, CKO_SECRET_KEY, keyType, id, label);
-  } // method generateSecretKey0
+  }
 
   @Override
   protected PKCS11KeyId doImportSecretKey(long keyType, byte[] keyValue, P11NewKeyControl control)
@@ -477,7 +516,7 @@ class NativeP11Slot extends P11Slot {
     }
 
     return new PKCS11KeyId(keyHandle, CKO_SECRET_KEY, keyType, id, label);
-  } // method importSecretKey0
+  }
 
   @Override
   protected PKCS11KeyId doGenerateRSAKeypair(int keysize, BigInteger publicExponent, P11NewKeyControl control)
@@ -490,7 +529,7 @@ class NativeP11Slot extends P11Slot {
     setKeyPairAttributes(control, template, newObjectConf);
 
     return doGenerateKeyPair(rsaKeyPairGenMech, control.getId(), template);
-  } // method generateRSAKeypair0
+  }
 
   @Override
   protected PrivateKeyInfo doGenerateRSAKeypairOtf(int keysize, BigInteger publicExponent) throws TokenException {
@@ -574,7 +613,7 @@ class NativeP11Slot extends P11Slot {
     }
     template.publicKey().ecParams(encodedCurveId);
     return doGenerateKeyPair(CKM_EC_EDWARDS_KEY_PAIR_GEN, control.getId(), template);
-  } // method generateECEdwardsKeypair0
+  }
 
   @Override
   protected PrivateKeyInfo doGenerateECEdwardsKeypairOtf(ASN1ObjectIdentifier curveId) throws TokenException {
@@ -593,7 +632,7 @@ class NativeP11Slot extends P11Slot {
     }
 
     return doGenerateKeyPair(CKM_EC_MONTGOMERY_KEY_PAIR_GEN, control.getId(), template);
-  } // method generateECMontgomeryKeypair0
+  }
 
   @Override
   protected PrivateKeyInfo doGenerateECMontgomeryKeypairOtf(ASN1ObjectIdentifier curveId) throws TokenException {
@@ -614,7 +653,7 @@ class NativeP11Slot extends P11Slot {
 
     template.publicKey().ecParams(encodedCurveId);
     return doGenerateKeyPair(CKM_EC_KEY_PAIR_GEN, control.getId(), template);
-  } // method generateECKeypair0
+  }
 
   @Override
   protected PrivateKeyInfo doGenerateECKeypairOtf(ASN1ObjectIdentifier curveId) throws TokenException {
@@ -682,7 +721,7 @@ class NativeP11Slot extends P11Slot {
     } else {
       return doGenerateECKeypair(GMObjectIdentifiers.sm2p256v1, control);
     }
-  } // method generateSM2Keypair0
+  }
 
   @Override
   protected PrivateKeyInfo doGenerateSM2KeypairOtf() throws TokenException {
@@ -693,8 +732,7 @@ class NativeP11Slot extends P11Slot {
         : doGenerateECKeypairOtf(GMObjectIdentifiers.sm2p256v1);
   }
 
-  private PKCS11KeyId doGenerateKeyPair(long mech, byte[] id, KeyPairTemplate template)
-      throws TokenException {
+  private PKCS11KeyId doGenerateKeyPair(long mech, byte[] id, KeyPairTemplate template) throws TokenException {
     long keyType = template.privateKey().keyType();
     String label = template.privateKey().label();
 
@@ -754,20 +792,8 @@ class NativeP11Slot extends P11Slot {
    */
   @Override
   public void showDetails(OutputStream stream, Long objectHandle, boolean verbose) throws IOException {
-    Token underlyingToken = token.getToken();
-    String tokenInfo;
-    try {
-      tokenInfo = underlyingToken.getTokenInfo().toString("  ");
-    } catch (PKCS11Exception ex) {
-      tokenInfo = "  ERROR";
-    }
-
-    String slotInfo;
-    try {
-      slotInfo = underlyingToken.getSlot().getSlotInfo().toString("  ");
-    } catch (PKCS11Exception ex) {
-      slotInfo = "  ERROR";
-    }
+    String tokenInfo = (this.tokenInfo == null) ? "ERROR" : this.tokenInfo.toString("  ");
+    String slotInfo  = (this.slotInfo  == null) ? "ERROR" : this.slotInfo .toString("  ");
 
     stream.write(("\nToken information:\n" + tokenInfo).getBytes(StandardCharsets.UTF_8));
     stream.write(("\n\nSlot information:\n" + slotInfo).getBytes(StandardCharsets.UTF_8));
@@ -817,10 +843,8 @@ class NativeP11Slot extends P11Slot {
 
   private String objectToString(long handle) throws TokenException {
     AttributeVector attrs = token.getAttrValues(handle, CKA_ID, CKA_LABEL, CKA_CLASS);
-    Long objClass = attrs.class_();
-    if (objClass == null) {
-      throw new TokenException("CKA_CLASS is not present.");
-    }
+    long objClass = Optional.ofNullable(attrs.class_()).orElseThrow(
+        () -> new TokenException("CKA_CLASS is not present."));
 
     byte[] id = attrs.id();
     String label = attrs.label();
@@ -891,18 +915,20 @@ class NativeP11Slot extends P11Slot {
   }
 
   private void destroyKeyPairQuietly(PKCS11KeyPair keypair) {
-    if (keypair != null) {
-      try {
-        token.destroyObject(keypair.getPrivateKey());
-      } catch (TokenException ex) {
-        LogUtil.warn(LOG, ex, "error destroying private key " + keypair.getPrivateKey());
-      }
+    if (keypair == null) {
+      return;
+    }
 
-      try {
-        token.destroyObject(keypair.getPublicKey());
-      } catch (TokenException ex) {
-        LogUtil.warn(LOG, ex, "error destroying public key " + keypair.getPublicKey());
-      }
+    try {
+      token.destroyObject(keypair.getPrivateKey());
+    } catch (TokenException ex) {
+      LogUtil.warn(LOG, ex, "error destroying private key " + keypair.getPrivateKey());
+    }
+
+    try {
+      token.destroyObject(keypair.getPublicKey());
+    } catch (TokenException ex) {
+      LogUtil.warn(LOG, ex, "error destroying public key " + keypair.getPublicKey());
     }
   }
 
@@ -918,29 +944,6 @@ class NativeP11Slot extends P11Slot {
     }
   }
 
-  private Mechanism getMechanism(long mechanism, P11Params parameters, P11Key identity) throws TokenException {
-    if (parameters == null) {
-      return new Mechanism(mechanism);
-    }
-
-    CkParams paramObj;
-    if (parameters instanceof P11Params.P11RSAPkcsPssParams) {
-      P11Params.P11RSAPkcsPssParams param = (P11Params.P11RSAPkcsPssParams) parameters;
-      paramObj = new RSA_PKCS_PSS_PARAMS(param.getHashAlgorithm(),
-          param.getMaskGenerationFunction(), param.getSaltLength());
-    } else if (parameters instanceof P11Params.P11ByteArrayParams) {
-      paramObj = new ByteArrayParams(((P11Params.P11ByteArrayParams) parameters).getBytes());
-    } else {
-      throw new TokenException("unknown P11Parameters " + parameters.getClass().getName());
-    }
-
-    if (identity.getEcOrderBitSize() != null) {
-      paramObj = new CkParamsWithExtra(paramObj, new ExtraParams().ecOrderBitSize(identity.getEcOrderBitSize()));
-    }
-
-    return new Mechanism(mechanism, paramObj);
-  } // method getMechanism
-
   private List<Long> getObjects(AttributeVector template) throws TokenException {
     return getObjects(template, 9999);
   }
@@ -954,14 +957,6 @@ class NativeP11Slot extends P11Slot {
     }
 
     return objList;
-  } // method getObjects
-
-  private RSAPublicKey buildRSAKey(BigInteger mod, BigInteger exp) throws TokenException {
-    try {
-      return KeyUtil.generateRSAPublicKey(new RSAPublicKeySpec(mod, exp));
-    } catch (InvalidKeySpecException ex) {
-      throw new TokenException(ex.getMessage(), ex);
-    }
   }
 
   private int removeObjects0(AttributeVector template, String desc) throws TokenException {
@@ -972,7 +967,7 @@ class NativeP11Slot extends P11Slot {
       LogUtil.error(LOG, ex, "could not remove " + desc);
       throw new TokenException(ex.getMessage(), ex);
     }
-  } // method removeObjects
+  }
 
   private void setKeyPairAttributes(P11NewKeyControl control, KeyPairTemplate template,
                                    P11ModuleConf.P11NewObjectConf newObjectConf) {
@@ -1029,7 +1024,7 @@ class NativeP11Slot extends P11Slot {
         template.unwrapWrap(true).decryptEncrypt(true);
       }
     }
-  } // method setKeyAttributes
+  }
 
   private void setKeyAttributes(P11NewKeyControl control, AttributeVector template, String label) {
     template.token(true);

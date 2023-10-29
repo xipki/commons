@@ -298,7 +298,7 @@ public class P11ModuleConf {
 
   private final String nativeLibrary;
 
-  private final boolean readOnly;
+  private final Map<String, String> nativeLibraryProperties;
 
   private final Set<P11SlotIdFilter> excludeSlots;
 
@@ -308,26 +308,27 @@ public class P11ModuleConf {
 
   private final P11MechanismFilter mechanismFilter;
 
-  private final int maxMessageSize;
+  private final Integer newSessionTimeout;
 
   private final String userType;
 
   private final char[] userName;
 
-  private final P11NewObjectConf newObjectConf;
+  private boolean readOnly;
 
-  private final Integer numSessions;
+  private int maxMessageSize;
 
-  private final Integer newSessionTimeout;
+  private Integer numSessions;
 
-  private final List<Long> secretKeyTypes;
+  private P11NewObjectConf newObjectConf;
 
-  private final List<Long> keyPairTypes;
+  private List<Long> secretKeyTypes;
+
+  private List<Long> keyPairTypes;
 
   public P11ModuleConf(
       Pkcs11conf.Module moduleType, List<Pkcs11conf.MechanismSet> mechanismSets, PasswordResolver passwordResolver)
       throws InvalidConfException {
-    Args.notEmpty(mechanismSets, "mechanismSets");
     this.name = Args.notNull(moduleType, "moduleType").getName();
     this.readOnly = moduleType.isReadonly();
 
@@ -371,33 +372,35 @@ public class P11ModuleConf {
       this.keyPairTypes = Collections.unmodifiableList(ll);
     }
 
+    Map<String, MechanismSet> mechanismSetsMap = new HashMap<>();
     // parse mechanismSets
-    Map<String, MechanismSet> mechanismSetsMap = new HashMap<>(mechanismSets.size() * 3 / 2);
-    for (Pkcs11conf.MechanismSet m : mechanismSets) {
-      String name = m.getName();
-      if (mechanismSetsMap.containsKey(name)) {
-        throw new InvalidConfException("Duplication mechanismSets named " + name);
-      }
-
-      MechanismSet mechanismSet = new MechanismSet();
-      mechanismSet.includeMechanisms = new HashSet<>();
-      mechanismSet.excludeMechanisms = new HashSet<>();
-
-      for (String mechStr : m.getMechanisms()) {
-        mechStr = mechStr.trim().toUpperCase();
-        if (mechStr.equals("ALL")) {
-          mechanismSet.includeMechanisms = null; // accept all mechanisms
-          break;
+    if (mechanismSets != null) {
+      for (Pkcs11conf.MechanismSet m : mechanismSets) {
+        String name = m.getName();
+        if (mechanismSetsMap.containsKey(name)) {
+          throw new InvalidConfException("Duplication mechanismSets named " + name);
         }
 
-        mechanismSet.includeMechanisms.add(mechStr);
-      }
+        MechanismSet mechanismSet = new MechanismSet();
+        mechanismSet.includeMechanisms = new HashSet<>();
+        mechanismSet.excludeMechanisms = new HashSet<>();
 
-      for (String mechStr : m.getExcludeMechanisms()) {
-        mechanismSet.excludeMechanisms.add(mechStr.trim().toUpperCase());
-      }
+        for (String mechStr : m.getMechanisms()) {
+          mechStr = mechStr.trim().toUpperCase();
+          if (mechStr.equals("ALL")) {
+            mechanismSet.includeMechanisms = null; // accept all mechanisms
+            break;
+          }
 
-      mechanismSetsMap.put(name, mechanismSet);
+          mechanismSet.includeMechanisms.add(mechStr);
+        }
+
+        for (String mechStr : m.getExcludeMechanisms()) {
+          mechanismSet.excludeMechanisms.add(mechStr.trim().toUpperCase());
+        }
+
+        mechanismSetsMap.put(name, mechanismSet);
+      }
     }
 
     // Mechanism filter
@@ -433,33 +436,38 @@ public class P11ModuleConf {
     excludeSlots = getSlotIdFilters(moduleType.getExcludeSlots());
 
     final String osName = System.getProperty("os.name").toLowerCase();
-    String nativeLibraryPath = null;
-    for (Pkcs11conf.NativeLibrary library : moduleType.getNativeLibraries()) {
-      List<String> osNames = library.getOperationSystems();
-      if (CollectionUtil.isEmpty(osNames)) {
-        nativeLibraryPath = library.getPath();
-      } else {
-        for (String entry : osNames) {
-          if (osName.contains(entry.toLowerCase())) {
-            nativeLibraryPath = library.getPath();
-            break;
-          }
-        }
-      }
 
-      if (nativeLibraryPath != null) {
-        break;
-      }
-    } // end for (NativeLibraryType library)
+    Pkcs11conf.NativeLibrary matchLibrary = getNativeLibrary(moduleType, osName);
 
-    if (nativeLibraryPath == null) {
-      throw new InvalidConfException("could not find PKCS#11 library for OS " + osName);
-    }
-    this.nativeLibrary = nativeLibraryPath;
+    this.nativeLibrary = matchLibrary.getPath();
+    this.nativeLibraryProperties = matchLibrary.getProperties();
 
     this.newObjectConf = (moduleType.getNewObjectConf() == null) ? new P11NewObjectConf()
         : new P11NewObjectConf(moduleType.getNewObjectConf());
   } // constructor
+
+  private static Pkcs11conf.NativeLibrary getNativeLibrary(Pkcs11conf.Module moduleType, String osName)
+      throws InvalidConfException {
+    Pkcs11conf.NativeLibrary matchLibrary = null;
+    for (Pkcs11conf.NativeLibrary library : moduleType.getNativeLibraries()) {
+      List<String> osNames = library.getOperationSystems();
+      if (CollectionUtil.isEmpty(osNames)) {
+        matchLibrary = library;
+      } else {
+        for (String entry : osNames) {
+          if (osName.contains(entry.toLowerCase())) {
+            matchLibrary = library;
+            break;
+          }
+        }
+      }
+    }
+
+    if (matchLibrary == null) {
+      throw new InvalidConfException("could not find PKCS#11 library for OS " + osName);
+    }
+    return matchLibrary;
+  }
 
   public String getName() {
     return name;
@@ -473,8 +481,28 @@ public class P11ModuleConf {
     return nativeLibrary;
   }
 
+  public Map<String, String> getNativeLibraryProperties() {
+    return nativeLibraryProperties;
+  }
+
+  public void setNewObjectConf(P11NewObjectConf newObjectConf) {
+    this.newObjectConf = Args.notNull(newObjectConf, "newObjectConf");
+  }
+
+  public P11NewObjectConf getNewObjectConf() {
+    return newObjectConf;
+  }
+
+  public void setMaxMessageSize(int maxMessageSize) {
+    this.maxMessageSize = maxMessageSize;
+  }
+
   public int getMaxMessageSize() {
     return maxMessageSize;
+  }
+
+  public void setReadOnly(boolean readOnly) {
+    this.readOnly = readOnly;
   }
 
   public boolean isReadOnly() {
@@ -493,6 +521,10 @@ public class P11ModuleConf {
     return passwordRetriever;
   }
 
+  public void setNumSessions(Integer numSessions) {
+    this.numSessions = numSessions;
+  }
+
   public Integer getNumSessions() {
     return numSessions;
   }
@@ -501,8 +533,16 @@ public class P11ModuleConf {
     return newSessionTimeout;
   }
 
+  public void setSecretKeyTypes(List<Long> secretKeyTypes) {
+    this.secretKeyTypes = secretKeyTypes;
+  }
+
   public List<Long> getSecretKeyTypes() {
     return secretKeyTypes;
+  }
+
+  public void setKeyPairTypes(List<Long> keyPairTypes) {
+    this.keyPairTypes = keyPairTypes;
   }
 
   public List<Long> getKeyPairTypes() {
@@ -549,8 +589,7 @@ public class P11ModuleConf {
     return newObjectConf;
   }
 
-  private static Set<P11SlotIdFilter> getSlotIdFilters(List<Pkcs11conf.Slot> slotTypes)
-      throws InvalidConfException {
+  private static Set<P11SlotIdFilter> getSlotIdFilters(List<Pkcs11conf.Slot> slotTypes) throws InvalidConfException {
     if (CollectionUtil.isEmpty(slotTypes)) {
       return null;
     }
