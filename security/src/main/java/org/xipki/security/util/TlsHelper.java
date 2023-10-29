@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.xipki.security.X509Cert;
 import org.xipki.util.LruCache;
 import org.xipki.util.StringUtil;
+import org.xipki.util.exception.InvalidConfException;
 import org.xipki.util.http.XiHttpRequest;
 
 import java.io.IOException;
@@ -56,34 +57,18 @@ public class TlsHelper {
   private static final LruCache<String, X509Cert> clientCerts = new LruCache<>(50);
   private static final LruCache<Reference, X509Cert> clientCerts0 = new LruCache<>(50);
 
-  private static final int PROXY_MODE_GENERAL = 1;
-
-  private static final int PROXY_MODE_NO = 0;
-
-  private static final int reverseProxyMode;
-
-  static {
-    String propName = "org.xipki.reverseproxy.mode";
-    String mode = System.getProperty(propName);
-    if (mode != null && !mode.trim().isEmpty()) {
-      mode = mode.trim().toUpperCase();
-    }
-
-    if (mode == null || "NO".equals(mode)) {
-      reverseProxyMode = PROXY_MODE_NO;
-    } else if ("APACHE".equals(mode) || "NGINX".equals(mode) || "GENERAL".equals(mode)) {
-      reverseProxyMode = PROXY_MODE_GENERAL;
+  public static void checkReverseProxyMode(String mode) throws InvalidConfException {
+    if (mode == null || StringUtil.orEqualsIgnoreCase(mode, "GENERAL", "NGINX", "APACHE")) {
+      LOG.info("reverseProxyMode: {}", mode);
     } else {
-      LOG.error("ignored invalid value of property {}: {} is not one of [NO, GENERAL, APACHE, NGINX]", propName, mode);
-      reverseProxyMode = PROXY_MODE_NO;
+      String msg = "reverseProxyMode '" + mode + "' in not among [NO,APACHE,NGINX,GENERAL]";
+      LOG.error(msg);
+      throw new InvalidConfException(msg);
     }
+  }
 
-    LOG.info("set reverseProxyMode to {}", reverseProxyMode);
-  } // method static
-
-  public static X509Cert getTlsClientCert(XiHttpRequest request)
-      throws IOException {
-    if (reverseProxyMode == PROXY_MODE_NO) {
+  public static X509Cert getTlsClientCert(XiHttpRequest request, String reverseProxyMode) throws IOException {
+    if (reverseProxyMode == null || "NO".equalsIgnoreCase(reverseProxyMode)) {
       X509Certificate[] certs = request.getCertificateChain();
       if (certs == null || certs.length < 1) {
         return null;
@@ -97,7 +82,7 @@ public class TlsHelper {
         clientCerts0.put(ref, cert);
       }
       return cert;
-    } else { // { if (reverseProxyMode == PROXY_MODE_GENERAL) {
+    } else if (StringUtil.orEqualsIgnoreCase(reverseProxyMode, "GENERAL", "NGINX", "APACHE")) {
       // check whether this application is behind a reverse proxy and the TLS client
       // certificate is forwarded.
       String clientVerify = request.getHeader("SSL_CLIENT_VERIFY");
@@ -132,6 +117,9 @@ public class TlsHelper {
 
       clientCerts.put(pemClientCert, clientCert);
       return clientCert;
+    } else {
+      throw new IllegalArgumentException(
+          "reverseProxyMode '" + reverseProxyMode + "' in not among [NO,APACHE,NGINX,GENERAL]");
     }
   }
 
