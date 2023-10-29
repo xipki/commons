@@ -24,10 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
 import java.security.interfaces.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.bouncycastle.asn1.bsi.BSIObjectIdentifiers.*;
 import static org.bouncycastle.asn1.cms.CMSObjectIdentifiers.*;
@@ -194,11 +191,8 @@ public enum SignAlgo {
     this.jceName = jceName.toUpperCase();
     this.oid = oid;
     this.hashAlgo = hashAlgo;
-    if (withNullParams) {
-      this.algId = new AlgorithmIdentifier(this.oid, DERNull.INSTANCE);
-    } else {
-      this.algId = new AlgorithmIdentifier(this.oid);
-    }
+    this.algId = withNullParams
+        ? new AlgorithmIdentifier(this.oid, DERNull.INSTANCE) : new AlgorithmIdentifier(this.oid);
   }
 
   // RSA PSS with MGF1
@@ -389,10 +383,8 @@ public enum SignAlgo {
 
   public static SignAlgo getInstance(String nameOrOid) throws NoSuchAlgorithmException {
     SignAlgo alg = map.get(nameOrOid.toUpperCase().replace("-", ""));
-    if (alg == null) {
-      throw new NoSuchAlgorithmException("Unknown HashAlgo OID/name '" + nameOrOid + "'");
-    }
-    return alg;
+    return Optional.ofNullable(alg).orElseThrow(
+        () -> new NoSuchAlgorithmException("Unknown HashAlgo OID/name '" + nameOrOid + "'"));
   }
 
   public static SignAlgo getInstance(P11Key p11Key, SignerConf signerConf) throws NoSuchAlgorithmException {

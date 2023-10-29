@@ -101,8 +101,7 @@ public class IoUtil {
     save(fileName, encoded, false);
   }
 
-  public static void save(String fileName, byte[] encoded, boolean prependBaseDir)
-      throws IOException {
+  public static void save(String fileName, byte[] encoded, boolean prependBaseDir) throws IOException {
     save(new File(fileName), encoded, prependBaseDir);
   }
 
@@ -171,7 +170,7 @@ public class IoUtil {
       }
     }
 
-    if (addresses.size() > 0) {
+    if (!addresses.isEmpty()) {
       return addresses.get(0);
     } else {
       try {
@@ -348,8 +347,7 @@ public class IoUtil {
     return loadProperties(path, false);
   }
 
-  public static ConfigurableProperties loadProperties(String path, boolean prependBaseDir)
-      throws IOException {
+  public static ConfigurableProperties loadProperties(String path, boolean prependBaseDir) throws IOException {
     Path realPath = Paths.get(expandFilepath(path, prependBaseDir));
     if (!Files.exists(realPath)) {
       throw new IOException("File " + path + " does not exist");

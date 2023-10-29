@@ -43,6 +43,6 @@ public class FpIdCalculator {
     int hi = bs[0] << 24 | (bs[1] & 0xff) << 16 | (bs[2] & 0xff) << 8 | (bs[3] & 0xff);
     int lo = bs[4] << 24 | (bs[5] & 0xff) << 16 | (bs[6] & 0xff) << 8 | (bs[7] & 0xff);
     return ((hi & 0xffffffffL) << 32) | (lo & 0xffffffffL);
-  } // method bytesToLong
+  }
 
 }

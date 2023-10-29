@@ -205,8 +205,7 @@ public class PciAuditEvent {
 
   private static String replaceDelimiter(String fieldValue) {
     return (fieldValue == null || fieldValue.isEmpty())
-        ? fieldValue
-        : fieldValue.replace(DEFAULT_DELIMITER, DEFAULT_REPLACE_DELIMITER);
+        ? fieldValue : fieldValue.replace(DEFAULT_DELIMITER, DEFAULT_REPLACE_DELIMITER);
   } // method replaceDelimiter
 
   private static String getHostAddress() {
@@ -242,7 +241,7 @@ public class PciAuditEvent {
       }
     }
 
-    if (addresses.size() > 0) {
+    if (!addresses.isEmpty()) {
       return addresses.get(0);
     } else {
       try {

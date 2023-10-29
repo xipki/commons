@@ -20,6 +20,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -137,11 +138,8 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
     } catch (InterruptedException ex) {
     }
 
-    if (signer == null) {
-      throw new NoIdleSignerException("no idle signer available");
-    }
-
-    return signer;
+    return Optional.ofNullable(signer).orElseThrow(
+        () -> new NoIdleSignerException("no idle signer available"));
   }
 
   @Override

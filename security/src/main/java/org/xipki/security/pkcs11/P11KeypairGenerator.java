@@ -137,17 +137,13 @@ public class P11KeypairGenerator extends KeypairGenerator {
           int pLength = Integer.parseInt(tokens[1]);
           int qLength = Integer.parseInt(tokens[2]);
           DSAParameterSpec spec = DSAParameterCache.getDSAParameterSpec(pLength, qLength, null);
-          return slot.generateDSAKeypairOtf0(spec.getP(), spec.getQ(), spec.getG());
+          return slot.generateDSAKeypairOtf(spec.getP(), spec.getQ(), spec.getG());
         }
         case "ED25519":
-        case "ED448": {
-          ASN1ObjectIdentifier curveId = EdECConstants.getCurveOid(keyspec);
-          return slot.doGenerateECEdwardsKeypairOtf(curveId);
-        }
+        case "ED448":
         case "X25519":
         case "X448": {
-          ASN1ObjectIdentifier curveId = EdECConstants.getCurveOid(keyspec);
-          return slot.doGenerateECMontgomeryKeypairOtf(curveId);
+          return slot.generateECKeypairOtf(EdECConstants.getCurveOid(keyspec));
         }
         default: {
           throw new IllegalArgumentException("unknown keyspec " + keyspec);

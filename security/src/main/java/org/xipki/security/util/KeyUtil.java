@@ -30,6 +30,7 @@ import java.security.*;
 import java.security.interfaces.*;
 import java.security.spec.*;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Key utility class.
@@ -449,12 +450,11 @@ public class KeyUtil {
   } // method createECPublicKey
 
   public static ASN1ObjectIdentifier detectCurveOid(ECParameterSpec paramSpec) {
-    byte[] ecParams = Functions.getEcParams(paramSpec.getOrder(), paramSpec.getGenerator().getAffineX());
-    if (ecParams == null) {
-      throw new IllegalArgumentException("unknown paramSpec");
-    }
+    byte[] ecParams = Optional.ofNullable(
+        Functions.getEcParams(paramSpec.getOrder(), paramSpec.getGenerator().getAffineX())).orElseThrow(
+        () -> new IllegalArgumentException("unknown paramSpec"));
+
     return new ASN1ObjectIdentifier(Functions.decodeOid(ecParams));
-    // return ECUtil.getNamedCurveOid(EC5Util.convertSpec(paramSpec));
   }
 
   public static byte[] getUncompressedEncodedECPoint(ECPoint point, int fieldBitSize) {
@@ -464,7 +464,7 @@ public class KeyUtil {
     unsignedByteArrayCopy(keyData, 1, fieldByteSize, point.getAffineX());
     unsignedByteArrayCopy(keyData, 1 + fieldByteSize, fieldByteSize, point.getAffineY());
     return keyData;
-  } // method getUncompressedEncodedECPoint
+  }
 
   /**
    * Write the passed in value as an unsigned byte array to the {@code dest} from offset
@@ -487,6 +487,6 @@ public class KeyUtil {
 
       System.arraycopy(bytes, start, dest, destPos + length - count, count);
     }
-  } // method unsignedByteArrayCopy
+  }
 
 }

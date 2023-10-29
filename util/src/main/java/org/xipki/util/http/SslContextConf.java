@@ -15,7 +15,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -207,8 +208,7 @@ public class SslContextConf {
         }
 
         sslContext = builder.build();
-      } catch (IOException | UnrecoverableKeyException | NoSuchAlgorithmException
-          | KeyStoreException | CertificateException | KeyManagementException | PasswordResolverException ex) {
+      } catch (IOException | GeneralSecurityException | PasswordResolverException ex) {
         throw new ObjectCreationException("could not build SSLContext: " + ex.getMessage(), ex);
       }
     }

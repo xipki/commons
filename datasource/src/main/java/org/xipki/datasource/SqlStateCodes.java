@@ -161,7 +161,7 @@ public class SqlStateCodes {
     Set<String> set = new HashSet<>();
     Collections.addAll(set, strs);
     return Collections.unmodifiableSet(set);
-  } // method toSet
+  }
 
   private static Set<String> addToSet(Set<String> baseSet, String... strs) {
     if (strs == null || strs.length == 0) {
@@ -171,6 +171,6 @@ public class SqlStateCodes {
     newSet.addAll(baseSet);
     Collections.addAll(newSet, strs);
     return Collections.unmodifiableSet(newSet);
-  } // method addToSet
+  }
 
 }

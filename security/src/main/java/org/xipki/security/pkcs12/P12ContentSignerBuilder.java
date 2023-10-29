@@ -150,8 +150,7 @@ public class P12ContentSignerBuilder {
     return key;
   }
 
-  public ContentSigner createContentSigner(SignAlgo signAlgo, SecureRandom random)
-          throws XiSecurityException {
+  public ContentSigner createContentSigner(SignAlgo signAlgo, SecureRandom random) throws XiSecurityException {
     String provName = getProviderName(Args.notNull(signAlgo, "signAlgo"));
 
     if (provName != null && Security.getProvider(provName) != null) {
@@ -249,8 +248,7 @@ public class P12ContentSignerBuilder {
     return signature;
   }
 
-  private Object[] ff(SignAlgo signAlgo, SecureRandom random)
-      throws XiSecurityException {
+  private Object[] ff(SignAlgo signAlgo, SecureRandom random) throws XiSecurityException {
     BcContentSignerBuilder signerBuilder;
     AsymmetricKeyParameter keyparam;
     try {
@@ -264,7 +262,7 @@ public class P12ContentSignerBuilder {
       } else if (key instanceof DSAPrivateKey) {
         if (!signAlgo.isDSASigAlgo()) {
           throw new NoSuchAlgorithmException(
-              "the given algorithm is not a valid DSA signature algirthm " + signAlgo);
+              "the given algorithm is not a valid DSA signature algorithm " + signAlgo);
         }
         keyparam = DSAUtil.generatePrivateKeyParameter(key);
         signerBuilder = new DSAContentSignerBuilder(signAlgo);
@@ -274,13 +272,13 @@ public class P12ContentSignerBuilder {
         if (GMUtil.isSm2primev2Curve(curve)) {
           if (!signAlgo.isSM2SigAlgo()) {
             throw new NoSuchAlgorithmException(
-                "the given algorithm is not a valid SM2 signature algirthm " + signAlgo);
+                "the given algorithm is not a valid SM2 signature algorithm " + signAlgo);
           }
           signerBuilder = new SM2ContentSignerBuilder(signAlgo);
         } else {
           if (!signAlgo.isECDSASigAlgo()) {
             throw new NoSuchAlgorithmException(
-                "the given algorithm is not a valid ECDSA signature algirthm " + signAlgo);
+                "the given algorithm is not a valid ECDSA signature algorithm " + signAlgo);
           }
           signerBuilder = new ECDSAContentSignerBuilder(signAlgo);
         }

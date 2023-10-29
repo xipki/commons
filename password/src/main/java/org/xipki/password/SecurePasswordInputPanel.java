@@ -93,7 +93,7 @@ public class SecurePasswordInputPanel extends Panel {
           }
 
           if (BACKSPACE.equals(pressedKey)) {
-            if (password.length() > 0) {
+            if (!password.isEmpty()) {
               password = password.substring(0, password.length() - 1);
             }
           } else if (CLEAR.equals(pressedKey)) {

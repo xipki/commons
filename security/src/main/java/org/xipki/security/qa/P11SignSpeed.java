@@ -35,8 +35,7 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
   public static class DSA extends P11SignSpeed {
 
     public DSA(SecurityFactory securityFactory, P11Slot slot, byte[] keyId,
-        String signatureAlgorithm, int threads, int plength, int qlength)
-        throws Exception {
+        String signatureAlgorithm, int threads, int plength, int qlength) throws Exception {
       this(false, securityFactory, slot, keyId, null, signatureAlgorithm, threads, plength, qlength);
     }
 
@@ -49,8 +48,7 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
     }
 
     private static PKCS11KeyId generateKey(
-        boolean keyPresent, P11Slot slot, byte[] keyId, String keyLabel, int plength, int qlength)
-        throws Exception {
+        boolean keyPresent, P11Slot slot, byte[] keyId, String keyLabel, int plength, int qlength) throws Exception {
       if (keyPresent) {
         return getNonNullKeyId(slot, keyId, keyLabel);
       }
@@ -63,8 +61,7 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
   public static class EC extends P11SignSpeed {
 
     public EC(SecurityFactory securityFactory, P11Slot slot, byte[] keyId,
-        String signatureAlgorithm, int threads, ASN1ObjectIdentifier curveOid)
-        throws Exception {
+        String signatureAlgorithm, int threads, ASN1ObjectIdentifier curveOid) throws Exception {
       this(false, securityFactory, slot, keyId, null, signatureAlgorithm, threads, curveOid);
     }
 
@@ -100,16 +97,14 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
     }
 
     public HMAC(boolean keyPresent, SecurityFactory securityFactory, P11Slot slot,
-        byte[] keyId, String keyLabel, String signatureAlgorithm, int threads)
-        throws Exception {
+        byte[] keyId, String keyLabel, String signatureAlgorithm, int threads) throws Exception {
       super(securityFactory, slot, signatureAlgorithm, !keyPresent,
           generateKey(keyPresent, slot, keyId, keyLabel, signatureAlgorithm),
           "PKCS#11 HMAC signature creation", threads);
     }
 
     private static PKCS11KeyId generateKey(
-        boolean keyPresent, P11Slot slot, byte[] keyId, String keyLabel, String signatureAlgorithm)
-        throws Exception {
+        boolean keyPresent, P11Slot slot, byte[] keyId, String keyLabel, String signatureAlgorithm) throws Exception {
       if (keyPresent) {
         return getNonNullKeyId(slot, keyId, keyLabel);
       }
@@ -153,8 +148,7 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
   public static class RSA extends P11SignSpeed {
 
     public RSA(SecurityFactory securityFactory, P11Slot slot, byte[] keyId,
-        String signatureAlgorithm, int threads, int keysize, BigInteger publicExponent)
-        throws Exception {
+        String signatureAlgorithm, int threads, int keysize, BigInteger publicExponent) throws Exception {
       this(false, securityFactory, slot, keyId, null, signatureAlgorithm, threads,
           keysize, publicExponent);
     }
@@ -182,21 +176,18 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
 
   public static class SM2 extends P11SignSpeed {
 
-    public SM2(SecurityFactory securityFactory, P11Slot slot, byte[] keyId, int threads)
-        throws Exception {
+    public SM2(SecurityFactory securityFactory, P11Slot slot, byte[] keyId, int threads) throws Exception {
       this(true, securityFactory, slot, keyId, null, threads);
     }
 
     public SM2(boolean keyPresent, SecurityFactory securityFactory, P11Slot slot,
-               byte[] keyId, String keyLabel, int threads)
-        throws Exception {
+               byte[] keyId, String keyLabel, int threads) throws Exception {
       super(securityFactory, slot, "SM3WITHSM2", !keyPresent,
           generateKey(keyPresent, slot, keyId, keyLabel), "PKCS#11 SM2 signature creation", threads);
     }
 
     private static PKCS11KeyId generateKey(
-        boolean keyPresent, P11Slot slot, byte[] keyId, String keyLabel)
-        throws Exception {
+        boolean keyPresent, P11Slot slot, byte[] keyId, String keyLabel) throws Exception {
       if (keyPresent) {
         return getNonNullKeyId(slot, keyId, keyLabel);
       }

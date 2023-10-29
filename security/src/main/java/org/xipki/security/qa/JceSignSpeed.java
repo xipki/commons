@@ -62,8 +62,7 @@ public class JceSignSpeed extends BenchmarkExecutor {
     Args.notBlank(signatureAlgorithm, "signatureAlgorithm");
 
     try {
-      SignerConf signerConf = getJceSignerConf(alias, threads,
-          SignAlgo.getInstance(signatureAlgorithm));
+      SignerConf signerConf = getJceSignerConf(alias, threads, SignAlgo.getInstance(signatureAlgorithm));
       this.signer = securityFactory.createSigner(type, signerConf, (X509Cert) null);
     } catch (ObjectCreationException ex) {
       close();

@@ -56,8 +56,7 @@ public class XiHttpClient {
   } // method httpGet
 
   public HttpRespContent httpPost(
-      String url, String requestContentType, byte[] request, String expectedRespContentType)
-      throws IOException {
+      String url, String requestContentType, byte[] request, String expectedRespContentType) throws IOException {
     HttpRespContent resp = httpPost(url, requestContentType, request);
 
     String responseContentType = resp.getContentType();
@@ -75,8 +74,7 @@ public class XiHttpClient {
     return resp;
   }
 
-  public HttpRespContent httpPost(String url, String requestContentType, byte[] request)
-      throws IOException {
+  public HttpRespContent httpPost(String url, String requestContentType, byte[] request) throws IOException {
     try {
       HttpURLConnection httpConn = openHttpConn(new URL(Args.notNull(url, "url")));
       httpConn.setRequestMethod("POST");

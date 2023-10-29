@@ -8,6 +8,7 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Optional;
 
 /**
  * PBE (Password Based Encryption) password service.
@@ -53,10 +54,8 @@ public class PBEPasswordService {
     // PBE algorithm
     byte bb = bytes[offset++];
     int algoCode = (bb < 0) ? 256 + bb : bb;
-    PBEAlgo algo = PBEAlgo.forCode(algoCode);
-    if (algo == null) {
-      throw new PasswordResolverException("unknown algorithm code " + algoCode);
-    }
+    PBEAlgo algo = Optional.ofNullable(PBEAlgo.forCode(algoCode)).orElseThrow(() ->
+        new PasswordResolverException("unknown algorithm code " + algoCode));
 
     // iteration count
     byte[] iterationCountBytes = Arrays.copyOfRange(bytes, offset, offset + 2);

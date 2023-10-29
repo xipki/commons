@@ -319,7 +319,7 @@ public class StringUtil {
 
   public static String getVersion(Class<?> clazz) {
     try {
-      return toUtf8String(IoUtil.readAllBytesAndClose(clazz.getResourceAsStream("/version"))).trim();
+      return toUtf8String(IoUtil.readAllBytesAndClose(clazz.getResourceAsStream("version"))).trim();
     } catch (Exception ex) {
       return "UNKNOWN";
     }

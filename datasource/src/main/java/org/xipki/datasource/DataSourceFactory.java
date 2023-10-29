@@ -16,6 +16,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 /**
  * Factory to create {@link DataSourceWrapper}.
@@ -65,11 +66,9 @@ public class DataSourceFactory {
       if (className != null) {
         databaseType = DatabaseType.forDriver(className);
       } else {
-        String jdbcUrl = conf.getProperty("jdbcUrl");
-        if (jdbcUrl == null) {
-          throw new IllegalArgumentException("none of the properties dataSourceClassName"
-              + ", driverClassName and jdbcUrl is configured");
-        }
+        String jdbcUrl = Optional.ofNullable(conf.getProperty("jdbcUrl")).orElseThrow(() ->
+            new IllegalArgumentException("none of the properties dataSourceClassName"
+              + ", driverClassName and jdbcUrl is configured"));
 
         databaseType = DatabaseType.forJdbcUrl(jdbcUrl);
       }

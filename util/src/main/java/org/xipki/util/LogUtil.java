@@ -146,17 +146,13 @@ public class LogUtil {
   }
 
   private static String toUtf8String(byte[] bytes) {
-    if (bytes == null) {
-      return "NULL";
-    }
-    return new String(bytes, StandardCharsets.UTF_8);
+    return (bytes == null) ? "NULL" : new String(bytes, StandardCharsets.UTF_8);
   }
 
   public static void logTextReqResp(
       String prefix, Logger log, boolean logReqResp, boolean viaPost,
       String requestURI, byte[] requestBytes, byte[] respBody) {
     if (logReqResp && log.isDebugEnabled()) {
-
       if (viaPost) {
         log.debug("{} HTTP POST path: {}\nRequest:\n{}\nResponse:\n{}",
             prefix, requestURI, toUtf8String(requestBytes), toUtf8String(respBody));
@@ -170,7 +166,6 @@ public class LogUtil {
       String prefix, Logger log, boolean logReqResp, boolean viaPost,
       String requestURI, byte[] requestBytes, byte[] respBody) {
     if (logReqResp && log.isDebugEnabled()) {
-
       if (viaPost) {
         log.debug("{} HTTP POST path: {}\nRequest:\n{}\nResponse:\n{}",
             prefix, requestURI, base64Encode(requestBytes), base64Encode(respBody));

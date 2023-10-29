@@ -77,8 +77,7 @@ public class SignerUtil {
   } // method createPSSRSASigner
 
   public static byte[] dsaSigPlainToX962(byte[] signature) throws XiSecurityException {
-    byte[] x962Sig = Functions.dsaSigPlainToX962(
-                        Args.notNull(signature, "signature"));
+    byte[] x962Sig = Functions.dsaSigPlainToX962(Args.notNull(signature, "signature"));
     if (Arrays.equals(x962Sig, signature)) {
       throw new XiSecurityException("signature is not correctly encoded.");
     }

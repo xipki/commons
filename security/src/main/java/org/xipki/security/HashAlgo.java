@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.*;
 
@@ -138,10 +139,8 @@ public enum HashAlgo {
 
   public static HashAlgo getInstance(String nameOrOid) throws NoSuchAlgorithmException {
     HashAlgo alg = map.get(nameOrOid.toUpperCase());
-    if (alg == null) {
-      throw new NoSuchAlgorithmException("Found no HashAlgo for name/OID '" + nameOrOid + "'");
-    }
-    return alg;
+    return Optional.ofNullable(alg).orElseThrow(
+        () -> new NoSuchAlgorithmException("Found no HashAlgo for name/OID '" + nameOrOid + "'"));
   }
 
   public static HashAlgo getInstanceForEncoded(byte[] encoded) throws NoSuchAlgorithmException {

@@ -63,7 +63,6 @@ class EmulatorKeyCryptor {
     byte[] S = new byte[8];
     byte[] dkey = SCrypt.generate(P, S, 16384, 8, 1, 16); //N: 16384, r: 8, p: 1, dkLen: 16
     this.key = new SecretKeySpec(dkey, "AES");
-
     this.rnd = new SecureRandom();
   } // constructor
 
@@ -74,16 +73,10 @@ class EmulatorKeyCryptor {
     AlgorithmIdentifier keyAlg = privateKeyInfo.getPrivateKeyAlgorithm();
     ASN1ObjectIdentifier keyAlgOid = keyAlg.getAlgorithm();
 
-    String algoName;
-    if (PKCSObjectIdentifiers.rsaEncryption.equals(keyAlgOid)) {
-      algoName = "RSA";
-    } else if (X9ObjectIdentifiers.id_dsa.equals(keyAlgOid)) {
-      algoName = "DSA";
-    } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(keyAlgOid)) {
-      algoName = "EC";
-    } else {
-      algoName = EdECConstants.getName(keyAlg.getAlgorithm());
-    }
+    String algoName = PKCSObjectIdentifiers.rsaEncryption.equals(keyAlgOid) ? "RSA"
+        : X9ObjectIdentifiers.id_dsa.equals(keyAlgOid) ? "DSA"
+        : X9ObjectIdentifiers.id_ecPublicKey.equals(keyAlgOid) ? "EC"
+        : EdECConstants.getName(keyAlg.getAlgorithm());
 
     if (algoName == null) {
       throw new TokenException("unknown private key algorithm " + keyAlgOid.getId());
@@ -91,8 +84,7 @@ class EmulatorKeyCryptor {
 
     try {
       KeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyInfo.getEncoded());
-      KeyFactory keyFactory = KeyFactory.getInstance(algoName, "BC");
-      return keyFactory.generatePrivate(keySpec);
+      return KeyFactory.getInstance(algoName, "BC").generatePrivate(keySpec);
     } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException ex) {
       throw new TokenException(ex.getClass().getName() + ": " + ex.getMessage(), ex);
     }
@@ -114,11 +106,7 @@ class EmulatorKeyCryptor {
       int plainLen = cipher.getOutputSize(cipherLen);
       byte[] plain = new byte[plainLen];
       int realPlainLen = cipher.doFinal(cipherBlob, cipherValueOffset, cipherLen, plain, 0);
-      if (plainLen > realPlainLen) {
-        plain = Arrays.copyOf(plain, realPlainLen);
-      }
-
-      return plain;
+      return (plainLen > realPlainLen) ? Arrays.copyOf(plain, realPlainLen) : plain;
     } catch (GeneralSecurityException ex) {
       throw new TokenException(ex);
     }

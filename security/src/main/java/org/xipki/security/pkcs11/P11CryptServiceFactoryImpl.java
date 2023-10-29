@@ -66,24 +66,29 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
     }
 
     try {
-      List<Pkcs11conf.Module> moduleTypes = pkcs11Conf.getModules();
-      List<Pkcs11conf.MechanismSet> mechanismSets = pkcs11Conf.getMechanismSets();
-
-      Map<String, P11ModuleConf> confs = new HashMap<>();
-      for (Pkcs11conf.Module moduleType : moduleTypes) {
-        P11ModuleConf conf = new P11ModuleConf(moduleType, mechanismSets, passwordResolver);
-        confs.put(conf.getName(), conf);
-      }
-
-      if (!confs.containsKey(P11CryptServiceFactory.DEFAULT_P11MODULE_NAME)) {
-        throw new InvalidConfException("module '" + P11CryptServiceFactory.DEFAULT_P11MODULE_NAME + "' is not defined");
-      }
+      Map<String, P11ModuleConf> confs = geModuleConfs();
       this.moduleConfs = Collections.unmodifiableMap(confs);
       this.moduleNames = Set.copyOf(confs.keySet());
     } catch (RuntimeException ex) {
       throw new InvalidConfException("could not create P11Conf: " + ex.getMessage(), ex);
     }
   } // method init
+
+  private Map<String, P11ModuleConf> geModuleConfs() throws InvalidConfException {
+    List<Pkcs11conf.Module> moduleTypes = pkcs11Conf.getModules();
+    List<Pkcs11conf.MechanismSet> mechanismSets = pkcs11Conf.getMechanismSets();
+
+    Map<String, P11ModuleConf> confs = new HashMap<>();
+    for (Pkcs11conf.Module moduleType : moduleTypes) {
+      P11ModuleConf conf = new P11ModuleConf(moduleType, mechanismSets, passwordResolver);
+      confs.put(conf.getName(), conf);
+    }
+
+    if (!confs.containsKey(P11CryptServiceFactory.DEFAULT_P11MODULE_NAME)) {
+      throw new InvalidConfException("module '" + P11CryptServiceFactory.DEFAULT_P11MODULE_NAME + "' is not defined");
+    }
+    return confs;
+  }
 
   public synchronized P11CryptService getP11CryptService(String moduleName)
       throws XiSecurityException, TokenException {
@@ -98,10 +103,8 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
     }
 
     final String name = getModuleName(moduleName);
-    P11ModuleConf conf = moduleConfs.get(name);
-    if (conf == null) {
-      throw new XiSecurityException("PKCS#11 module " + name + " is not defined");
-    }
+    P11ModuleConf conf = Optional.ofNullable(moduleConfs.get(name)).orElseThrow(() ->
+        new XiSecurityException("PKCS#11 module " + name + " is not defined"));
 
     P11CryptService instance = services.get(name);
     if (instance == null) {

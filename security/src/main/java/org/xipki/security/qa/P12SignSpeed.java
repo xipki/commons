@@ -30,14 +30,12 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
 
   public static class AESGmac extends P12SignSpeed {
 
-    public AESGmac(SecurityFactory securityFactory, String signatureAlgorithm, int threads)
-        throws Exception {
+    public AESGmac(SecurityFactory securityFactory, String signatureAlgorithm, int threads) throws Exception {
       super("JCEKS", securityFactory, signatureAlgorithm, generateKeystore(signatureAlgorithm),
           "JCEKS AES-GMAC signature creation", threads);
     }
 
-    private static byte[] generateKeystore(String signatureAlgorithm)
-        throws Exception {
+    private static byte[] generateKeystore(String signatureAlgorithm) throws Exception {
       int keysize = getKeysize(signatureAlgorithm);
       KeyStoreWrapper identity = new P12KeyGenerator().generateSecretKey(
           "AES", keysize, new KeystoreGenerationParameters(PASSWORD.toCharArray()));
@@ -74,8 +72,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
               + "\nqlength: " + qlength, threads);
     }
 
-    private static byte[] generateKeystore(int plength, int qlength)
-        throws Exception {
+    private static byte[] generateKeystore(int plength, int qlength) throws Exception {
       byte[] keystoreBytes = getPrecomputedDSAKeystore(plength, qlength);
       if (keystoreBytes == null) {
         KeystoreGenerationParameters params = new KeystoreGenerationParameters(PASSWORD.toCharArray());
@@ -114,8 +111,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
 
   public static class HMAC extends P12SignSpeed {
 
-    public HMAC(SecurityFactory securityFactory, String signatureAlgorithm, int threads)
-        throws Exception {
+    public HMAC(SecurityFactory securityFactory, String signatureAlgorithm, int threads) throws Exception {
       super("JCEKS", securityFactory, signatureAlgorithm, generateKeystore(signatureAlgorithm),
           "JCEKS HMAC signature creation", threads);
     }
@@ -161,15 +157,13 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
   public static class RSA extends P12SignSpeed {
 
     public RSA(SecurityFactory securityFactory, String signatureAlgorithm, int threads,
-               int keysize, BigInteger publicExponent)
-        throws Exception {
+               int keysize, BigInteger publicExponent) throws Exception {
       super(securityFactory, signatureAlgorithm, generateKeystore(keysize, publicExponent),
           "PKCS#12 RSA signature creation\nkeysize: " + keysize
               + "\npublic exponent: " + publicExponent, threads);
     }
 
-    private static byte[] generateKeystore(int keysize, BigInteger publicExponent)
-        throws Exception {
+    private static byte[] generateKeystore(int keysize, BigInteger publicExponent) throws Exception {
       byte[] keystoreBytes = getPrecomputedRSAKeystore(keysize, publicExponent);
       if (keystoreBytes == null) {
         KeystoreGenerationParameters params = new KeystoreGenerationParameters(PASSWORD.toCharArray());
@@ -189,8 +183,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
           "PKCS#12 SM2 signature creation", threads);
     }
 
-    private static byte[] generateKeystore(ASN1ObjectIdentifier curveNOid)
-        throws Exception {
+    private static byte[] generateKeystore(ASN1ObjectIdentifier curveNOid) throws Exception {
       byte[] keystoreBytes = getPrecomputedECKeystore(curveNOid);
       if (keystoreBytes == null) {
         KeystoreGenerationParameters params = new KeystoreGenerationParameters(PASSWORD.toCharArray());
@@ -237,14 +230,12 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
   private final ConcurrentContentSigner signer;
 
   public P12SignSpeed(SecurityFactory securityFactory, String signatureAlgorithm,
-                      byte[] keystore, String description, int threads)
-      throws Exception {
+                      byte[] keystore, String description, int threads) throws Exception {
     this("PKCS12", securityFactory, signatureAlgorithm, keystore, description, threads);
   }
 
   public P12SignSpeed(String tokenType, SecurityFactory securityFactory, String signatureAlgorithm,
-                      byte[] keystore, String description, int threads)
-      throws Exception {
+                      byte[] keystore, String description, int threads) throws Exception {
     super(description);
 
     Args.notNull(securityFactory, "securityFactory");

@@ -30,6 +30,7 @@ import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
 import static org.xipki.security.SignAlgo.*;
@@ -75,11 +76,8 @@ abstract class P11ContentSigner implements XiContentSigner {
 
      if (isSm2p256v1) {
        if (publicKey == null) {
-         publicKey = identity.getPublicKey();
-       }
-
-       if (publicKey == null) {
-         throw new XiSecurityException("SM2 signer needs public key, but could not get anyone.");
+         publicKey = Optional.ofNullable(identity.getPublicKey()).orElseThrow(() ->
+             new XiSecurityException("SM2 signer needs public key, but could not get anyone."));
        }
 
        java.security.spec.ECPoint w = ((ECPublicKey) publicKey).getW();
@@ -138,10 +136,8 @@ abstract class P11ContentSigner implements XiContentSigner {
         throw new XiSecurityException("not a DSA algorithm: " + signAlgo);
       }
 
-      Long mech = algoMechMap.get(signAlgo);
-      if (mech == null) {
-        throw new XiSecurityException("unsupported signature algorithm " + signAlgo);
-      }
+      long mech = Optional.ofNullable(algoMechMap.get(signAlgo)).orElseThrow( () ->
+        new XiSecurityException("unsupported signature algorithm " + signAlgo));
 
       if (identity.supportsSign(CKM_DSA)) {
         mechanism = CKM_DSA;
@@ -219,10 +215,8 @@ abstract class P11ContentSigner implements XiContentSigner {
         throw new XiSecurityException("not an ECDSA algorithm: " + signAlgo);
       }
 
-      Long mech = algoMechMap.get(signAlgo);
-      if (mech == null) {
-        throw new XiSecurityException("unsupported signature algorithm " + signAlgo);
-      }
+      long mech = Optional.ofNullable(algoMechMap.get(signAlgo)).orElseThrow(() ->
+        new XiSecurityException("unsupported signature algorithm " + signAlgo));
 
       if (identity.supportsSign(CKM_ECDSA)) {
         mechanism = CKM_ECDSA;
@@ -338,10 +332,8 @@ abstract class P11ContentSigner implements XiContentSigner {
     Mac(P11Key identity, SignAlgo signAlgo) throws XiSecurityException {
       super(identity, signAlgo);
 
-      Long mech = algoMechMap.get(signAlgo);
-      if (mech == null) {
-        throw new XiSecurityException("Unsupported signature algorithm " + signAlgo);
-      }
+      long mech = Optional.ofNullable(algoMechMap.get(signAlgo)).orElseThrow(() ->
+          new XiSecurityException("Unsupported signature algorithm " + signAlgo));
 
       this.mechanism = mech;
       if (identity.supportsSign(mechanism)) {
@@ -405,10 +397,8 @@ abstract class P11ContentSigner implements XiContentSigner {
         throw new XiSecurityException("not an RSA PKCS#1 algorithm: " + signAlgo);
       }
 
-      Long mech = algoMechMap.get(signAlgo);
-      if (mech == null) {
-        throw new XiSecurityException("unsupported signature algorithm " + signAlgo);
-      }
+      long mech = Optional.ofNullable(algoMechMap.get(signAlgo)).orElseThrow(() ->
+          new XiSecurityException("unsupported signature algorithm " + signAlgo));
 
       if (identity.supportsSign(CKM_RSA_PKCS)) {
         mechanism = CKM_RSA_PKCS;
@@ -502,10 +492,8 @@ abstract class P11ContentSigner implements XiContentSigner {
       this.random = Args.notNull(random, "random");
       HashAlgo hashAlgo = signAlgo.getHashAlgo();
 
-      Long mech = algoMechMap.get(signAlgo);
-      if (mech == null) {
-        throw new XiSecurityException("unsupported signature algorithm " + signAlgo);
-      }
+      long mech = Optional.ofNullable(algoMechMap.get(signAlgo)).orElseThrow(() ->
+          new XiSecurityException("unsupported signature algorithm " + signAlgo));
 
       boolean usePss = signAlgo.isRSAPSSMGF1SigAlgo() && identity.supportsSign(CKM_RSA_PKCS_PSS);
       if (usePss) {
@@ -605,10 +593,8 @@ abstract class P11ContentSigner implements XiContentSigner {
       }
 
       HashAlgo hashAlgo = signAlgo.getHashAlgo();
-      Long mech = algoMechMap.get(signAlgo);
-      if (mech == null) {
-        throw new XiSecurityException("unsupported signature algorithm " + signAlgo);
-      }
+      long mech = Optional.ofNullable(algoMechMap.get(signAlgo)).orElseThrow(() ->
+          new XiSecurityException("unsupported signature algorithm " + signAlgo));
 
       if (identity.supportsSign(CKM_VENDOR_SM2)) {
         this.mechanism = CKM_VENDOR_SM2;

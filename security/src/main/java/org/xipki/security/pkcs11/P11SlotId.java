@@ -50,9 +50,7 @@ public class P11SlotId {
 
   @Override
   public int hashCode() {
-    int hashCode = Long.hashCode(id);
-    hashCode += 31 * index;
-    return hashCode;
+    return Long.hashCode(id) + 31 * index;
   }
 
 }

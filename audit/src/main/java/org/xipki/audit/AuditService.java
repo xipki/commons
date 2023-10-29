@@ -22,8 +22,7 @@ public interface AuditService {
 
   void init(String conf) throws InvalidConfException;
 
-  void init(String conf, PasswordResolver passwordResolver)
-      throws PasswordResolverException, InvalidConfException;
+  void init(String conf, PasswordResolver passwordResolver) throws PasswordResolverException, InvalidConfException;
 
   /**
    * Log audit event.

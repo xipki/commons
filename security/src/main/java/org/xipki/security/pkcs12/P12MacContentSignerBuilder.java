@@ -82,8 +82,7 @@ public class P12MacContentSignerBuilder {
     }
   } // constructor
 
-  public ConcurrentContentSigner createSigner(SignAlgo sigAlgo, int parallelism)
-      throws XiSecurityException {
+  public ConcurrentContentSigner createSigner(SignAlgo sigAlgo, int parallelism) throws XiSecurityException {
     Args.notNull(sigAlgo, "sigAlgo");
     List<XiContentSigner> signers = new ArrayList<>(Args.positive(parallelism, "parallelism"));
 

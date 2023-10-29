@@ -74,21 +74,7 @@ public class P12SignerFactory implements SignerFactory {
     }
 
     String passwordHint = conf.getConfValue("password");
-    char[] password;
-    if (passwordHint == null) {
-      password = null;
-    } else {
-      PasswordResolver passwordResolver = securityFactory.getPasswordResolver();
-      if (passwordResolver == null) {
-        password = passwordHint.toCharArray();
-      } else {
-        try {
-          password = passwordResolver.resolvePassword(passwordHint);
-        } catch (PasswordResolverException ex) {
-          throw new ObjectCreationException("could not resolve password. Message: " + ex.getMessage());
-        }
-      }
-    }
+    char[] password = getPassword(passwordHint);
 
     str = conf.getConfValue("keystore");
     String keyLabel = conf.getConfValue("key-label");
@@ -111,23 +97,8 @@ public class P12SignerFactory implements SignerFactory {
 
         ASN1ObjectIdentifier curveOid = EdECConstants.getCurveOid(publicKeyAlg);
         if (curveOid != null && EdECConstants.isMontgomeryCurve(curveOid)) {
-          X509Cert peerCert = null;
-          // peer certificate is needed
-          List<X509Cert> peerCerts = conf.getPeerCertificates();
-          if (peerCerts != null) {
-            for (X509Cert m : conf.getPeerCertificates()) {
-              if (publicKeyAlg.equalsIgnoreCase(m.getPublicKey().getAlgorithm())) {
-                peerCert = m;
-                break;
-              }
-            }
-          }
-
-          if (peerCert == null) {
-            throw new ObjectCreationException("could not find peer certificate for algorithm " + publicKeyAlg);
-          }
-
-          P12XdhMacContentSignerBuilder signerBuilder = new P12XdhMacContentSignerBuilder(keypairWithCert, peerCert);
+          P12XdhMacContentSignerBuilder signerBuilder =
+              getP12XdhMacContentSignerBuilder(conf, publicKeyAlg, keypairWithCert);
           return signerBuilder.createSigner(parallelism);
         } else {
           P12ContentSignerBuilder signerBuilder = new P12ContentSignerBuilder(keypairWithCert);
@@ -144,6 +115,47 @@ public class P12SignerFactory implements SignerFactory {
       throw new ObjectCreationException(String.format("%s: %s", ex.getClass().getName(), ex.getMessage()));
     }
   } // method newSigner
+
+  private static P12XdhMacContentSignerBuilder getP12XdhMacContentSignerBuilder(
+      SignerConf conf, String publicKeyAlg, KeypairWithCert keypairWithCert)
+      throws ObjectCreationException, XiSecurityException {
+    X509Cert peerCert = null;
+    // peer certificate is needed
+    List<X509Cert> peerCerts = conf.getPeerCertificates();
+    if (peerCerts != null) {
+      for (X509Cert m : conf.getPeerCertificates()) {
+        if (publicKeyAlg.equalsIgnoreCase(m.getPublicKey().getAlgorithm())) {
+          peerCert = m;
+          break;
+        }
+      }
+    }
+
+    if (peerCert == null) {
+      throw new ObjectCreationException("could not find peer certificate for algorithm " + publicKeyAlg);
+    }
+
+    return new P12XdhMacContentSignerBuilder(keypairWithCert, peerCert);
+  }
+
+  private char[] getPassword(String passwordHint) throws ObjectCreationException {
+    char[] password;
+    if (passwordHint == null) {
+      password = null;
+    } else {
+      PasswordResolver passwordResolver = securityFactory.getPasswordResolver();
+      if (passwordResolver == null) {
+        password = passwordHint.toCharArray();
+      } else {
+        try {
+          password = passwordResolver.resolvePassword(passwordHint);
+        } catch (PasswordResolverException ex) {
+          throw new ObjectCreationException("could not resolve password. Message: " + ex.getMessage());
+        }
+      }
+    }
+    return password;
+  }
 
   private static InputStream getInputStream(String str) throws ObjectCreationException {
     if (StringUtil.startsWithIgnoreCase(str, "base64:")) {

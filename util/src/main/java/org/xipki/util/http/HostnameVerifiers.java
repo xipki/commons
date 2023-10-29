@@ -8,7 +8,6 @@ import org.xipki.util.exception.ObjectCreationException;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Utility class to create {@link HostnameVerifier}.
@@ -52,8 +51,7 @@ public class HostnameVerifiers {
       try {
         Class<?> clazz = Class.forName(className, true, HostnameVerifiers.class.getClassLoader());
         return (HostnameVerifier) clazz.getDeclaredConstructor().newInstance();
-      } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
-               InvocationTargetException ex) {
+      } catch (Exception ex) {
         throw new ObjectCreationException("create not create HostnameVerifier from "
             + className + ": " + ex.getMessage(), ex);
       }

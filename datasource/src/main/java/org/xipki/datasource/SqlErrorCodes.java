@@ -169,7 +169,7 @@ class SqlErrorCodes {
     }
 
     return Set.of(strs);
-  } // method toSet
+  }
 
   private static Set<String> toSet(int... ints) {
     if (ints == null || ints.length == 0) {
@@ -181,6 +181,6 @@ class SqlErrorCodes {
       set.add(Integer.toString(i));
     }
     return Collections.unmodifiableSet(set);
-  } // method toSet
+  }
 
 }

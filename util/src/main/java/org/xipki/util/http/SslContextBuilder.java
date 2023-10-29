@@ -247,24 +247,20 @@ public class SslContextBuilder {
     return loadKeyMaterial(identityStore, keyPassword);
   }
 
-  protected void initSSLContext
-      (SSLContext sslContext, Collection<KeyManager> keyManagers,
-      Collection<TrustManager> trustManagers, SecureRandom secureRandom)
-      throws KeyManagementException {
+  protected void initSSLContext(
+      SSLContext sslContext, Collection<KeyManager> keyManagers,
+      Collection<TrustManager> trustManagers, SecureRandom secureRandom) throws KeyManagementException {
     sslContext.init(
-        !keyManagers.isEmpty() ? keyManagers.toArray(new KeyManager[0]) : null,
-        !trustManagers.isEmpty() ? trustManagers.toArray(new TrustManager[0]) : null,
+        keyManagers.isEmpty()   ? null : keyManagers  .toArray(new KeyManager[0]),
+        trustManagers.isEmpty() ? null : trustManagers.toArray(new TrustManager[0]),
         secureRandom);
   }
 
   public SSLContext build() throws NoSuchAlgorithmException, KeyManagementException {
     final String protocolStr = this.protocol != null ? this.protocol : TLS;
-    final SSLContext sslContext;
-    if (this.provider != null) {
-      sslContext = SSLContext.getInstance(protocolStr, this.provider);
-    } else {
-      sslContext = SSLContext.getInstance(protocolStr);
-    }
+    final SSLContext sslContext = (this.provider == null)
+        ? SSLContext.getInstance(protocolStr)
+        : SSLContext.getInstance(protocolStr, this.provider);
 
     initSSLContext(sslContext, keyManagers, trustManagers, secureRandom);
     return sslContext;

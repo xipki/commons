@@ -119,8 +119,7 @@ public class AESGmacContentSigner implements XiContentSigner {
 
   @Override
   public AlgorithmIdentifier getAlgorithmIdentifier() {
-    GCMParameters params = new GCMParameters(nonce, tagByteLen);
-    return new AlgorithmIdentifier(signAlgo.getOid(), params);
+    return new AlgorithmIdentifier(signAlgo.getOid(), new GCMParameters(nonce, tagByteLen));
   }
 
   @Override

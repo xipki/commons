@@ -444,7 +444,7 @@ public class Base64 {
    *         (I.e. definitely corrupted).
    */
   public static byte[] decode(byte[] sArr) {
-    // Check special case
+    // Check special cases
     int sLen = sArr.length;
 
     // Count illegal characters (including '\r', '\n') to know what size the returned array

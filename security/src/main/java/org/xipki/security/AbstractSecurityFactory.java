@@ -30,15 +30,12 @@ public abstract class AbstractSecurityFactory implements SecurityFactory {
   }
 
   @Override
-  public ContentVerifierProvider getContentVerifierProvider(X509Cert cert)
-      throws InvalidKeyException {
-    Args.notNull(cert, "cert");
-    return getContentVerifierProvider(cert.getPublicKey());
+  public ContentVerifierProvider getContentVerifierProvider(X509Cert cert) throws InvalidKeyException {
+    return getContentVerifierProvider(Args.notNull(cert, "cert").getPublicKey());
   }
 
   @Override
-  public ContentVerifierProvider getContentVerifierProvider(PublicKey publicKey)
-      throws InvalidKeyException {
+  public ContentVerifierProvider getContentVerifierProvider(PublicKey publicKey) throws InvalidKeyException {
     return getContentVerifierProvider(publicKey, null);
   }
 

@@ -526,11 +526,7 @@ public abstract class DataSourceWrapper implements Closeable {
     try {
       stmt = conn == null ? createStatement() : createStatement(conn);
       rs = stmt.executeQuery(sql);
-      if (rs.next()) {
-        return rs.getString(column);
-      } else {
-        return null;
-      }
+      return rs.next() ? rs.getString(column) : null;
     } catch (SQLException ex) {
       throw translate(sql, ex);
     } finally {

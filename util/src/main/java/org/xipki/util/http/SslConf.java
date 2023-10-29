@@ -82,4 +82,4 @@ public class SslConf extends ValidatableConf {
   public void validate() throws InvalidConfException {
   }
 
-} // class Ssl
+}

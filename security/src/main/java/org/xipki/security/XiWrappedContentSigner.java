@@ -22,8 +22,7 @@ public class XiWrappedContentSigner implements XiContentSigner {
   private byte[] encodedAlgorithmIdentifier;
   private final ContentSigner signer;
 
-  public XiWrappedContentSigner(ContentSigner signer, boolean fixedAlgorithmIdentifier)
-      throws XiSecurityException {
+  public XiWrappedContentSigner(ContentSigner signer, boolean fixedAlgorithmIdentifier) throws XiSecurityException {
     this.signer = Args.notNull(signer, "signer");
     if (fixedAlgorithmIdentifier) {
       try {

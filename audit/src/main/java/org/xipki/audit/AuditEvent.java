@@ -59,11 +59,7 @@ public class AuditEvent {
   }
 
   public AuditLevel getLevel() {
-    if (status == AuditStatus.FAILED && AuditLevel.INFO == level) {
-      return AuditLevel.WARN;
-    } else {
-      return level;
-    }
+    return (status == AuditStatus.FAILED && AuditLevel.INFO == level) ? AuditLevel.WARN : level;
   }
 
   public void setLevel(AuditLevel level) {
@@ -157,7 +153,7 @@ public class AuditEvent {
     }
 
     return removed;
-  } // method removeEventData
+  }
 
   public AuditStatus getStatus() {
     return status;

@@ -36,6 +36,7 @@ import java.math.BigInteger;
 import java.security.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
@@ -54,7 +55,7 @@ class EmulatorP11Key extends P11Key {
 
   private static final Map<Long, HashAlgo> mgfMechHashMap = new HashMap<>();
 
-  private static final Map<Long, HashAlgo> mechHashMap = new HashMap<>();
+  static final Map<Long, HashAlgo> mechHashMap = new HashMap<>();
 
   private final Key signingKey;
 
@@ -264,11 +265,14 @@ class EmulatorP11Key extends P11Key {
       throw new TokenException("digestSecretKey could not be applied to non-SecretKey");
     }
 
-    HashAlgo hashAlgo =  mechHashMap.get(mechanism);
-    if (hashAlgo == null) {
-      throw new TokenException("unknown mechanism " + ckmCodeToName(mechanism));
-    }
+    HashAlgo hashAlgo = Optional.ofNullable(mechHashMap.get(mechanism)).orElseThrow(
+        () -> new TokenException("unknown mechanism " + ckmCodeToName(mechanism)));
     return hashAlgo.hash(signingKey.getEncoded());
+  }
+
+  @Override
+  public PublicKey getPublicKey0() throws TokenException {
+    return ((EmulatorP11Slot) slot).readPublicKey(keyId.getId());
   }
 
   @Override
@@ -373,10 +377,8 @@ class EmulatorP11Key extends P11Key {
       throw new TokenException("Invalid parameters: invalid hash algorithm");
     }
 
-    HashAlgo mgfHash =  mgfMechHashMap.get(pssParam.getMaskGenerationFunction());
-    if (mgfHash == null) {
-      throw new TokenException("unsupported MaskGenerationFunction " + pssParam.getHashAlgorithm());
-    }
+    HashAlgo mgfHash =  Optional.ofNullable(mgfMechHashMap.get(pssParam.getMaskGenerationFunction()))
+        .orElseThrow(() -> new TokenException("unsupported MaskGenerationFunction " + pssParam.getHashAlgorithm()));
 
     byte[] hashValue = (hashAlgo == null) ? contentToSign : hashAlgo.hash(contentToSign);
     byte[] encodedHashValue;
@@ -405,13 +407,10 @@ class EmulatorP11Key extends P11Key {
   private byte[] rsaX509Sign(byte[] dataToSign) throws TokenException {
     BagEntry<Cipher> cipher;
     try {
-      cipher = rsaCiphers.borrow(5000, TimeUnit.MILLISECONDS);
+      cipher = Optional.ofNullable(rsaCiphers.borrow(5000, TimeUnit.MILLISECONDS)).orElseThrow(
+          () -> new TokenException("no idle RSA cipher available"));
     } catch (InterruptedException ex) {
       throw new TokenException("could not take any idle signer");
-    }
-
-    if (cipher == null) {
-      throw new TokenException("no idle RSA cipher available");
     }
 
     try {
@@ -430,13 +429,10 @@ class EmulatorP11Key extends P11Key {
 
     BagEntry<Signature> sig0;
     try {
-      sig0 = dsaSignatures.borrow(5000, TimeUnit.MILLISECONDS);
+      sig0 = Optional.ofNullable(dsaSignatures.borrow(5000, TimeUnit.MILLISECONDS))
+          .orElseThrow(() -> new TokenException("no idle DSA Signature available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
-    }
-
-    if (sig0 == null) {
-      throw new TokenException("no idle DSA Signature available");
     }
 
     try {
@@ -460,13 +456,10 @@ class EmulatorP11Key extends P11Key {
 
     BagEntry<Signature> sig0;
     try {
-      sig0 = eddsaSignatures.borrow(5000, TimeUnit.MILLISECONDS);
+      sig0 = Optional.ofNullable(eddsaSignatures.borrow(5000, TimeUnit.MILLISECONDS))
+          .orElseThrow(() -> new TokenException("no idle DSA Signature available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
-    }
-
-    if (sig0 == null) {
-      throw new TokenException("no idle DSA Signature available");
     }
 
     try {
@@ -481,27 +474,23 @@ class EmulatorP11Key extends P11Key {
   } // method eddsaSign
 
   private byte[] sm2SignHash(byte[] hash) throws TokenException {
-    BagEntry<EmulatorSM2Signer> sig0;
+    BagEntry<EmulatorSM2Signer> sig;
     try {
-      sig0 = sm2Signers.borrow(5000, TimeUnit.MILLISECONDS);
+      sig = Optional.ofNullable(sm2Signers.borrow(5000, TimeUnit.MILLISECONDS)).orElseThrow(
+          () -> new TokenException("no idle SM2 Signer available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
     }
 
-    if (sig0 == null) {
-      throw new TokenException("no idle SM2 Signer available");
-    }
-
     try {
-      EmulatorSM2Signer sig = sig0.value();
-      byte[] x962Signature = sig.generateSignatureForHash(hash);
+      byte[] x962Signature = sig.value().generateSignatureForHash(hash);
       return SignerUtil.dsaSigX962ToPlain(x962Signature, dsaOrderBitLen);
     } catch (CryptoException ex) {
       throw new TokenException("CryptoException: " + ex.getMessage(), ex);
     } catch (XiSecurityException ex) {
       throw new TokenException("XiSecurityException: " + ex.getMessage(), ex);
     } finally {
-      sm2Signers.requite(sig0);
+      sm2Signers.requite(sig);
     }
   } // method sm2SignHash
 
@@ -519,19 +508,14 @@ class EmulatorP11Key extends P11Key {
 
     BagEntry<EmulatorSM2Signer> sig0;
     try {
-      sig0 = sm2Signers.borrow(5000, TimeUnit.MILLISECONDS);
+      sig0 = Optional.ofNullable(sm2Signers.borrow(5000, TimeUnit.MILLISECONDS)).orElseThrow(
+          () -> new TokenException("no idle SM2 Signer available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
     }
 
-    if (sig0 == null) {
-      throw new TokenException("no idle SM2 Signer available");
-    }
-
     try {
-      EmulatorSM2Signer sig = sig0.value();
-
-      byte[] x962Signature = sig.generateSignatureForMessage(userId, dataToSign);
+      byte[] x962Signature = sig0.value().generateSignatureForMessage(userId, dataToSign);
       return SignerUtil.dsaSigX962ToPlain(x962Signature, dsaOrderBitLen);
     } catch (CryptoException ex) {
       throw new TokenException("CryptoException: " + ex.getMessage(), ex);

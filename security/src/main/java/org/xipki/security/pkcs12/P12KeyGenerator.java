@@ -127,7 +127,7 @@ public class P12KeyGenerator {
 
     return generateIdentity(new KeyPairWithSubjectPublicKeyInfo(keypair, subjectPublicKeyInfo),
         params, selfSignedCertSubject);
-  } // method generateEdECKeypair
+  }
 
   public KeyStoreWrapper generateSecretKey(String algorithm, int keyBitLen, KeystoreGenerationParameters params)
       throws Exception {
@@ -161,7 +161,7 @@ public class P12KeyGenerator {
     KeyStoreWrapper result = new KeyStoreWrapper(ksStream.toByteArray());
     result.setKeystoreObject(ks);
     return result;
-  } // method generateSecretKey
+  }
 
   private KeyPairWithSubjectPublicKeyInfo genRSAKeypair(int keysize, BigInteger publicExponent, SecureRandom random)
       throws Exception {
@@ -172,7 +172,7 @@ public class P12KeyGenerator {
         new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE),
         new RSAPublicKey(rsaPubKey.getModulus(), rsaPubKey.getPublicExponent()));
     return new KeyPairWithSubjectPublicKeyInfo(kp, spki);
-  } // method genRSAKeypair
+  }
 
   private KeyPairWithSubjectPublicKeyInfo genDSAKeypair(int plength, int qlength, SecureRandom random)
       throws Exception {
@@ -246,15 +246,10 @@ public class P12KeyGenerator {
         algo = SignAlgo.SM2_SM3;
       } else {
         int orderBitLength = ((ECPrivateKey) key).getParams().getOrder().bitLength();
-        if (orderBitLength > 384) {
-          algo = SignAlgo.ECDSA_SHA512;
-        } else if (orderBitLength > 256) {
-          algo = SignAlgo.ECDSA_SHA384;
-        } else if (orderBitLength > 160) {
-          algo = SignAlgo.ECDSA_SHA256;
-        } else {
-          algo = SignAlgo.ECDSA_SHA1;
-        }
+        algo = orderBitLength > 384 ? SignAlgo.ECDSA_SHA512
+            : orderBitLength > 256 ? SignAlgo.ECDSA_SHA384
+            : orderBitLength > 160 ? SignAlgo.ECDSA_SHA256
+            : SignAlgo.ECDSA_SHA1;
       }
     } else if (key instanceof EdDSAKey) {
       String algorithm = key.getAlgorithm();

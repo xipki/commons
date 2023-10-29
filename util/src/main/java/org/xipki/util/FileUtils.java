@@ -63,9 +63,7 @@ public class FileUtils {
    * @since 2.0.0
    */
   private static boolean isSymlink(File file) throws IOException {
-    if (file == null) {
-      throw new NullPointerException("File may not be null");
-    }
+    Args.notNull(file, "file");
 
     if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
       return false;
@@ -196,8 +194,7 @@ public class FileUtils {
    * @since 1.1
    */
   private static void copyDirectory(File srcDir, File destDir, FileFilter filter,
-      boolean preserveFileDate, List<String> exclusionList)
-      throws IOException {
+      boolean preserveFileDate, List<String> exclusionList) throws IOException {
     // recurse
     final File[] srcFiles = (filter == null)
         ? srcDir.listFiles()

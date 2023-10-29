@@ -86,7 +86,7 @@ public class ScriptRunner {
       throws Exception {
     ScriptRunner runner = new ScriptRunner(conn, true);
     runner.runScript(IoUtil.expandFilepath(scriptFile));
-  } // method initDb
+  }
 
   /**
    * Default constructor
@@ -198,7 +198,7 @@ public class ScriptRunner {
         String trimmedLine = line.trim();
 
         final Matcher delimMatch = delimP.matcher(trimmedLine);
-        if (trimmedLine.length() < 1 || trimmedLine.startsWith("//")) {
+        if (trimmedLine.isEmpty() || trimmedLine.startsWith("//")) {
           // Do nothing
         } else if (delimMatch.matches()) {
           setDelimiter(delimMatch.group(2), false);
@@ -209,8 +209,7 @@ public class ScriptRunner {
           println(trimmedLine);
         } else if (!fullLineDelimiter && trimmedLine.endsWith(getDelimiter())
             ||  fullLineDelimiter && trimmedLine.equals(getDelimiter())) {
-          command.append(line, 0, line.lastIndexOf(getDelimiter()));
-          command.append(" ");
+          command.append(line, 0, line.lastIndexOf(getDelimiter())).append(" ");
           this.execCommand(conn, command, lineReader, ignoreSqlError);
           ignoreSqlError = false;
           command = null;

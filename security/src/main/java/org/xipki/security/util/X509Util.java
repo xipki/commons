@@ -108,15 +108,13 @@ public class X509Util {
         IoUtil.expandFilepath(notNull(file, "file"))));
   }
 
-  public static List<X509Cert> parseCerts(byte[] certsBytes)
-      throws IOException, CertificateException {
+  public static List<X509Cert> parseCerts(byte[] certsBytes) throws IOException, CertificateException {
     try (InputStream is = new ByteArrayInputStream(certsBytes)) {
       return parseCerts(is);
     }
   }
 
-  public static List<X509Cert> parseCerts(File certsFile)
-      throws IOException, CertificateException {
+  public static List<X509Cert> parseCerts(File certsFile) throws IOException, CertificateException {
     try (InputStream is = Files.newInputStream(certsFile.toPath())) {
       return parseCerts(is);
     }
@@ -131,18 +129,15 @@ public class X509Util {
    * @throws IOException if IO error occurs while reading the input stream.
    * @throws CertificateException if error occurs parsing the certificates.
    */
-  private static List<X509Cert> parseCerts(InputStream certsStream)
-      throws IOException, CertificateException {
+  private static List<X509Cert> parseCerts(InputStream certsStream) throws IOException, CertificateException {
     List<X509Cert> certs = new LinkedList<>();
     try (PemReader pemReader = new PemReader(
         new InputStreamReader(certsStream, StandardCharsets.UTF_8))) {
       PemObject pemObj;
       while ((pemObj = pemReader.readPemObject()) != null) {
-        if (!"CERTIFICATE".equals(pemObj.getType())) {
-          continue;
+        if ("CERTIFICATE".equalsIgnoreCase(pemObj.getType())) {
+          certs.add(parseCert(pemObj.getContent()));
         }
-
-        certs.add(parseCert(pemObj.getContent()));
       }
     }
     return certs;
@@ -196,8 +191,7 @@ public class X509Util {
     }
   }
 
-  public static CertificationRequest parseCsrInRequest(byte[] p10Bytes)
-      throws OperationException {
+  public static CertificationRequest parseCsrInRequest(byte[] p10Bytes) throws OperationException {
     try {
       return CertificationRequest.getInstance(toDerEncoded(p10Bytes));
     } catch (Exception ex) {
@@ -205,8 +199,7 @@ public class X509Util {
     }
   }
 
-  public static CertificationRequest parseCsrInRequest(ASN1Encodable p10Asn1)
-      throws OperationException {
+  public static CertificationRequest parseCsrInRequest(ASN1Encodable p10Asn1) throws OperationException {
     try {
       return CertificationRequest.getInstance(p10Asn1);
     } catch (Exception ex) {
@@ -524,8 +517,7 @@ public class X509Util {
     return sb.toString();
   }
 
-  public static List<X509Cert> listCertificates(String encodedCerts)
-      throws CertificateException, IOException {
+  public static List<X509Cert> listCertificates(String encodedCerts) throws CertificateException, IOException {
     List<X509Cert> certs = new LinkedList<>();
     try (BufferedReader reader = new BufferedReader(new StringReader(encodedCerts));
          ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
@@ -544,8 +536,7 @@ public class X509Util {
     return certs;
   }
 
-  private static X509Cert getCaCertOf(X509Cert cert, Collection<X509Cert> caCerts)
-      throws CertificateEncodingException {
+  private static X509Cert getCaCertOf(X509Cert cert, Collection<X509Cert> caCerts) throws CertificateEncodingException {
     if (notNull(cert, "cert").isSelfSigned()) {
       return null;
     }
@@ -692,8 +683,7 @@ public class X509Util {
     }
   } // method createExtnSubjectInfoAccess
 
-  private static AccessDescription createAccessDescription(String accessMethodAndLocation)
-      throws BadInputException {
+  private static AccessDescription createAccessDescription(String accessMethodAndLocation) throws BadInputException {
     ConfPairs pairs;
     try {
       pairs = new ConfPairs(notNull(accessMethodAndLocation, "accessMethodAndLocation"));
@@ -714,8 +704,7 @@ public class X509Util {
     return new AccessDescription(accessMethod, location);
   } // method createAccessDescription
 
-  private static GeneralNames createGeneralNames(List<String> taggedValues)
-      throws BadInputException {
+  private static GeneralNames createGeneralNames(List<String> taggedValues) throws BadInputException {
     if (CollectionUtil.isEmpty(taggedValues)) {
       return null;
     }

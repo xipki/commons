@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +26,7 @@ public class ConfigurableProperties {
   }
 
   public synchronized void load(Properties props) {
-    Objects.requireNonNull(props, "props parameter is null");
+    Args.notNull(props, "props");
     for (String name : props.stringPropertyNames()) {
       setProperty(name, props.getProperty(name));
     }
@@ -45,7 +44,7 @@ public class ConfigurableProperties {
    * @throws     NullPointerException if {@code inStream} is null.
    */
   public synchronized void load(InputStream inStream) throws IOException {
-    Objects.requireNonNull(inStream, "inStream parameter is null");
+    Args.notNull(inStream, "inStream");
     load(new InputStreamReader(inStream));
   }
 
@@ -61,7 +60,7 @@ public class ConfigurableProperties {
    * @throws  NullPointerException if {@code reader} is null.
    */
   public synchronized void load(Reader reader) throws IOException {
-    Objects.requireNonNull(reader, "reader parameter is null");
+    Args.notNull(reader, "reader");
     Properties props = new Properties();
     props.load(reader);
 
