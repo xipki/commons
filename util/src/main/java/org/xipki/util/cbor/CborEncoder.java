@@ -8,6 +8,7 @@
  */
 package org.xipki.util.cbor;
 
+import org.xipki.util.Args;
 import org.xipki.util.exception.EncodeException;
 
 import java.io.IOException;
@@ -29,10 +30,7 @@ public class CborEncoder {
      * @param os the actual output stream to write the CBOR-encoded data to, cannot be <code>null</code>.
      */
     public CborEncoder(OutputStream os) {
-        if (os == null) {
-            throw new IllegalArgumentException("OutputStream cannot be null!");
-        }
-        m_os = os;
+        m_os = Args.notNull(os, "os");
     }
 
     /**
@@ -78,8 +76,10 @@ public class CborEncoder {
     /**
      * Writes the start of an indefinite-length array.
      * <p>
-     * After calling this method, one is expected to write the given number of array elements, which can be of any type. No length checks are performed.<p>
-     * After all array elements are written, one should write a single break value to end the array, see {@link #writeBreak()}.
+     * After calling this method, one is expected to write the given number of array elements, which can be of any type.
+     * No length checks are performed.<p>
+     * After all array elements are written, one should write a single break value to end the array,
+     * see {@link #writeBreak()}.
      * </p>
      *
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
@@ -91,7 +91,8 @@ public class CborEncoder {
     /**
      * Writes the start of a definite-length array.
      * <p>
-     * After calling this method, one is expected to write the given number of array elements, which can be of any type. No length checks are performed.
+     * After calling this method, one is expected to write the given number of array elements, which can be of any type.
+     * No length checks are performed.
      * </p>
      *
      * @param length the number of array elements to write, should &gt;= 0.
@@ -99,9 +100,7 @@ public class CborEncoder {
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
      */
     public void writeArrayStart(int length) throws IOException {
-        if (length < 0) {
-            throw new IllegalArgumentException("Invalid array-length!");
-        }
+        Args.notNegative(length, "array-length");
         writeType(CborConstants.TYPE_ARRAY, length);
     }
 
@@ -127,7 +126,8 @@ public class CborEncoder {
     /**
      * Writes a byte string in canonical CBOR-format.
      *
-     * @param bytes the byte string to write, can be <code>null</code> in which case a byte-string of length 0 is written.
+     * @param bytes the byte string to write, can be <code>null</code> in which case a byte-string of length 0 is
+     *              written.
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
      */
     public void writeByteString(byte[] bytes) throws IOException {
@@ -137,8 +137,11 @@ public class CborEncoder {
     /**
      * Writes the start of an indefinite-length byte string.
      * <p>
-     * After calling this method, one is expected to write the given number of string parts. No length checks are performed.<p>
-     * After all string parts are written, one should write a single break value to end the string, see {@link #writeBreak()}.
+     * After calling this method, one is expected to write the given number of string parts. No length checks are
+     * performed.
+     * <p>
+     * After all string parts are written, one should write a single break value to end the string,
+     * see {@link #writeBreak()}.
      * </p>
      *
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
@@ -178,7 +181,8 @@ public class CborEncoder {
     }
 
     /**
-     * Writes a signed or unsigned integer value in canonical CBOR format, that is, tries to encode it in a little bytes as possible..
+     * Writes a signed or unsigned integer value in canonical CBOR format, that is, tries to encode it in a little
+     * bytes as possible..
      *
      * @param value the value to write, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
@@ -257,8 +261,10 @@ public class CborEncoder {
     /**
      * Writes the start of an indefinite-length map.
      * <p>
-     * After calling this method, one is expected to write any number of map entries, as separate key and value. Keys and values can both be of any type. No length checks are performed.<p>
-     * After all map entries are written, one should write a single break value to end the map, see {@link #writeBreak()}.
+     * After calling this method, one is expected to write any number of map entries, as separate key and value.
+     * Keys and values can both be of any type. No length checks are performed.<p>
+     * After all map entries are written, one should write a single break value to end the map,
+     * see {@link #writeBreak()}.
      * </p>
      *
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
@@ -270,7 +276,8 @@ public class CborEncoder {
     /**
      * Writes the start of a finite-length map.
      * <p>
-     * After calling this method, one is expected to write any number of map entries, as separate key and value. Keys and values can both be of any type. No length checks are performed.
+     * After calling this method, one is expected to write any number of map entries, as separate key and value.
+     * Keys and values can both be of any type. No length checks are performed.
      * </p>
      *
      * @param length the number of map entries to write, should &gt;= 0.
@@ -278,9 +285,7 @@ public class CborEncoder {
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
      */
     public void writeMapStart(int length) throws IOException {
-        if (length < 0) {
-            throw new IllegalArgumentException("Invalid length of map!");
-        }
+        Args.notNegative(length, "lengh of map");
         writeType(CborConstants.TYPE_MAP, length);
     }
 
@@ -330,9 +335,7 @@ public class CborEncoder {
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
      */
     public void writeTag(long tag) throws IOException {
-        if (tag < 0) {
-            throw new IllegalArgumentException("Invalid tag specification, cannot be negative!");
-        }
+        Args.notNegative(tag, "tag");
         writeType(CborConstants.TYPE_TAG, tag);
     }
 

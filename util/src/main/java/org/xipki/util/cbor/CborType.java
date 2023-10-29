@@ -8,6 +8,8 @@
  */
 package org.xipki.util.cbor;
 
+import org.xipki.util.Args;
+
 /**
  * Represents the various major types in CBOR, along with their .
  * <p>
@@ -104,7 +106,9 @@ public class CborType {
      *         <code>false</code> if only definite-length payloads are allowed.
      */
     public boolean isBreakAllowed() {
-        return m_major == CborConstants.TYPE_ARRAY || m_major == CborConstants.TYPE_BYTE_STRING || m_major == CborConstants.TYPE_MAP
+        return m_major == CborConstants.TYPE_ARRAY
+            || m_major == CborConstants.TYPE_BYTE_STRING
+            || m_major == CborConstants.TYPE_MAP
             || m_major == CborConstants.TYPE_TEXT_STRING;
     }
 
@@ -112,14 +116,12 @@ public class CborType {
      * Determines whether the major type of a given {@link CborType} equals the major type of this {@link CborType}.
      *
      * @param other the {@link CborType} to compare against, cannot be <code>null</code>.
-     * @return <code>true</code> if the given {@link CborType} is of the same major type as this {@link CborType}, <code>false</code> otherwise.
+     * @return <code>true</code> if the given {@link CborType} is of the same major type as this {@link CborType},
+     *         <code>false</code> otherwise.
      * @throws IllegalArgumentException in case the given argument was <code>null</code>.
      */
     public boolean isEqualType(CborType other) {
-        if (other == null) {
-            throw new IllegalArgumentException("Parameter cannot be null!");
-        }
-        return m_major == other.m_major;
+        return m_major == Args.notNull(other, "other").m_major;
     }
 
     /**
