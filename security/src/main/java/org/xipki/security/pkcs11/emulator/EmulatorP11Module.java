@@ -12,6 +12,7 @@ import org.xipki.security.pkcs11.P11ModuleConf;
 import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.pkcs11.P11SlotId;
 import org.xipki.util.Args;
+import org.xipki.util.CollectionUtil;
 import org.xipki.util.IoUtil;
 import org.xipki.util.StringUtil;
 
@@ -38,6 +39,10 @@ class EmulatorP11Module extends P11Module {
 
   private EmulatorP11Module(P11ModuleConf moduleConf) throws TokenException {
     super(moduleConf);
+
+    if (CollectionUtil.isNotEmpty(moduleConf.getNativeLibraryProperties())) {
+      throw new TokenException("nativeLibraries[i].properties is present but not allowed.");
+    }
 
     File baseDir;
     String modulePath = moduleConf.getNativeLibrary().trim();
