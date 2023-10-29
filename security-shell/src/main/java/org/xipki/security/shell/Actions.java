@@ -115,9 +115,9 @@ public class Actions {
       } else if (fingerprint != null && fingerprint) {
         byte[] encoded = cert.getEncoded();
         return HashAlgo.getInstance(hashAlgo).hexHash(encoded);
+      } else {
+        return null;
       }
-
-      return null;
     }
 
     private String getNumber(Number no) {

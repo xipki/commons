@@ -184,37 +184,48 @@ public class P11Actions {
 
     @Override
     protected Object execute0() throws Exception {
-      P11Slot slot = getSlot();
-      P11Key identity = getIdentity(id, label);
+      PKCS11KeyId identity = getIdentity(id, label);
       if (identity == null) {
         println("unknown identity");
         return null;
       }
 
-      if (force || confirm("Do you want to remove the identity " + identity.getKeyId(), 3)) {
-        identity.destroy();
-        println("deleted identity " + identity.getKeyId());
+      if (force || confirm("Do you want to remove the identity " + identity, 3)) {
+        Long publicKeyHandle = identity.getPublicKeyHandle();
+        long[] failedHandles;
+        if (publicKeyHandle == null) {
+          failedHandles = getSlot().destroyObjectsByHandle(identity.getHandle());
+        } else {
+          failedHandles = getSlot().destroyObjectsByHandle(identity.getHandle(), publicKeyHandle);
+        }
+
+        if (failedHandles == null || failedHandles.length == 0) {
+          println("deleted identity " + identity);
+        } else {
+          println("error deleting identity " + identity);
+        }
       }
       return null;
     }
 
   } // class DeleteKeyP11
 
-  @Command(scope = "xi", name = "key-exists-p11", description = "return whether keys exist in PKCS#11 device")
+  @Command(scope = "xi", name = "object-exists-p11", description = "return whether objects exist in PKCS#11 device")
   @Service
-  public static class KeyExistsP11 extends P11SecurityAction {
+  public static class ObjecctExistsP11 extends P11SecurityAction {
 
-    @Option(name = "--id", description = "id (hex) of the private key in the PKCS#11 device\n"
-                    + "either keyId or keyLabel must be specified")
+    @Option(name = "--id", description = "id (hex) of the object in the PKCS#11 device\n"
+        + "either keyId or keyLabel must be specified")
     protected String id;
 
-    @Option(name = "--label", description = "label of the private key in the PKCS#11 device\n"
-                    + "either keyId or keyLabel must be specified")
+    @Option(name = "--label", description = "label of the object key in the PKCS#11 device\n"
+        + "either id or label must be specified")
     protected String label;
 
     @Override
     protected Object execute0() throws Exception {
-      return null != getIdentity(id, label);
+      byte[] idBytes = id == null ? null : Hex.decode(id);
+      return getSlot().objectExistsByIdLabel(idBytes, label);
     }
 
   } // class KeyExistsP11
@@ -564,11 +575,11 @@ public class P11Actions {
       return p11Service.getModule();
     }
 
-    public P11Key getIdentity(String hexId, String label)
+    public PKCS11KeyId getIdentity(String hexId, String label)
         throws IllegalCmdParamException, XiSecurityException, TokenException {
       P11Slot slot = getSlot();
       byte[] id = hexId == null ? null : Hex.decode(hexId);
-      return slot.getKey(id, label);
+      return slot.getKeyId(id, label);
     }
 
   } // class P11SecurityAction
