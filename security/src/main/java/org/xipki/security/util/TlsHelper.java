@@ -3,6 +3,7 @@
 
 package org.xipki.security.util;
 
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.security.X509Cert;
@@ -11,8 +12,9 @@ import org.xipki.util.StringUtil;
 import org.xipki.util.exception.InvalidConfException;
 import org.xipki.util.http.XiHttpRequest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.cert.CertificateException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
 /**
@@ -108,18 +110,46 @@ public class TlsHelper {
         return clientCert;
       }
 
-      try {
-        clientCert = X509Util.parseCert(StringUtil.toUtf8Bytes(pemClientCert));
-      } catch (CertificateException ex) {
-        LOG.error("SSL_CLIENT_CERT: '{}'", pemClientCert);
-        throw new IOException("could not parse Certificate", ex);
+      clientCert = parseCert(pemClientCert);
+      if (clientCert != null) {
+        clientCerts.put(pemClientCert, clientCert);
       }
-
-      clientCerts.put(pemClientCert, clientCert);
       return clientCert;
     } else {
       throw new IllegalArgumentException(
           "reverseProxyMode '" + reverseProxyMode + "' in not among [NO,APACHE,NGINX,GENERAL]");
+    }
+  }
+
+  private static X509Cert parseCert(String pemCert) {
+    // need to pre-process the string
+    byte[] origBytes = pemCert.getBytes(StandardCharsets.UTF_8);
+    int n = origBytes.length;
+    ByteArrayOutputStream bout = new ByteArrayOutputStream(n);
+    for (int i = 0; i < n; i++) {
+      int b = 0xFF & origBytes[i];
+      if (b == '\t' || b == '\n' || b == '\r' || b == ' ') {
+        continue;
+      }
+
+      if (b == '%') {
+        // read the next two bytes
+        String bText = new String(origBytes, i + 1, 2, StandardCharsets.UTF_8);
+        b = Integer.parseInt(bText, 16);
+        i += 2;
+      }
+
+      bout.write(b);
+    }
+
+    byte[] trimmedBytes = bout.toByteArray();
+    byte[] derBytes = X509Util.toDerEncoded(trimmedBytes);
+
+    try {
+      return new X509Cert(new X509CertificateHolder(derBytes), derBytes);
+    } catch (RuntimeException | IOException ex) {
+      LOG.error("SSL_CLIENT_CERT: '{}'", pemCert);
+      return null;
     }
   }
 
