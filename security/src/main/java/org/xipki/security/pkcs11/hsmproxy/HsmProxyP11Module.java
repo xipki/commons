@@ -417,7 +417,6 @@ class HsmProxyP11Module extends P11Module {
     } catch (DecodeException ex) {
       throw new TokenException("DecodingException while decoding response.", ex);
     }
-
   }
 
 }

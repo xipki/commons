@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Provides an encoder capable of encoding data into CBOR format to a given {@link OutputStream}.
@@ -182,7 +183,7 @@ public class CborEncoder {
 
     /**
      * Writes a signed or unsigned integer value in canonical CBOR format, that is, tries to encode it in a little
-     * bytes as possible..
+     * bytes as possible.
      *
      * @param value the value to write, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
@@ -518,8 +519,20 @@ public class CborEncoder {
         }
     }
 
-    public void writeByteString(BigInteger value) throws IOException {
+    public void writeBigInt(BigInteger value) throws IOException {
         writeByteString(value == null ? null : value.toByteArray());
+    }
+
+    public void writeBigInts(BigInteger[] value) throws IOException {
+        if (value == null) {
+            writeNull();
+            return;
+        }
+
+        writeArrayStart(value.length);
+        for (BigInteger bn : value) {
+            writeBigInt(bn);
+        }
     }
 
     public void writeIntObj(Long value) throws IOException {
@@ -535,6 +548,30 @@ public class CborEncoder {
             writeNull();
         } else {
             writeInt(value);
+        }
+    }
+
+    public void writeLongs(long[] value) throws IOException {
+        if (value == null) {
+            writeNull();
+            return;
+        }
+
+        writeArrayStart(value.length);
+        for (long v : value) {
+            writeInt(v);
+        }
+    }
+
+    public void writeLongs(List<Long> value) throws IOException {
+        if (value == null) {
+            writeNull();
+            return;
+        }
+
+        writeArrayStart(value.size());
+        for (Long v : value) {
+            writeIntObj(v);
         }
     }
 

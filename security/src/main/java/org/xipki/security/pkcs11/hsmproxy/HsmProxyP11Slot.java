@@ -30,6 +30,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -50,12 +51,9 @@ class HsmProxyP11Slot extends P11Slot {
     super(module.getName(), slotId, readOnly, secretKeyTypes, keyPairTypes, newObjectConf);
 
     this.module = module;
-    initMechanisms(getSupportedMechanisms(), mechanismFilter);
-  }
-
-  private Map<Long, MechanismInfo> getSupportedMechanisms() throws TokenException {
     GetMechanismInfosResponse resp = (GetMechanismInfosResponse) send(ProxyAction.mechInfos, null);
-    return resp == null ? null : resp.getMechamismInfoMap();
+    Map<Long, MechanismInfo> mechanismInfoMap = resp == null ? Collections.emptyMap() : resp.getMechamismInfoMap();
+    initMechanisms(mechanismInfoMap, mechanismFilter);
   }
 
   @Override
@@ -64,37 +62,32 @@ class HsmProxyP11Slot extends P11Slot {
 
   @Override
   public P11Key getKey(PKCS11KeyId keyId) throws TokenException {
-    KeyIdMessage req = new KeyIdMessage(keyId);
-    return toP11Key(send(ProxyAction.keyByKeyId, req));
+    return toP11Key(send(ProxyAction.keyByKeyId, new KeyIdMessage(keyId)));
   }
 
   @Override
   public P11Key getKey(byte[] keyId, String keyLabel) throws TokenException {
-    IdLabelMessage req = new IdLabelMessage(keyId, keyLabel);
-    return toP11Key(send(ProxyAction.keyByIdLabel, req));
+    return toP11Key(send(ProxyAction.keyByIdLabel, new IdLabelMessage(keyId, keyLabel)));
   }
 
   @Override
   public PKCS11KeyId getKeyId(byte[] keyId, String keyLabel) throws TokenException {
-    IdLabelMessage req = new IdLabelMessage(keyId, keyLabel);
-    return toPKCS11KeyId(send(ProxyAction.keyIdByIdLabel, req));
+    return toPKCS11KeyId(send(ProxyAction.keyIdByIdLabel, new IdLabelMessage(keyId, keyLabel)));
   }
 
   @Override
   public byte[] sign(long mechanism, P11Params params, ExtraParams extraParams,
                      long keyHandle, byte[] content) throws TokenException {
     SignRequest req = new SignRequest(keyHandle, mechanism, params, extraParams, content);
-    ByteArrayMessage resp = (ByteArrayMessage) send(ProxyAction.sign, req);
-    return resp == null ? null : resp.getValue();
+    return toByteArray(send(ProxyAction.sign, req));
   }
 
   @Override
   public PublicKey getPublicKey(long handle) throws TokenException {
-    LongMessage req = new LongMessage(handle);
-    ByteArrayMessage resp = (ByteArrayMessage) send(ProxyAction.publicKeyByHandle, req);
+    byte[] bytes = toByteArray(send(ProxyAction.publicKeyByHandle, new LongMessage(handle)));
     try {
-      return resp == null ? null : KeyUtil.generatePublicKey(
-          SubjectPublicKeyInfo.getInstance(resp.getValue()));
+      return bytes == null ? null : KeyUtil.generatePublicKey(
+          SubjectPublicKeyInfo.getInstance(bytes));
     } catch (InvalidKeySpecException ex) {
       throw new TokenException("error parsing SubjectPublicKeyInfo", ex);
     }
@@ -103,14 +96,12 @@ class HsmProxyP11Slot extends P11Slot {
   @Override
   public byte[] digestSecretKey(long mechanism, long handle) throws TokenException {
     DigestSecretKeyRequest req = new DigestSecretKeyRequest(mechanism, handle);
-    ByteArrayMessage resp = ((ByteArrayMessage) send(ProxyAction.digestSecretKey, req));
-    return resp == null ? null : resp.getValue();
+    return toByteArray(send(ProxyAction.digestSecretKey, req));
   }
 
   @Override
   public boolean objectExistsByIdLabel(byte[] id, String label) throws TokenException {
-    IdLabelMessage req = new IdLabelMessage(id, label);
-    return ((BooleanMessage) send(ProxyAction.objectExistsByIdLabel, req)).getValue();
+    return ((BooleanMessage) send(ProxyAction.objectExistsByIdLabel, new IdLabelMessage(id, label))).getValue();
   }
 
   @Override
@@ -125,9 +116,9 @@ class HsmProxyP11Slot extends P11Slot {
 
   @Override
   public long[] destroyObjectsByHandle(long[] handles) {
-    LongArrayMessage req = new LongArrayMessage(handles);
     try {
-      LongArrayMessage resp = ((LongArrayMessage) send(ProxyAction.destroyObjectsByHandle, req));
+      LongArrayMessage resp = ((LongArrayMessage) send(
+          ProxyAction.destroyObjectsByHandle, new LongArrayMessage(handles)));
       return resp == null ? null : resp.getValue();
     } catch (Exception e) {
       LogUtil.warn(LOG, e, "error destroyObjectsByHandle()");
@@ -137,9 +128,8 @@ class HsmProxyP11Slot extends P11Slot {
 
   @Override
   public int destroyObjectsByIdLabel(byte[] id, String label) throws TokenException {
-    IdLabelMessage req = new IdLabelMessage(id, label);
     try {
-      return ((IntMessage) send(ProxyAction.destroyObjectsByIdLabel, req)).getValue();
+      return ((IntMessage) send(ProxyAction.destroyObjectsByIdLabel, new IdLabelMessage(id, label))).getValue();
     } catch (TokenException e) {
       LogUtil.warn(LOG, e, "error destroyAllObjects()");
       return 0;
@@ -149,68 +139,57 @@ class HsmProxyP11Slot extends P11Slot {
   @Override
   public PKCS11KeyId generateSecretKey(long keyType, Integer keysize, P11NewKeyControl control)
       throws TokenException {
-    GenerateSecretKeyRequest req = new GenerateSecretKeyRequest(keyType, keysize, control);
-    return toPKCS11KeyId(send(ProxyAction.genSecretKey, req));
+    return toPKCS11KeyId(send(ProxyAction.genSecretKey, new GenerateSecretKeyRequest(keyType, keysize, control)));
   } // method generateSecretKey0
 
   @Override
-  public PKCS11KeyId importSecretKey(long keyType, byte[] keyValue, P11NewKeyControl control)
-      throws TokenException {
-    ImportSecretKeyRequest req = new ImportSecretKeyRequest(keyType, keyValue, control);
-    return toPKCS11KeyId(send(ProxyAction.importSecretKey, req));
+  public PKCS11KeyId importSecretKey(long keyType, byte[] keyValue, P11NewKeyControl control) throws TokenException {
+    return toPKCS11KeyId(send(ProxyAction.importSecretKey, new ImportSecretKeyRequest(keyType, keyValue, control)));
   } // method importSecretKey0
 
   @Override
   public PKCS11KeyId generateRSAKeypair(int keysize, BigInteger publicExponent, P11NewKeyControl control)
       throws TokenException {
-    GenerateRSAKeyPairRequest req = new GenerateRSAKeyPairRequest(keysize, publicExponent, control);
-    return toPKCS11KeyId(send(ProxyAction.genRSAKeypair, req));
+    return toPKCS11KeyId(send(ProxyAction.genRSAKeypair,
+        new GenerateRSAKeyPairRequest(keysize, publicExponent, control)));
   }
 
   @Override
   public PrivateKeyInfo generateRSAKeypairOtf(int keysize, BigInteger publicExponent) throws TokenException {
-    GenerateRSAKeyPairOtfRequest req = new GenerateRSAKeyPairOtfRequest(keysize, publicExponent);
-    return toPrivateKeyInfo(send(ProxyAction.genRSAKeypairOtf, req));
+    return toPrivateKeyInfo(send(ProxyAction.genRSAKeypairOtf,
+        new GenerateRSAKeyPairOtfRequest(keysize, publicExponent)));
   }
 
   @Override
-  public PKCS11KeyId generateDSAKeypair(int plength, int qlength, P11NewKeyControl control)
-      throws TokenException {
-    GenerateDSAKeyPairByKeysizeRequest req = new GenerateDSAKeyPairByKeysizeRequest(plength, qlength, control);
-    return toPKCS11KeyId(send(ProxyAction.genDSAKeypair2, req));
+  public PKCS11KeyId generateDSAKeypair(int plength, int qlength, P11NewKeyControl control) throws TokenException {
+    return toPKCS11KeyId(send(ProxyAction.genDSAKeypair2,
+        new GenerateDSAKeyPairByKeysizeRequest(plength, qlength, control)));
   }
 
   @Override
   public PKCS11KeyId generateDSAKeypair(BigInteger p, BigInteger q, BigInteger g, P11NewKeyControl control)
       throws TokenException {
-    GenerateDSAKeyPairRequest req = new GenerateDSAKeyPairRequest(p, q, g, control);
-    return toPKCS11KeyId(send(ProxyAction.genDSAKeypair, req));
+    return toPKCS11KeyId(send(ProxyAction.genDSAKeypair, new GenerateDSAKeyPairRequest(p, q, g, control)));
   }
 
   @Override
   public PrivateKeyInfo generateDSAKeypairOtf(BigInteger p, BigInteger q, BigInteger g) throws TokenException {
-    GenerateDSAKeyPairOtfRequest req = new GenerateDSAKeyPairOtfRequest(p, q, g);
-    return toPrivateKeyInfo(send(ProxyAction.genDSAKeypairOtf, req));
+    return toPrivateKeyInfo(send(ProxyAction.genDSAKeypairOtf, new GenerateDSAKeyPairOtfRequest(p, q, g)));
   }
 
   @Override
-  public PKCS11KeyId generateECKeypair(ASN1ObjectIdentifier curveId, P11NewKeyControl control)
-      throws TokenException {
-    GenerateECKeyPairRequest req = new GenerateECKeyPairRequest(curveId, control);
-    return toPKCS11KeyId(send(ProxyAction.genECKeypair, req));
+  public PKCS11KeyId generateECKeypair(ASN1ObjectIdentifier curveId, P11NewKeyControl control) throws TokenException {
+    return toPKCS11KeyId(send(ProxyAction.genECKeypair, new GenerateECKeyPairRequest(curveId, control)));
   }
 
   @Override
-  public PrivateKeyInfo generateECKeypairOtf(ASN1ObjectIdentifier curveId)
-      throws TokenException {
-    GenerateECKeyPairOtfRequest req = new GenerateECKeyPairOtfRequest(curveId);
-    return toPrivateKeyInfo(send(ProxyAction.genECKeypair, req));
+  public PrivateKeyInfo generateECKeypairOtf(ASN1ObjectIdentifier curveId) throws TokenException {
+    return toPrivateKeyInfo(send(ProxyAction.genECKeypair, new GenerateECKeyPairOtfRequest(curveId)));
   }
 
   @Override
   public PKCS11KeyId generateSM2Keypair(P11NewKeyControl control) throws TokenException {
-    GenerateSM2KeyPairRequest req = new GenerateSM2KeyPairRequest(control);
-    return toPKCS11KeyId(send(ProxyAction.genSM2Keypair, req));
+    return toPKCS11KeyId(send(ProxyAction.genSM2Keypair, new GenerateSM2KeyPairRequest(control)));
   }
 
   @Override
@@ -224,10 +203,22 @@ class HsmProxyP11Slot extends P11Slot {
     }
 
     if (!(response instanceof P11KeyResponse)) {
-      throw new TokenException("response is not a KeyIdMessage");
+      throw new TokenException("response is not a P11KeyResponse");
     }
 
     return ((P11KeyResponse) response).getP11Key(this);
+  }
+
+  private static byte[] toByteArray(ProxyMessage response) throws TokenException {
+    if (response == null) {
+      return null;
+    }
+
+    if (!(response instanceof ByteArrayMessage)) {
+      throw new TokenException("response is not a ByteArrayMessage");
+    }
+
+    return ((ByteArrayMessage) response).getValue();
   }
 
   private static PKCS11KeyId toPKCS11KeyId(ProxyMessage response) throws TokenException {
@@ -243,15 +234,11 @@ class HsmProxyP11Slot extends P11Slot {
   }
 
   private static PrivateKeyInfo toPrivateKeyInfo(ProxyMessage response) throws TokenException {
-    if (response == null) {
+    byte[] bytes = toByteArray(response);
+    if (bytes == null) {
       return null;
     }
 
-    if (!(response instanceof ByteArrayMessage)) {
-      throw new TokenException("response is not a ByteArrayMessage");
-    }
-
-    byte[] bytes = ((ByteArrayMessage) response).getValue();
     try {
       return PrivateKeyInfo.getInstance(bytes);
     } catch (IllegalArgumentException ex) {
