@@ -230,14 +230,14 @@ public class KeyUtil {
 
   private static KeyPairGenerator getKeyPairGenerator(String algorithm)
       throws NoSuchAlgorithmException, NoSuchProviderException {
-    if ("ECDSA".equalsIgnoreCase(algorithm)) {
-      algorithm = "EC";
-    }
-
-    if ("EC".equalsIgnoreCase(algorithm)) {
-      return KeyPairGenerator.getInstance(algorithm, "BC");
-    } else {
+    if ("RSA".equalsIgnoreCase(algorithm) || "DSA".equalsIgnoreCase(algorithm)) {
       return KeyPairGenerator.getInstance(algorithm);
+    } else {
+      if ("ECDSA".equalsIgnoreCase(algorithm)) {
+        algorithm = "EC";
+      }
+
+      return KeyPairGenerator.getInstance(algorithm, "BC");
     }
   } // method getKeyPairGenerator
 
