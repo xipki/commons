@@ -14,7 +14,7 @@ import org.xipki.security.pkcs11.*;
 import org.xipki.security.pkcs11.emulator.EmulatorP11ModuleFactory;
 import org.xipki.security.pkcs11.hsmproxy.HsmProxyP11ModuleFactory;
 import org.xipki.security.pkcs12.P12SignerFactory;
-import org.xipki.security.util.JSON;
+import org.xipki.util.JSON;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.FileOrValue;
 import org.xipki.util.ValidatableConf;
