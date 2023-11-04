@@ -37,7 +37,7 @@ public class XiHttpClient {
 
   public XiHttpClient(SslContextConf sslContextConf) throws ObjectCreationException {
     this.sslSocketFactory = sslContextConf.getSslSocketFactory();
-    this.hostnameVerifier = sslContextConf.buildHostnameVerifier();
+    this.hostnameVerifier = sslContextConf.getHostnameVerifier();
   }
 
   public XiHttpClient(SSLSocketFactory sslSocketFactory, HostnameVerifier hostnameVerifier) {
