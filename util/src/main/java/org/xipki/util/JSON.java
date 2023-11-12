@@ -43,32 +43,56 @@ public class JSON {
 
   }
 
-  public static class XiJsonModule extends SimpleModule {
+  private static class ValiditySerializer extends JsonSerializer<Validity> {
 
-    public static final XiJsonModule INSTANCE = new XiJsonModule();
-    public XiJsonModule() {
-      addSerializer(Instant.class,   new InstantSerializer());
-      addDeserializer(Instant.class, new InstantDeserializer());
+    @Override
+    public void serialize(Validity validity, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+        throws IOException {
+      jsonGenerator.writeString(validity.toString());
     }
 
   }
 
-  private static final ObjectMapper json;
-  private static final ObjectWriter prettyJson;
+  private static class ValidityDeserializer extends JsonDeserializer<Validity> {
+
+    @Override
+    public Validity deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
+        throws IOException {
+      return Validity.getInstance(jsonParser.getValueAsString());
+    }
+
+  }
+
+  private static class XiJsonModule extends SimpleModule {
+
+    public static final XiJsonModule INSTANCE = new XiJsonModule();
+    public XiJsonModule() {
+      addSerializer  (Instant.class,  new InstantSerializer());
+      addDeserializer(Instant.class,  new InstantDeserializer());
+
+      addSerializer  (Validity.class, new ValiditySerializer());
+      addDeserializer(Validity.class, new ValidityDeserializer());
+    }
+
+  }
+
+  private static final ObjectMapper mapper;
+  private static final ObjectWriter prettyWriter;
 
   static {
-    json = new ObjectMapper().registerModule(XiJsonModule.INSTANCE)
-            .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    prettyJson = new ObjectMapper().registerModule(XiJsonModule.INSTANCE)
-        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    mapper = newDefaultObjectMapper();
+    prettyWriter = newDefaultObjectMapper().writerWithDefaultPrettyPrinter();
+  }
+
+  public static ObjectMapper newDefaultObjectMapper() {
+    return new ObjectMapper().registerModule(XiJsonModule.INSTANCE)
         .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
-        .writerWithDefaultPrettyPrinter();
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
   public static <T> T parseObject(String json, Class<T> classOfT) {
     try {
-      return JSON.json.readValue(json, classOfT);
+      return mapper.readValue(json, classOfT);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -76,18 +100,18 @@ public class JSON {
 
   public static <T> T parseObject(byte[] json, Class<T> classOfT) {
     try {
-      return JSON.json.readValue(json, classOfT);
+      return mapper.readValue(json, classOfT);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   public static <T> T parseObject(Path jsonFilePath, Class<T> classOfT) throws IOException {
-    return json.readValue(jsonFilePath.toFile(), classOfT);
+    return mapper.readValue(jsonFilePath.toFile(), classOfT);
   }
 
   public static <T> T parseObject(File jsonFile, Class<T> classOfT) throws IOException {
-    return json.readValue(jsonFile, classOfT);
+    return mapper.readValue(jsonFile, classOfT);
   }
 
   /**
@@ -106,7 +130,7 @@ public class JSON {
       }
     };
     // jackson closes the stream.
-    return json.readValue(noCloseReader, classOfT);
+    return mapper.readValue(noCloseReader, classOfT);
   }
 
   /**
@@ -120,12 +144,12 @@ public class JSON {
    */
   public static <T> T parseObjectAndClose(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
     // jackson closes the stream.
-    return json.readValue(new InputStreamReader(jsonInputStream), classOfT);
+    return mapper.readValue(new InputStreamReader(jsonInputStream), classOfT);
   }
 
   public static String toJson(Object obj) {
     try {
-      return json.writeValueAsString(obj);
+      return mapper.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -133,7 +157,7 @@ public class JSON {
 
   public static byte[] toJSONBytes(Object obj) {
     try {
-      return json.writeValueAsBytes(obj);
+      return mapper.writeValueAsBytes(obj);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -141,7 +165,7 @@ public class JSON {
 
   public static String toPrettyJson(Object obj) {
     try {
-      return prettyJson.writeValueAsString(obj);
+      return prettyWriter.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -166,7 +190,7 @@ public class JSON {
    * @throws IOException if IO error occurs while writting to the stream.
    */
   public static void writeJSONAndClose(Object object, OutputStream outputStream) throws IOException {
-    json.writeValue(outputStream, object);
+    mapper.writeValue(outputStream, object);
   }
 
   /**
@@ -188,7 +212,7 @@ public class JSON {
    * @throws IOException if IO error occurs while writting to the stream.
    */
   public static void writePrettyJSONAndClose(Object object, OutputStream outputStream) throws IOException {
-    prettyJson.writeValue(outputStream, object);
+    prettyWriter.writeValue(outputStream, object);
   }
 
 }
