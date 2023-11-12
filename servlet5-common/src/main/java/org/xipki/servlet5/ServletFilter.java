@@ -6,6 +6,8 @@ package org.xipki.servlet5;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xipki.util.exception.ServletException0;
 import org.xipki.util.http.XiHttpFilter;
 
@@ -19,6 +21,8 @@ import java.io.IOException;
  */
 public abstract class ServletFilter implements Filter {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ServletFilter.class);
+
   private XiHttpFilter filter0;
 
   protected abstract XiHttpFilter initFilter(FilterConfig filterConfig) throws ServletException0;
@@ -28,6 +32,7 @@ public abstract class ServletFilter implements Filter {
     try {
       filter0 = initFilter(filterConfig);
     } catch (ServletException0 ex) {
+      LOG.error("error initializing ServletFiler", ex);
       throw new ServletException(ex);
     }
   }
