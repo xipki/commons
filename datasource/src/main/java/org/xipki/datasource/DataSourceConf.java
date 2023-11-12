@@ -4,7 +4,7 @@
 package org.xipki.datasource;
 
 import org.xipki.util.FileOrValue;
-import org.xipki.util.ValidatableConf;
+import org.xipki.util.ValidableConf;
 import org.xipki.util.exception.InvalidConfException;
 
 /**
@@ -12,7 +12,7 @@ import org.xipki.util.exception.InvalidConfException;
  *
  * @author Lijun Liao (xipki)
  */
-public class DataSourceConf extends ValidatableConf {
+public class DataSourceConf extends ValidableConf {
 
   private FileOrValue conf;
 

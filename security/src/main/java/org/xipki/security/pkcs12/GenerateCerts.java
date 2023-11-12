@@ -39,7 +39,7 @@ import java.util.*;
 
 public class GenerateCerts {
 
-  private static class Conf extends ValidatableConf {
+  private static class Conf extends ValidableConf {
     private List<KeyCertConf> keycerts;
     private List<CertStore> certstores;
 
@@ -103,7 +103,7 @@ public class GenerateCerts {
 
   }
 
-  private static class CertStore extends ValidatableConf {
+  private static class CertStore extends ValidableConf {
     private String name;
     private String p12Password;
     private List<String> keyCertNames;
@@ -130,7 +130,7 @@ public class GenerateCerts {
     }
   }
 
-  private static class KeyCertConf extends ValidatableConf {
+  private static class KeyCertConf extends ValidableConf {
     private String name;
     private String issuerName;
     // RSA: RSA/<key size>

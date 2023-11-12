@@ -17,7 +17,7 @@ import org.xipki.security.pkcs12.P12SignerFactory;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.FileOrValue;
 import org.xipki.util.JSON;
-import org.xipki.util.ValidatableConf;
+import org.xipki.util.ValidableConf;
 import org.xipki.util.exception.InvalidConfException;
 
 import java.io.Closeable;
@@ -35,7 +35,7 @@ import java.util.List;
 
 public class Securities implements Closeable {
 
-  public static class SecurityConf extends ValidatableConf {
+  public static class SecurityConf extends ValidableConf {
 
     private boolean keyStrongrandomEnabled;
 

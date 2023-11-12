@@ -13,14 +13,14 @@ import java.util.Collection;
  * @author Lijun Liao (xipki)
  */
 
-public abstract class ValidatableConf {
+public abstract class ValidableConf {
 
-  protected static void validate(ValidatableConf aConf, ValidatableConf... extraConfs) throws InvalidConfException {
+  protected static void validate(ValidableConf aConf, ValidableConf... extraConfs) throws InvalidConfException {
     if (aConf != null) {
       aConf.validate();
     }
 
-    for (ValidatableConf conf : extraConfs) {
+    for (ValidableConf conf : extraConfs) {
       if (conf != null) {
         conf.validate();
       }
@@ -28,17 +28,17 @@ public abstract class ValidatableConf {
   }
 
   @SafeVarargs
-  protected static void validate(Collection<? extends ValidatableConf> aConfList,
-                                 Collection<? extends ValidatableConf>... confLists) throws InvalidConfException {
+  protected static void validate(Collection<? extends ValidableConf> aConfList,
+                                 Collection<? extends ValidableConf>... confLists) throws InvalidConfException {
     if (aConfList != null) {
-      for (ValidatableConf conf : aConfList) {
+      for (ValidableConf conf : aConfList) {
         conf.validate();
       }
     }
 
-    for (Collection<? extends ValidatableConf> confList : confLists) {
+    for (Collection<? extends ValidableConf> confList : confLists) {
       if (confList != null) {
-        for (ValidatableConf conf : confList) {
+        for (ValidableConf conf : confList) {
           conf.validate();
         }
       }

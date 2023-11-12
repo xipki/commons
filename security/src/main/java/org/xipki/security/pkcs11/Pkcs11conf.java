@@ -4,7 +4,7 @@
 package org.xipki.security.pkcs11;
 
 import org.xipki.util.Args;
-import org.xipki.util.ValidatableConf;
+import org.xipki.util.ValidableConf;
 import org.xipki.util.exception.InvalidConfException;
 
 import java.util.LinkedList;
@@ -17,9 +17,9 @@ import java.util.Map;
  * @author Lijun Liao (xipki)
  */
 
-public class Pkcs11conf extends ValidatableConf {
+public class Pkcs11conf extends ValidableConf {
 
-  public static class MechanismFilter extends ValidatableConf {
+  public static class MechanismFilter extends ValidableConf {
 
     /**
      * name of the mechanismSet.
@@ -59,7 +59,7 @@ public class Pkcs11conf extends ValidatableConf {
 
   } // class MechanismFilter
 
-  public static class MechanismSet extends ValidatableConf {
+  public static class MechanismSet extends ValidableConf {
 
     private String name;
 
@@ -111,7 +111,7 @@ public class Pkcs11conf extends ValidatableConf {
 
   } // class MechanismSet
 
-  public static class Module extends ValidatableConf {
+  public static class Module extends ValidableConf {
 
     private String name;
 
@@ -320,7 +320,7 @@ public class Pkcs11conf extends ValidatableConf {
 
   } // class Module
 
-  public static class NativeLibrary extends ValidatableConf {
+  public static class NativeLibrary extends ValidableConf {
 
     private String path;
 
@@ -362,7 +362,7 @@ public class Pkcs11conf extends ValidatableConf {
 
   } // class NativeLibrary
 
-  public static class NewObjectConf extends ValidatableConf {
+  public static class NewObjectConf extends ValidableConf {
 
     private Boolean ignoreLabel;
 
@@ -393,7 +393,7 @@ public class Pkcs11conf extends ValidatableConf {
 
   } // class NewObjectConf
 
-  public static class PasswordSet extends ValidatableConf {
+  public static class PasswordSet extends ValidableConf {
 
     private List<Slot> slots;
 
@@ -428,7 +428,7 @@ public class Pkcs11conf extends ValidatableConf {
 
   } // class PasswordSet
 
-  public static class Slot extends ValidatableConf {
+  public static class Slot extends ValidableConf {
 
     private Integer index;
     /**

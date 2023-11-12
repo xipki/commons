@@ -13,7 +13,7 @@ import java.io.IOException;
  * @author Lijun Liao (xipki)
  */
 
-public class FileOrBinary extends ValidatableConf {
+public class FileOrBinary extends ValidableConf {
 
   private String file;
 

@@ -31,7 +31,7 @@ import java.util.Map.Entry;
 
 public class DefaultCurl implements Curl {
 
-  private static final class HostConf extends ValidatableConf {
+  private static final class HostConf extends ValidableConf {
     private List<String> urlPattern;
     private SslConf sslContext;
 
@@ -50,7 +50,7 @@ public class DefaultCurl implements Curl {
     }
   }
 
-  private static final class CurlConf extends ValidatableConf {
+  private static final class CurlConf extends ValidableConf {
     private List<HostConf> hostConfs;
 
     public void setHostConfs(List<HostConf> hostConfs) {

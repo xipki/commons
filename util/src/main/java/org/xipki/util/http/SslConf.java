@@ -4,7 +4,7 @@
 package org.xipki.util.http;
 
 import org.xipki.util.FileOrBinary;
-import org.xipki.util.ValidatableConf;
+import org.xipki.util.ValidableConf;
 import org.xipki.util.exception.InvalidConfException;
 
 /**
@@ -12,7 +12,7 @@ import org.xipki.util.exception.InvalidConfException;
  *
  * @author Lijun Liao (xipki)
  */
-public class SslConf extends ValidatableConf {
+public class SslConf extends ValidableConf {
 
   private String name;
 
