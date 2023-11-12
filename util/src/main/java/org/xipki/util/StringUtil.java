@@ -317,6 +317,22 @@ public class StringUtil {
     return new BigInteger(tmpStr, defaultHex ? 16 : 10);
   }
 
+  public static String lowercase(String str) {
+    return str == null ? null : str.toLowerCase(Locale.ROOT);
+  }
+
+  public static List<String> lowercase(List<String> strs) {
+    if (strs == null) {
+      return null;
+    }
+
+    List<String> ret = new ArrayList<>(strs.size());
+    for (String str : strs) {
+      ret.add(lowercase(str));
+    }
+    return ret;
+  }
+
   public static String getVersion(Class<?> clazz) {
     try {
       return toUtf8String(IoUtil.readAllBytesAndClose(clazz.getResourceAsStream("version"))).trim();
