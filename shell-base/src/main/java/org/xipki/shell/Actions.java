@@ -630,4 +630,33 @@ public class Actions {
     }
   }
 
+
+  @Command(scope = "xi", name = "exec", description = "execute terminal")
+  @Service
+  public static class ExecTerminalCommand extends XiAction {
+
+    @Argument(name = "terminal command", required = true, description = "Terminal command")
+    @Completion(FileCompleter.class)
+    private String command;
+
+    @Option(name = "--ignore-error", description = "whether ignores error")
+    private Boolean ignoreError;
+
+    @Override
+    protected Object execute0() throws Exception {
+      System.out.println("Executing command '" + command + "'");
+
+      command = IoUtil.expandFilepath(command, false);
+
+      Process process = Runtime.getRuntime().exec(command);
+      int exitValue = process.waitFor();
+      if (exitValue != 0) {
+        if (ignoreError == null || !ignoreError.booleanValue()){
+          throw new Exception("command ends with exit value " + exitValue);
+        }
+      }
+      return null;
+    }
+  }
+
 }
