@@ -3,6 +3,8 @@
 
 package org.xipki.util;
 
+import org.xipki.util.exception.InvalidConfException;
+
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -29,9 +31,7 @@ public class PermissionConstants {
   public static final int GET_CRL = 64;
   public static final int ENROLL_CROSS = 128;
   public static final int GEN_KEYPAIR = 256;
-
   public static final int GET_CERT = 512;
-
   public static final int ALL =
       ENROLL_CERT | REVOKE_CERT | UNSUSPEND_CERT | REMOVE_CERT | REENROLL_CERT
           | GEN_CRL | GET_CRL | ENROLL_CROSS | GEN_KEYPAIR | GET_CERT;
@@ -77,6 +77,10 @@ public class PermissionConstants {
   }
 
   public static String getTextForCode(int code) {
+    if (code == ALL) {
+      return "all";
+    }
+
     String text = codeTextMap.get(code);
     return (text == null) ? Integer.toString(code) : text;
   }
@@ -86,6 +90,10 @@ public class PermissionConstants {
   }
 
   public static String permissionToString(int permission) {
+    if (permission == ALL) {
+      return "all";
+    }
+
     StringBuilder sb = new StringBuilder();
     for (Entry<Integer, String> entry : codeTextMap.entrySet()) {
       Integer code = entry.getKey();
@@ -102,6 +110,10 @@ public class PermissionConstants {
   }
 
   public static List<String> permissionToStringSet(int permission) {
+    if (permission == ALL) {
+      return Arrays.asList("all");
+    }
+
     List<String> list = new ArrayList<>(10);
     for (Entry<Integer, String> entry : codeTextMap.entrySet()) {
       Integer code = entry.getKey();
@@ -112,4 +124,18 @@ public class PermissionConstants {
     Collections.sort(list);
     return list;
   }
+
+  public static int toIntPermission(List<String> permissions)
+      throws InvalidConfException {
+    int ret = 0;
+    for (String permission : permissions) {
+      Integer ii = getPermissionForText(permission);
+      if (ii == null) {
+        throw new InvalidConfException("invalid permission " + permission);
+      }
+      ret |= ii;
+    }
+    return ret;
+  }
+
 }
