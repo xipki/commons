@@ -630,7 +630,6 @@ public class Actions {
     }
   }
 
-
   @Command(scope = "xi", name = "exec", description = "execute terminal")
   @Service
   public static class ExecTerminalCommand extends XiAction {

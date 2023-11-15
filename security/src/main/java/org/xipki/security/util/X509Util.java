@@ -191,9 +191,9 @@ public class X509Util {
     }
   }
 
-  public static CertificationRequest parseCsrInRequest(byte[] p10Bytes) throws OperationException {
+  public static CertificationRequest parseCsrInRequest(byte[] csrBytes) throws OperationException {
     try {
-      return CertificationRequest.getInstance(toDerEncoded(p10Bytes));
+      return CertificationRequest.getInstance(toDerEncoded(notNull(csrBytes, "csrBytes")));
     } catch (Exception ex) {
       throw new OperationException(ErrorCode.BAD_REQUEST, "invalid CSR: " + ex.getMessage());
     }
@@ -208,6 +208,7 @@ public class X509Util {
   }
 
   public static byte[] toDerEncoded(byte[] bytes) {
+    Args.notNull(bytes, "bytes");
     final int len = bytes.length;
 
     if (len > 23) {

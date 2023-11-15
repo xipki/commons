@@ -73,18 +73,6 @@ public class CollectionUtil {
     return upperList;
   }
 
-  public static Set<String> toLowerCaseSet(Set<String> set) {
-    if (set == null) {
-      return null;
-    }
-
-    Set<String> lowerSet = new HashSet<>();
-    for (String s : set) {
-      lowerSet.add(s.toLowerCase());
-    }
-    return lowerSet;
-  }
-
   public static <T> Set<T> unmodifiableSet(Set<? extends T> set) {
     return (set == null) ? Collections.emptySet() : Collections.unmodifiableSet(set);
   }

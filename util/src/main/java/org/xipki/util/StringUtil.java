@@ -333,6 +333,18 @@ public class StringUtil {
     return ret;
   }
 
+  public static Set<String> lowercase(Set<String> strs) {
+    if (strs == null) {
+      return null;
+    }
+
+    Set<String> ret = new HashSet<>(strs.size());
+    for (String str : strs) {
+      ret.add(lowercase(str));
+    }
+    return ret;
+  }
+
   public static String getVersion(Class<?> clazz) {
     try {
       return toUtf8String(IoUtil.readAllBytesAndClose(clazz.getResourceAsStream("version"))).trim();

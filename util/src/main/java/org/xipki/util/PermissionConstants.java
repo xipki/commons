@@ -17,6 +17,10 @@ import java.util.Map.Entry;
 
 public class PermissionConstants {
 
+  public static final String NAME_NONE = "none";
+
+  public static final String NAME_ALL = "all";
+
   private static final Map<Integer, String> codeTextMap = new HashMap<>();
   private static final Map<String, Integer> textCodeMap = new HashMap<>();
   private static final List<Integer> permissions;
@@ -91,7 +95,7 @@ public class PermissionConstants {
 
   public static String permissionToString(int permission) {
     if (permission == ALL) {
-      return "all";
+      return NAME_ALL;
     }
 
     StringBuilder sb = new StringBuilder();
@@ -109,26 +113,32 @@ public class PermissionConstants {
     return sb.toString();
   }
 
-  public static List<String> permissionToStringSet(int permission) {
+  public static List<String> permissionToStringList(int permission) {
+    List<String> set = new ArrayList<>(10);
     if (permission == ALL) {
-      return Arrays.asList("all");
+      return set;
     }
 
-    List<String> list = new ArrayList<>(10);
     for (Entry<Integer, String> entry : codeTextMap.entrySet()) {
       Integer code = entry.getKey();
       if ((permission & code) != 0) {
-        list.add(entry.getValue());
+        set.add(entry.getValue());
       }
     }
-    Collections.sort(list);
-    return list;
+    return set;
   }
 
-  public static int toIntPermission(List<String> permissions)
-      throws InvalidConfException {
+  public static int toIntPermission(Collection<String> permissions) throws InvalidConfException {
+    if (permissions == null) {
+      return 0;
+    }
+
     int ret = 0;
     for (String permission : permissions) {
+      if (NAME_NONE.equalsIgnoreCase(permission)) {
+        continue;
+      }
+
       Integer ii = getPermissionForText(permission);
       if (ii == null) {
         throw new InvalidConfException("invalid permission " + permission);
