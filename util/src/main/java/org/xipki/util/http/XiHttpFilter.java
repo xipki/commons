@@ -2,10 +2,6 @@
 // License Apache License 2.0
 package org.xipki.util.http;
 
-import org.xipki.util.exception.ServletException0;
-
-import java.io.IOException;
-
 /**
  * HTTP filter.
  *
@@ -15,6 +11,6 @@ public interface XiHttpFilter {
 
   void destroy();
 
-  void doFilter(XiHttpRequest request, XiHttpResponse response) throws IOException, ServletException0;
+  void doFilter(XiHttpRequest request, XiHttpResponse response) throws Exception;
 
 }

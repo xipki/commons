@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.util.exception.ServletException0;
 import org.xipki.util.http.XiHttpFilter;
 
 import java.io.IOException;
@@ -25,13 +24,13 @@ public abstract class ServletFilter implements Filter {
 
   private XiHttpFilter filter0;
 
-  protected abstract XiHttpFilter initFilter(FilterConfig filterConfig) throws ServletException0;
+  protected abstract XiHttpFilter initFilter(FilterConfig filterConfig) throws Exception;
 
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
     try {
       filter0 = initFilter(filterConfig);
-    } catch (ServletException0 ex) {
+    } catch (Exception ex) {
       LOG.error("error initializing ServletFiler", ex);
       throw new ServletException(ex);
     }
@@ -59,7 +58,9 @@ public abstract class ServletFilter implements Filter {
     try {
       filter0.doFilter(new XiHttpRequestImpl((HttpServletRequest) request),
           new XiHttpResponseImpl((HttpServletResponse) response));
-    } catch (ServletException0 ex) {
+    } catch (IOException ex) {
+      throw ex;
+    } catch (Exception ex) {
       throw new ServletException(ex);
     }
   }
