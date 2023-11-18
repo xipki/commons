@@ -129,7 +129,7 @@ public class Actions {
 
       List<File> sourceFiles = new ArrayList<>(n - 1);
       for (int i = 0; i < n - 1; i++) {
-        String source = files.get(i);
+        String source = expandFilepath(files.get(i));
         File sourceFile = new File(source);
 
         if (!sourceFile.exists()) {
