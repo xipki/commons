@@ -218,10 +218,10 @@ public class KeyUtil {
     }
 
     try {
-      if ("EC".equalsIgnoreCase(algorithm)) {
-        return KeyFactory.getInstance(algorithm, "BC");
-      } else {
+      if ("RSA".equalsIgnoreCase(algorithm) || "DSA".equalsIgnoreCase(algorithm)) {
         return KeyFactory.getInstance(algorithm);
+      } else {
+        return KeyFactory.getInstance(algorithm, "BC");
       }
     } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
       throw new InvalidKeySpecException("could not find KeyFactory for " + algorithm + ": " + ex.getMessage());

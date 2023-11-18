@@ -12,8 +12,6 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.jcajce.interfaces.EdDSAKey;
-import org.bouncycastle.jcajce.interfaces.XDHKey;
 import org.bouncycastle.operator.ContentSigner;
 import org.xipki.security.*;
 import org.xipki.security.util.GMUtil;
@@ -241,21 +239,6 @@ public class P12KeyGenerator {
   } // method generateIdentity
 
   public static ContentSigner getContentSigner(PrivateKey key, PublicKey publicKey) throws Exception {
-    if (key instanceof XDHKey) {
-      String algorithm = key.getAlgorithm();
-      ASN1ObjectIdentifier curveOid = EdECConstants.getCurveOid(algorithm);
-      if (curveOid == null || !EdECConstants.isMontgomeryCurve(curveOid)) {
-        throw new InvalidKeyException("unknown XDH key algorithm " + algorithm);
-      }
-      Signature signer = Signature.getInstance("EdDSA", "BC");
-
-      // Just dummy: signature created by the signKey cannot be verified by the public key.
-      PrivateKey signKey = KeyUtil.convertXDHToDummyEdDSAPrivateKey(key);
-      return new SignatureSigner(new AlgorithmIdentifier(curveOid), signer, signKey);
-    }
-
-    P12ContentSignerBuilder builder = new P12ContentSignerBuilder(key, publicKey);
-
     SignAlgo algo;
     if (key instanceof RSAPrivateKey) {
       algo = SignAlgo.RSAPSS_SHA256;
@@ -271,20 +254,26 @@ public class P12KeyGenerator {
             : orderBitLength > 160 ? SignAlgo.ECDSA_SHA256
             : SignAlgo.ECDSA_SHA1;
       }
-    } else if (key instanceof EdDSAKey) {
-      String algorithm = key.getAlgorithm();
-      ASN1ObjectIdentifier curveOid = EdECConstants.getCurveOid(algorithm);
-      if (EdECConstants.id_ED25519.equals(curveOid)) {
-        algo = SignAlgo.ED25519;
-      } else if (EdECConstants.id_ED448.equals(curveOid)) {
-        algo = SignAlgo.ED448;
-      } else {
-        throw new IllegalArgumentException("unknown EdDSA key algorithm " + algorithm);
-      }
     } else {
-      throw new IllegalArgumentException("unknown type of key " + key.getClass().getName());
+      SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+      ASN1ObjectIdentifier algOid = spki.getAlgorithm().getAlgorithm();
+      if (EdECConstants.isMontgomeryCurve(algOid)) {
+        Signature signer = Signature.getInstance("EdDSA", "BC");
+        // Just dummy: signature created by the signKey cannot be verified by the public key.
+        PrivateKey signKey = KeyUtil.convertXDHToDummyEdDSAPrivateKey(key);
+        return new SignatureSigner(new AlgorithmIdentifier(algOid), signer, signKey);
+      } else if (EdECConstants.isEdwardsCurve(algOid)) {
+        if (EdECConstants.id_ED25519.equals(algOid)) {
+          algo = SignAlgo.ED25519;
+        } else { // if (EdECConstants.id_ED448.equals(curveOid)) {
+          algo = SignAlgo.ED448;
+        }
+      } else {
+        throw new IllegalArgumentException("unknown public key algorithm " + algOid.getId());
+      }
     }
 
+    P12ContentSignerBuilder builder = new P12ContentSignerBuilder(key, publicKey);
     ConcurrentContentSigner csigner = builder.createSigner(algo, 1, null);
     return csigner.borrowSigner().value();
   } // method getContentSigner

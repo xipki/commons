@@ -127,7 +127,8 @@ class EmulatorP11Slot extends P11Slot {
   static {
     // keypair generation
     long[] mechs = {CKM_DSA_KEY_PAIR_GEN, CKM_RSA_X9_31_KEY_PAIR_GEN,  CKM_RSA_PKCS_KEY_PAIR_GEN,
-                    CKM_EC_KEY_PAIR_GEN,  CKM_EC_EDWARDS_KEY_PAIR_GEN, CKM_EC_MONTGOMERY_KEY_PAIR_GEN};
+                    CKM_EC_KEY_PAIR_GEN,  CKM_EC_EDWARDS_KEY_PAIR_GEN, CKM_EC_MONTGOMERY_KEY_PAIR_GEN,
+                    CKM_VENDOR_SM2_KEY_PAIR_GEN};
     for (long mech : mechs) {
       supportedMechs.put(mech, new MechanismInfo(0, Integer.MAX_VALUE, CKF_GENERATE_KEY_PAIR));
     }
@@ -180,7 +181,7 @@ class EmulatorP11Slot extends P11Slot {
     supportedMechs.put(CKM_EDDSA, new MechanismInfo(0, Integer.MAX_VALUE, CKF_SIGN | CKF_VERIFY));
 
     // SM2
-    mechs = new long[]{CKM_VENDOR_SM2_KEY_PAIR_GEN, CKM_VENDOR_SM2_SM3, CKM_VENDOR_SM2};
+    mechs = new long[]{CKM_VENDOR_SM2_SM3, CKM_VENDOR_SM2};
     for (long mech : mechs) {
       supportedMechs.put(mech, new MechanismInfo(0, Integer.MAX_VALUE, CKF_SIGN | CKF_VERIFY));
     }

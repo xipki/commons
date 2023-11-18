@@ -193,7 +193,7 @@ public class P12Actions {
     private void assertMatch(KeyStore ks, X509Cert cert, String password)
         throws Exception {
       String keyAlgName = cert.getPublicKey().getAlgorithm();
-      if (StringUtil.orEqualsIgnoreCase(keyAlgName, EdECConstants.X25519, EdECConstants.X448)) {
+      if (StringUtil.orEqualsIgnoreCase(keyAlgName, EdECConstants.X25519, EdECConstants.X448, "XDH")) {
         // cannot be checked via creating dummy signature, just compare the public keys
         char[] pwd = password.toCharArray();
         KeypairWithCert kp = KeypairWithCert.fromKeystore(ks, null, pwd, null);
@@ -204,6 +204,7 @@ public class P12Actions {
         }
       } else {
         ConfPairs pairs = new ConfPairs("keystore", "file:" + expandFilepath(p12File));
+        pairs.putPair("parallelism", "1");
         if (password != null) {
           pairs.putPair("password", password);
         }

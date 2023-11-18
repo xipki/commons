@@ -4,6 +4,7 @@
 package org.xipki.security.pkcs12;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.security.*;
@@ -19,6 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 import java.util.Set;
 
@@ -93,12 +97,20 @@ public class P12SignerFactory implements SignerFactory {
       } else {
         KeypairWithCert keypairWithCert = KeypairWithCert.fromKeystore(
             type, keystoreStream, password, keyLabel, password, certificateChain);
-        String publicKeyAlg = keypairWithCert.getPublicKey().getAlgorithm();
+        PublicKey publicKey = keypairWithCert.getPublicKey();
+        ASN1ObjectIdentifier xdhCurveOid = null;
+        if (!(publicKey instanceof RSAPublicKey || publicKey instanceof ECPublicKey
+            || publicKey instanceof DSAPublicKey)) {
+          SubjectPublicKeyInfo spki = keypairWithCert.getCertificateChain()[0].getSubjectPublicKeyInfo();
+          xdhCurveOid = spki.getAlgorithm().getAlgorithm();
+          if (!EdECConstants.isMontgomeryCurve(xdhCurveOid)) {
+            xdhCurveOid = null;
+          }
+        }
 
-        ASN1ObjectIdentifier curveOid = EdECConstants.getCurveOid(publicKeyAlg);
-        if (curveOid != null && EdECConstants.isMontgomeryCurve(curveOid)) {
+        if (xdhCurveOid != null) {
           P12XdhMacContentSignerBuilder signerBuilder =
-              getP12XdhMacContentSignerBuilder(conf, publicKeyAlg, keypairWithCert);
+              getP12XdhMacContentSignerBuilder(conf, xdhCurveOid, keypairWithCert);
           return signerBuilder.createSigner(parallelism);
         } else {
           P12ContentSignerBuilder signerBuilder = new P12ContentSignerBuilder(keypairWithCert);
@@ -117,14 +129,14 @@ public class P12SignerFactory implements SignerFactory {
   } // method newSigner
 
   private static P12XdhMacContentSignerBuilder getP12XdhMacContentSignerBuilder(
-      SignerConf conf, String publicKeyAlg, KeypairWithCert keypairWithCert)
+      SignerConf conf, ASN1ObjectIdentifier curveId, KeypairWithCert keypairWithCert)
       throws ObjectCreationException, XiSecurityException {
     X509Cert peerCert = null;
     // peer certificate is needed
     List<X509Cert> peerCerts = conf.getPeerCertificates();
     if (peerCerts != null) {
       for (X509Cert m : conf.getPeerCertificates()) {
-        if (publicKeyAlg.equalsIgnoreCase(m.getPublicKey().getAlgorithm())) {
+        if (curveId.equals(m.getSubjectPublicKeyInfo().getAlgorithm().getAlgorithm())) {
           peerCert = m;
           break;
         }
@@ -132,7 +144,7 @@ public class P12SignerFactory implements SignerFactory {
     }
 
     if (peerCert == null) {
-      throw new ObjectCreationException("could not find peer certificate for algorithm " + publicKeyAlg);
+      throw new ObjectCreationException("could not find peer certificate for algorithm " + curveId.getId());
     }
 
     return new P12XdhMacContentSignerBuilder(keypairWithCert, peerCert);
