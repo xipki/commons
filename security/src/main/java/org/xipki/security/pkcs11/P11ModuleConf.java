@@ -151,7 +151,7 @@ public class P11ModuleConf {
                   Collection<String> excludeMechanisms) {
       singleFilters.add(
           new P11SingleMechanismFilter(slots,
-              Args.notNull(includeMechanisms, "includeMechanisms"),
+              includeMechanisms,
               excludeMechanisms));
     }
 
