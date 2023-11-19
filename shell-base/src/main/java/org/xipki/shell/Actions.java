@@ -646,12 +646,13 @@ public class Actions {
       System.out.println("Executing command '" + command + "'");
 
       command = IoUtil.expandFilepath(command, false);
-
       Process process = Runtime.getRuntime().exec(command);
-      int exitValue = process.waitFor();
-      if (exitValue != 0) {
+      int status = process.waitFor();
+      System.out.write(IoUtil.readAllBytes(process.getInputStream()));
+      if (status != 0) {
+        System.err.write(IoUtil.readAllBytes(process.getErrorStream()));
         if (ignoreError == null || !ignoreError.booleanValue()){
-          throw new Exception("command ends with exit value " + exitValue);
+          throw new Exception("process exited with status " + status);
         }
       }
       return null;
