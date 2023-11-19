@@ -116,6 +116,7 @@ public class PermissionConstants {
   public static List<String> permissionToStringList(int permission) {
     List<String> set = new ArrayList<>(10);
     if (permission == ALL) {
+      set.add(NAME_ALL);
       return set;
     }
 
