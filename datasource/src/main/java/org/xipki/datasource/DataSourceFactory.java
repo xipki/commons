@@ -96,7 +96,19 @@ public class DataSourceFactory {
      *   dataSource.url = jdbc:hsqldb:file:~/xipki/db/hsqldb/ocspcache;sql.syntax_pgs=true
      */
     String dataSourceUrl = conf.getProperty("dataSource.url");
-    if (dataSourceUrl != null) {
+    if (dataSourceUrl == null) {
+      // mariadb
+      if (databaseType == DatabaseType.MARIADB) {
+        String serverName = conf.remove("dataSource.serverName");
+        String port = conf.remove("dataSource.port");
+        if (port == null) {
+          port = "3306";
+        }
+        String databaseName = conf.remove("dataSource.databaseName");
+        dataSourceUrl = "jdbc:mariadb://" + serverName + ":" + port + "/" + databaseName;
+        conf.setProperty("dataSource.url", dataSourceUrl);
+      }
+    } else {
       String newUrl = null;
 
       final String h2_prefix = "jdbc:h2:";
