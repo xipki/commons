@@ -4,8 +4,11 @@
 package org.xipki.util;
 
 import java.math.BigInteger;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * Utility class for String.
@@ -345,11 +348,37 @@ public class StringUtil {
     return ret;
   }
 
-  public static String getVersion(Class<?> clazz) {
+  public static String getBundleNameVersion(Class<?> clazz) {
+    return getBundleVersion(clazz, true);
+  }
+
+  public static String getBundleVersion(Class<?> clazz) {
+    return getBundleVersion(clazz, false);
+  }
+
+  private static String getBundleVersion(Class<?> clazz, boolean withName) {
     try {
-      return toUtf8String(IoUtil.readAllBytesAndClose(clazz.getResourceAsStream("version"))).trim();
+      String className = "/" + clazz.getName().replace(".", "/") + ".class";
+      String classPath = clazz.getResource(className).toString();
+
+      String manifestPath = classPath.substring(0, classPath.length() - className.length()) +
+          "/META-INF/MANIFEST.MF";
+      Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+      Attributes attrs = manifest.getMainAttributes();
+      String version = attrs.getValue("Bundle-Version");
+      if (version == null) {
+        return "UNKNOWN";
+      }
+
+      String buildNumber = attrs.getValue("Bundle-Build-Id");
+      String timestamp = attrs.getValue("Bundle-Build-Timestamp");
+      String desc = version + " buildNumber " + buildNumber + " built at " + timestamp;
+      if (withName) {
+        desc = attrs.getValue("Bundle-SymbolicName") + " " + desc;
+      }
+      return desc;
     } catch (Exception ex) {
-      return "UNKNOWN";
+      return "ERROR";
     }
   }
 
