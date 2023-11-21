@@ -3,8 +3,16 @@
 See also <https://github.com/xipki/commons/releases>
 
 ## 6.3.2
-- Release date: 2023/mm/dd
-
+- Release date: 2023/11/19
+  - Feature: add new binary of HSM proxy.
+  - Move (repackage) JSON.java from module security to util.
+  - Feature: add code to generate a set of hierarchic certificates.
+  - Feature: add karaf command xi:exec to execute terminal command.
+  - Bugfix: Fixed "MariaDB JDBC driver does not work with old hikaricp (datasource) configuration".
+- Dependenciees 
+  - Bouncycastle: 1.76 -> 1.77
+  - ipkcs11wrapper: 1.0.7 -> 1.0.8
+  
 ## 6.3.1
 - Release date: 2023/10/15
 - Features
