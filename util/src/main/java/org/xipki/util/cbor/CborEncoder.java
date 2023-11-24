@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -133,6 +134,10 @@ public class CborEncoder {
      */
     public void writeByteString(byte[] bytes) throws IOException {
         writeString(CborConstants.TYPE_BYTE_STRING, bytes);
+    }
+
+    public void writeByteString(byte[] bytes, int off, int len) throws IOException {
+        writeString(CborConstants.TYPE_BYTE_STRING, bytes, off, len);
     }
 
     /**
@@ -398,9 +403,13 @@ public class CborEncoder {
         if (bytes == null) {
             writeNull();
         } else {
-            writeType(majorType, bytes.length);
-            m_os.write(bytes);
+            writeString(majorType, bytes, 0, bytes.length);
         }
+    }
+
+    protected void writeString(int majorType, byte[] bytes, int off, int len) throws IOException {
+        writeType(majorType, len);
+        m_os.write(bytes, off, len);
     }
 
     /**
@@ -519,8 +528,36 @@ public class CborEncoder {
         }
     }
 
+    public void writeInstant(Instant value) throws IOException {
+        if (value == null) {
+            writeNull();
+        } else {
+            writeTag(CborConstants.TAG_EPOCH_DATE_TIME);
+            writeInt(value.getEpochSecond());
+        }
+    }
+
     public void writeBigInt(BigInteger value) throws IOException {
-        writeByteString(value == null ? null : value.toByteArray());
+        if (value == null) {
+            writeNull();
+            return;
+        }
+
+        boolean neg = value.signum() == -1;
+        long tag = neg ? CborConstants.TAG_NEGATIVE_BIGINT : CborConstants.TAG_POSITIVE_BIGINT;
+        byte[] bytes;
+        if (neg) {
+            BigInteger v = value.negate().subtract(BigInteger.ONE);
+            bytes = v.toByteArray();
+        } else {
+            bytes = value.toByteArray();
+        }
+        writeTag(tag);
+        if (bytes.length > 1 && bytes[0] == 0) { // remove leading zeros
+            writeByteString(bytes, 1, bytes.length - 1);
+        } else {
+            writeByteString(bytes);
+        }
     }
 
     public void writeBigInts(BigInteger[] value) throws IOException {

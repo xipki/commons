@@ -7,6 +7,7 @@
 package org.xipki.util.cbor;
 
 import org.xipki.util.Args;
+import org.xipki.util.DateUtil;
 import org.xipki.util.exception.DecodeException;
 
 import java.io.EOFException;
@@ -15,6 +16,8 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -692,10 +695,53 @@ public class CborDecoder implements AutoCloseable {
     }
 
     public BigInteger readBigInt() throws IOException, DecodeException {
+        CborType type = peekType();
+        if (isNull(type)) {
+            read1Byte();
+            return null;
+        }
+
+        long tag = readTag();
+        boolean neg;
+        if (tag == CborConstants.TAG_POSITIVE_BIGINT) {
+            neg = false;
+        } else if (tag == CborConstants.TAG_NEGATIVE_BIGINT) {
+            neg = true;
+        } else {
+            throw new DecodeException("invalid tag " + tag);
+        }
+
         byte[] bytes = readByteString();
-        return bytes == null ? null : new BigInteger(bytes);
+        BigInteger value = new BigInteger(1, bytes);
+        if (neg) {
+            value = value.negate().min(BigInteger.ONE);
+        }
+
+        return value;
     }
 
+    public Instant readInstant() throws IOException, DecodeException {
+        CborType type = peekType();
+        if (isNull(type)) {
+            read1Byte();
+            return null;
+        }
+
+        long tag = readTag();
+        if (tag == CborConstants.TAG_STANDARD_DATE_TIME) {
+            String value = readTextString();
+            try {
+                return DateUtil.parseRFC3339Timestamp(value);
+            } catch (DateTimeParseException ex) {
+                throw new DecodeException("invalid date/time " + value);
+            }
+        } else if (tag == CborConstants.TAG_EPOCH_DATE_TIME) {
+            long value = readLong();
+            return Instant.ofEpochSecond(value);
+        } else {
+            throw new DecodeException("invalid tag " + tag);
+        }
+    }
     public String[] readTextStrings() throws IOException, DecodeException {
         Integer arrayLen = readNullOrArrayLength();
         if (arrayLen == null) {
@@ -725,14 +771,14 @@ public class CborDecoder implements AutoCloseable {
     }
 
     public BigInteger[] readBigInts() throws IOException, DecodeException {
-        byte[][] bytes = readByteStrings();
-        if (bytes == null) {
+        Integer arrayLen = readNullOrArrayLength();
+        if (arrayLen == null) {
             return null;
         }
 
-        BigInteger[] ret = new BigInteger[bytes.length];
-        for (int i = 0; i < bytes.length; i++) {
-            ret[i] = bytes[i] == null ? null : new BigInteger(bytes[i]);
+        BigInteger[] ret = new BigInteger[arrayLen];
+        for (int i = 0; i < arrayLen.intValue(); i++) {
+            ret[i] = readBigInt();
         }
 
         return ret;

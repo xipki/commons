@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 /**
@@ -27,6 +28,40 @@ public class DateUtil {
   private static final DateTimeFormatter SDF2 = DateTimeFormatter.ofPattern("yyyyMMdd");
 
   private DateUtil() {
+  }
+
+  public static Instant parseRFC3339Timestamp(String timestamp) throws DateTimeParseException {
+    if (timestamp.endsWith("Z")) {
+      return Instant.parse(timestamp);
+    } else {
+      // This block can be deleted for JDK-17
+      // e.g. 2016-01-01T01:04:01+04:00, and 2016-01-01T01:04:01.99+04:00
+      boolean plusOffset = true;
+      int signIndex = timestamp.lastIndexOf('+');
+      if (signIndex == -1) {
+        plusOffset = false;
+        signIndex = timestamp.lastIndexOf('-');
+      }
+      if (signIndex < 19) {
+        throw new DateTimeParseException("invalid timestamp", timestamp, 0);
+      }
+
+      String timePart = timestamp.substring(0, signIndex);
+      Instant time = Instant.parse(timePart + "Z");
+      String offPart = timestamp.substring(signIndex + 1);
+      String[] offTokens = offPart.substring(1).split(":");
+      int offHour = Integer.parseInt(offTokens[0]);
+      int offMin = 0;
+      if (offTokens.length > 1) {
+        offMin = Integer.parseInt(offTokens[1]);
+      }
+
+      int offMinutes = offHour * 60 + offMin;
+      if (plusOffset) {
+        offMinutes *= -1;
+      }
+      return time.plus(offMinutes, ChronoUnit.MINUTES);
+    }
   }
 
   public static Instant parseUtcTimeyyyyMMddhhmmss(String utcTime) {
