@@ -10,11 +10,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
-import org.xipki.util.exception.InvalidConfException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -90,43 +87,6 @@ public class JSON {
 
   }
 
-  private static class PermissionsSerializer extends JsonSerializer<Permissions> {
-
-    @Override
-    public void serialize(Permissions value, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
-        throws IOException {
-      jsonGenerator.writeObject(PermissionConstants.permissionToStringList(value.getValue()));
-    }
-
-  }
-
-  private static class PermissionsDeserializer extends JsonDeserializer<Permissions> {
-
-    @Override
-    public Permissions deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-        throws IOException {
-      TreeNode o = jsonParser.readValueAsTree();
-      if (o instanceof NumericNode) {
-        int intValue = ((NumericNode) o).intValue();
-        return new Permissions(intValue);
-      }
-
-      ArrayNode a = (ArrayNode) o;
-      Set<String> s = new HashSet<>();
-      for (int i = 0; i < a.size(); i++) {
-        JsonNode n = a.get(i);
-        s.add(n.textValue());
-      }
-
-      try {
-        return new Permissions(s);
-      } catch (InvalidConfException e) {
-        throw new IOException(e);
-      }
-    }
-
-  }
-
   private static class XiJsonModule extends SimpleModule {
 
     public static final XiJsonModule INSTANCE = new XiJsonModule();
@@ -139,9 +99,6 @@ public class JSON {
 
       addSerializer  (ConfPairs.class, new ConfPairsSerializer());
       addDeserializer(ConfPairs.class, new ConfPairsDeserializer());
-
-      addSerializer  (Permissions.class, new PermissionsSerializer());
-      addDeserializer(Permissions.class, new PermissionsDeserializer());
     }
 
   }

@@ -52,11 +52,6 @@ public class Securities implements Closeable {
      */
     private List<String> signerFactories;
 
-    /**
-     * list of classes that implement {@link KeypairGeneratorFactory}
-     */
-    private List<String> keypairGeneratorFactories;
-
     public static final SecurityConf DEFAULT;
 
     static {
@@ -111,12 +106,11 @@ public class Securities implements Closeable {
       this.signerFactories = signerFactories;
     }
 
-    public List<String> getKeypairGeneratorFactories() {
-      return keypairGeneratorFactories;
-    }
-
+    @Deprecated
     public void setKeypairGeneratorFactories(List<String> keypairGeneratorFactories) {
-      this.keypairGeneratorFactories = keypairGeneratorFactories;
+      if (keypairGeneratorFactories != null && !keypairGeneratorFactories.isEmpty()) {
+        LOG.warn("keypairGeneratorFactories is not allowed");
+      }
     }
 
     @Override
@@ -221,22 +215,14 @@ public class Securities implements Closeable {
     SignerFactoryRegisterImpl signerFactoryRegister = new SignerFactoryRegisterImpl();
     securityFactory.setSignerFactoryRegister(signerFactoryRegister);
 
-    KeypairGeneratorFactoryRegisterImpl keypairFactoryRegister =
-        new KeypairGeneratorFactoryRegisterImpl();
-    securityFactory.setKeypairGeneratorFactoryRegister(keypairFactoryRegister);
-
     // PKCS#12 (software)
     P12SignerFactory p12SignerFactory = new P12SignerFactory();
     p12SignerFactory.setSecurityFactory(securityFactory);
     signerFactoryRegister.registFactory(p12SignerFactory);
 
-    DfltKeypairGeneratorFactory dfltKeypairGeneratorFactory = new DfltKeypairGeneratorFactory();
-    keypairFactoryRegister.registFactory(dfltKeypairGeneratorFactory);
-
     // PKCS#11
     if (conf.getPkcs11Conf() != null) {
-      initSecurityPkcs11(conf.getPkcs11Conf(), signerFactoryRegister, dfltKeypairGeneratorFactory,
-          passwords.getPasswordResolver());
+      initSecurityPkcs11(conf.getPkcs11Conf(), signerFactoryRegister, passwords.getPasswordResolver());
     }
 
     // register additional SignerFactories
@@ -252,25 +238,11 @@ public class Securities implements Closeable {
         }
       }
     }
-
-    // register additional KeypairGeneratorFactories
-    if (CollectionUtil.isNotEmpty(conf.getKeypairGeneratorFactories())) {
-      for (String className : conf.getKeypairGeneratorFactories()) {
-        try {
-          Class<?> clazz = Class.forName(className);
-          KeypairGeneratorFactory factory = (KeypairGeneratorFactory) clazz.getDeclaredConstructor().newInstance();
-          keypairFactoryRegister.registFactory(factory);
-        } catch (Exception ex) {
-          throw new InvalidConfException("error caught while initializing KeypairGeneratorFactory "
-              + className + ": " + ex.getClass().getName() + ": " + ex.getMessage(), ex);
-        }
-      }
-    }
   } // method initSecurityFactory
 
   private void initSecurityPkcs11(
       FileOrValue pkcs11Conf, SignerFactoryRegisterImpl signerFactoryRegister,
-      DfltKeypairGeneratorFactory dfltKeypairGeneratorFactory, PasswordResolver passwordResolver)
+      PasswordResolver passwordResolver)
       throws InvalidConfException {
     p11ModuleFactoryRegister = new P11ModuleFactoryRegisterImpl();
     for (P11ModuleFactory m : p11ModuleFactories) {
@@ -295,8 +267,6 @@ public class Securities implements Closeable {
     p11SignerFactory.setP11CryptServiceFactory(p11CryptServiceFactory);
 
     signerFactoryRegister.registFactory(p11SignerFactory);
-
-    dfltKeypairGeneratorFactory.setP11CryptServiceFactory(p11CryptServiceFactory);
   } // method initSecurityPkcs11
 
 }

@@ -39,8 +39,6 @@ public class SecurityFactoryImpl extends AbstractSecurityFactory {
 
   private SignerFactoryRegister signerFactoryRegister;
 
-  private KeypairGeneratorFactoryRegister keypairGeneratorFactoryRegister;
-
   private boolean strongRandom4KeyEnabled;
 
   private boolean strongRandom4SignEnabled;
@@ -82,16 +80,6 @@ public class SecurityFactoryImpl extends AbstractSecurityFactory {
       validateSigner(signer, type, conf);
     }
     return signer;
-  }
-
-  @Override
-  public Set<String> getSupportedKeypairGeneratorTypes() {
-    return keypairGeneratorFactoryRegister.getSupportedGeneratorTypes();
-  }
-
-  @Override
-  public KeypairGenerator createKeypairGenerator(String type, String conf) throws ObjectCreationException {
-    return keypairGeneratorFactoryRegister.newKeypairGenerator(this, type, conf);
   }
 
   @Override
@@ -153,10 +141,6 @@ public class SecurityFactoryImpl extends AbstractSecurityFactory {
 
   public void setSignerFactoryRegister(SignerFactoryRegister signerFactoryRegister) {
     this.signerFactoryRegister = signerFactoryRegister;
-  }
-
-  public void setKeypairGeneratorFactoryRegister(KeypairGeneratorFactoryRegister keypairGeneratorFactoryRegister) {
-    this.keypairGeneratorFactoryRegister = keypairGeneratorFactoryRegister;
   }
 
   public void setPasswordResolver(PasswordResolver passwordResolver) {

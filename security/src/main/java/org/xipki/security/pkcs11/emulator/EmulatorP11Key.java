@@ -195,14 +195,18 @@ class EmulatorP11Key extends P11Key {
           try {
             final String algo = "RSA/ECB/NoPadding";
             rsaCipher = Cipher.getInstance(algo, providerName);
-            LOG.info("use cipher algorithm {}", algo);
+            if (i == 0) {
+              LOG.info("use cipher algorithm {}", algo);
+            }
           } catch (NoSuchPaddingException ex) {
             throw new TokenException("NoSuchPadding", ex);
           } catch (NoSuchAlgorithmException ex) {
             final String algo = "RSA/NONE/NoPadding";
             try {
               rsaCipher = Cipher.getInstance(algo, providerName);
-              LOG.info("use cipher algorithm {}", algo);
+              if (i == 0) {
+                LOG.info("use cipher algorithm {}", algo);
+              }
             } catch (NoSuchPaddingException e1) {
               throw new TokenException("NoSuchPadding", ex);
             }
