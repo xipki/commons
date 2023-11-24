@@ -290,7 +290,7 @@ public class ProcessLog {
     ZonedDateTime midNight = ZonedDateTime.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
         0, 0, 0, 0, now.getZone());
 
-    long days = Duration.between(midNight, time).toDays();
+    long days = Duration.between(midNight.toInstant(), time).toDays();
     if (days > 0) {
       sb.append('+').append(days > 9 ? "x" : Long.toString(days));
     }

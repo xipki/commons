@@ -45,14 +45,11 @@ public class Validity implements Comparable<Validity> {
 
   private static final ZoneId TIMEZONE_UTC = ZoneId.of("UTC");
 
-  private int validity;
-  private Unit unit;
+  private final int validity;
+  private final Unit unit;
 
   // For the deserialization only
   @SuppressWarnings("unused")
-  private Validity() {
-  }
-
   public Validity(int validity, Unit unit) {
     this.validity = Args.positive(validity, "validity");
     this.unit = Args.notNull(unit, "unit");
@@ -92,16 +89,8 @@ public class Validity implements Comparable<Validity> {
     }
   } // method getInstance
 
-  public void setValidity(int validity) {
-    this.validity = Args.positive(validity, "validity");
-  }
-
   public int getValidity() {
     return validity;
-  }
-
-  public void setUnit(Unit unit) {
-    this.unit = Args.notNull(unit, "unit");
   }
 
   public Unit getUnit() {
