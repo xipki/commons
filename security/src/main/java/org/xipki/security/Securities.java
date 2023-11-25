@@ -14,10 +14,7 @@ import org.xipki.security.pkcs11.*;
 import org.xipki.security.pkcs11.emulator.EmulatorP11ModuleFactory;
 import org.xipki.security.pkcs11.hsmproxy.HsmProxyP11ModuleFactory;
 import org.xipki.security.pkcs12.P12SignerFactory;
-import org.xipki.util.CollectionUtil;
-import org.xipki.util.FileOrValue;
-import org.xipki.util.JSON;
-import org.xipki.util.ValidableConf;
+import org.xipki.util.*;
 import org.xipki.util.exception.InvalidConfException;
 
 import java.io.Closeable;
@@ -201,7 +198,22 @@ public class Securities implements Closeable {
 
   private void initSecurityFactory(SecurityConf conf) throws PasswordResolverException, InvalidConfException {
     Passwords passwords = new Passwords();
-    passwords.init(conf.getPassword());
+
+    PasswordConf pwdConf = conf.getPassword();
+    // we need to adapt the file path
+    String pwdCallBack = pwdConf.getMasterPasswordCallback();
+    if (pwdCallBack.startsWith("FILE file=")) {
+      String filepath = pwdCallBack.substring(10); // 10 = "FILE file=".length
+      String filepath1 = IoUtil.expandFilepath(filepath, true);
+      if (!filepath.equals(filepath1)) {
+        PasswordConf newPwdConf = new PasswordConf();
+        newPwdConf.setSinglePasswordResolvers(pwdConf.getSinglePasswordResolvers());
+        newPwdConf.setMasterPasswordCallback("FILE file=" + filepath1);
+        pwdConf = newPwdConf;
+      }
+    }
+
+    passwords.init(pwdConf);
 
     securityFactory = new SecurityFactoryImpl();
 
