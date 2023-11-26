@@ -9,8 +9,6 @@ import org.xipki.audit.AuditEvent;
 import org.xipki.audit.AuditLevel;
 import org.xipki.audit.AuditService;
 import org.xipki.audit.PciAuditEvent;
-import org.xipki.password.PasswordResolver;
-import org.xipki.password.PasswordResolverException;
 import org.xipki.util.Base64;
 import org.xipki.util.ConfPairs;
 import org.xipki.util.StringUtil;
@@ -114,8 +112,7 @@ public abstract class MacAuditService implements AuditService {
 
   protected abstract void doClose() throws Exception;
 
-  protected void doExtraInit(ConfPairs confPairs, PasswordResolver passwordResolver)
-      throws PasswordResolverException, InvalidConfException {
+  protected void doExtraInit(ConfPairs confPairs) throws InvalidConfException {
   }
 
   protected void verify(long id, String tag, String integrityText, ConfPairs confPairs) {
@@ -197,16 +194,6 @@ public abstract class MacAuditService implements AuditService {
 
   @Override
   public void init(String conf) throws InvalidConfException {
-    try {
-      init(conf, null);
-    } catch (PasswordResolverException ex) {
-      throw new InvalidConfException("error resolving password", ex);
-    }
-  }
-
-  @Override
-  public void init(String conf, PasswordResolver passwordResolver)
-          throws PasswordResolverException, InvalidConfException {
     ConfPairs confPairs = new ConfPairs(conf);
     String str = confPairs.value(KEY_SHARD_ID);
     shardId = StringUtil.isBlank(str) ? 0 : Integer.parseInt(str);
@@ -258,7 +245,7 @@ public abstract class MacAuditService implements AuditService {
     }
 
     this.rnd = new SecureRandom();
-    doExtraInit(new ConfPairs(conf), passwordResolver);
+    doExtraInit(new ConfPairs(conf));
   }
 
   @Override

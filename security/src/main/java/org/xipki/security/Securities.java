@@ -6,15 +6,15 @@ package org.xipki.security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
-import org.xipki.password.Passwords;
-import org.xipki.password.Passwords.PasswordConf;
 import org.xipki.security.pkcs11.*;
 import org.xipki.security.pkcs11.emulator.EmulatorP11ModuleFactory;
 import org.xipki.security.pkcs11.hsmproxy.HsmProxyP11ModuleFactory;
 import org.xipki.security.pkcs12.P12SignerFactory;
-import org.xipki.util.*;
+import org.xipki.util.CollectionUtil;
+import org.xipki.util.FileOrValue;
+import org.xipki.util.JSON;
+import org.xipki.util.ValidableConf;
 import org.xipki.util.exception.InvalidConfException;
 
 import java.io.Closeable;
@@ -41,8 +41,6 @@ public class Securities implements Closeable {
     private int defaultSignerParallelism = 32;
 
     private FileOrValue pkcs11Conf;
-
-    private PasswordConf password;
 
     /**
      * list of classes that implement {@link SignerFactory}
@@ -87,12 +85,9 @@ public class Securities implements Closeable {
       this.pkcs11Conf = pkcs11Conf;
     }
 
-    public PasswordConf getPassword() {
-      return password == null ? PasswordConf.DEFAULT : password;
-    }
-
-    public void setPassword(PasswordConf password) {
-      this.password = password;
+    @Deprecated
+    public void setPassword(Object password) {
+      LOG.warn("ignored password configuration");
     }
 
     public List<String> getSignerFactories() {
@@ -197,31 +192,11 @@ public class Securities implements Closeable {
   } // method close
 
   private void initSecurityFactory(SecurityConf conf) throws PasswordResolverException, InvalidConfException {
-    Passwords passwords = new Passwords();
-
-    PasswordConf pwdConf = conf.getPassword();
-    // we need to adapt the file path
-    String pwdCallBack = pwdConf.getMasterPasswordCallback();
-    if (pwdCallBack.startsWith("FILE file=")) {
-      String filepath = pwdCallBack.substring(10); // 10 = "FILE file=".length
-      String filepath1 = IoUtil.expandFilepath(filepath, true);
-      if (!filepath.equals(filepath1)) {
-        PasswordConf newPwdConf = new PasswordConf();
-        newPwdConf.setSinglePasswordResolvers(pwdConf.getSinglePasswordResolvers());
-        newPwdConf.setMasterPasswordCallback("FILE file=" + filepath1);
-        pwdConf = newPwdConf;
-      }
-    }
-
-    passwords.init(pwdConf);
-
     securityFactory = new SecurityFactoryImpl();
 
     securityFactory.setStrongRandom4SignEnabled(conf.isSignStrongrandomEnabled());
     securityFactory.setStrongRandom4KeyEnabled(conf.isKeyStrongrandomEnabled());
     securityFactory.setDefaultSignerParallelism(conf.getDefaultSignerParallelism());
-
-    securityFactory.setPasswordResolver(passwords.getPasswordResolver());
 
     //----- Factories
     SignerFactoryRegisterImpl signerFactoryRegister = new SignerFactoryRegisterImpl();
@@ -234,7 +209,7 @@ public class Securities implements Closeable {
 
     // PKCS#11
     if (conf.getPkcs11Conf() != null) {
-      initSecurityPkcs11(conf.getPkcs11Conf(), signerFactoryRegister, passwords.getPasswordResolver());
+      initSecurityPkcs11(conf.getPkcs11Conf(), signerFactoryRegister);
     }
 
     // register additional SignerFactories
@@ -253,8 +228,7 @@ public class Securities implements Closeable {
   } // method initSecurityFactory
 
   private void initSecurityPkcs11(
-      FileOrValue pkcs11Conf, SignerFactoryRegisterImpl signerFactoryRegister,
-      PasswordResolver passwordResolver)
+      FileOrValue pkcs11Conf, SignerFactoryRegisterImpl signerFactoryRegister)
       throws InvalidConfException {
     p11ModuleFactoryRegister = new P11ModuleFactoryRegisterImpl();
     for (P11ModuleFactory m : p11ModuleFactories) {
@@ -262,7 +236,6 @@ public class Securities implements Closeable {
     }
 
     p11CryptServiceFactory = new P11CryptServiceFactoryImpl(p11ModuleFactoryRegister);
-    p11CryptServiceFactory.setPasswordResolver(passwordResolver);
 
     Pkcs11conf pkcs11ConfObj;
     try {

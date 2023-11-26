@@ -8,12 +8,9 @@
     </cm:default-properties>
   </cm:property-placeholder>
 
-  <reference id="passwordResolver" interface="org.xipki.password.PasswordResolver"/>
-
   <bean id="curl" class="org.xipki.util.DefaultCurl">
     <property name="useSslConf" value="${useSslConf}"/>
     <property name="confFile" value="${confFile}"/>
-    <property name="passwordResolver" ref="passwordResolver"/>
   </bean>
 
   <service ref="curl" interface="org.xipki.util.Curl"/>

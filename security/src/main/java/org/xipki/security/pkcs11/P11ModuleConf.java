@@ -5,8 +5,8 @@ package org.xipki.security.pkcs11;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
+import org.xipki.password.Passwords;
 import org.xipki.pkcs11.wrapper.PKCS11Constants;
 import org.xipki.pkcs11.wrapper.PKCS11Module;
 import org.xipki.util.Args;
@@ -198,19 +198,14 @@ public class P11ModuleConf {
         return false;
       }
 
-      public List<char[]> getPasswords(PasswordResolver passwordResolver)
-          throws PasswordResolverException {
+      public List<char[]> getPasswords() throws PasswordResolverException {
         if (passwords == null) {
           return null;
         }
 
         List<char[]> ret = new ArrayList<>(passwords.size());
         for (String password : passwords) {
-          if (passwordResolver == null) {
-            ret.add(password.toCharArray());
-          } else {
-            ret.add(passwordResolver.resolvePassword(password));
-          }
+          ret.add(Passwords.resolvePassword(password));
         }
 
         return ret;
@@ -219,7 +214,6 @@ public class P11ModuleConf {
     } // class P11PasswordsRetriever
 
     private final List<P11SinglePasswordRetriever> singleRetrievers;
-    private PasswordResolver passwordResolver;
 
     P11PasswordsRetriever() {
       singleRetrievers = new LinkedList<>();
@@ -229,8 +223,7 @@ public class P11ModuleConf {
       singleRetrievers.add(new P11SinglePasswordRetriever(slots, passwords));
     }
 
-    public List<char[]> getPassword(P11SlotId slotId)
-        throws PasswordResolverException {
+    public List<char[]> getPassword(P11SlotId slotId) throws PasswordResolverException {
       Args.notNull(slotId, "slotId");
       if (CollectionUtil.isEmpty(singleRetrievers)) {
         return null;
@@ -238,19 +231,11 @@ public class P11ModuleConf {
 
       for (P11SinglePasswordRetriever sr : singleRetrievers) {
         if (sr.match(slotId)) {
-          return sr.getPasswords(passwordResolver);
+          return sr.getPasswords();
         }
       }
 
       return null;
-    }
-
-    public PasswordResolver getPasswordResolver() {
-      return passwordResolver;
-    }
-
-    public void setPasswordResolver(PasswordResolver passwordResolver) {
-      this.passwordResolver = passwordResolver;
     }
 
   } // P11PasswordsRetriever
@@ -327,7 +312,7 @@ public class P11ModuleConf {
   private List<Long> keyPairTypes;
 
   public P11ModuleConf(
-      Pkcs11conf.Module moduleType, List<Pkcs11conf.MechanismSet> mechanismSets, PasswordResolver passwordResolver)
+      Pkcs11conf.Module moduleType, List<Pkcs11conf.MechanismSet> mechanismSets)
       throws InvalidConfException {
     this.name = Args.notNull(moduleType, "moduleType").getName();
     this.readOnly = moduleType.isReadonly();
@@ -425,7 +410,6 @@ public class P11ModuleConf {
     passwordRetriever = new P11PasswordsRetriever();
     List<Pkcs11conf.PasswordSet> passwordsList = moduleType.getPasswordSets();
     if (CollectionUtil.isNotEmpty(passwordsList)) {
-      passwordRetriever.setPasswordResolver(passwordResolver);
       for (Pkcs11conf.PasswordSet passwordType : passwordsList) {
         Set<P11SlotIdFilter> slots = getSlotIdFilters(passwordType.getSlots());
         passwordRetriever.addPasswordEntry(slots, new ArrayList<>(passwordType.getPasswords()));

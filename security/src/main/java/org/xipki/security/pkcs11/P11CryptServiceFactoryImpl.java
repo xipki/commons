@@ -5,7 +5,6 @@ package org.xipki.security.pkcs11;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.security.XiSecurityException;
 import org.xipki.util.IoUtil;
@@ -29,8 +28,6 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
   private static final Logger LOG = LoggerFactory.getLogger(P11CryptServiceFactoryImpl.class);
 
   private static final Map<String, P11CryptService> services = new HashMap<>();
-
-  private PasswordResolver passwordResolver;
 
   private Map<String, P11ModuleConf> moduleConfs;
 
@@ -80,7 +77,7 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
 
     Map<String, P11ModuleConf> confs = new HashMap<>();
     for (Pkcs11conf.Module moduleType : moduleTypes) {
-      P11ModuleConf conf = new P11ModuleConf(moduleType, mechanismSets, passwordResolver);
+      P11ModuleConf conf = new P11ModuleConf(moduleType, mechanismSets);
       confs.put(conf.getName(), conf);
     }
 
@@ -132,10 +129,6 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
     }
     this.pkcs11Conf = conf;
     this.pkcs11ConfFile = null;
-  }
-
-  public void setPasswordResolver(PasswordResolver passwordResolver) {
-    this.passwordResolver = passwordResolver;
   }
 
   @Override

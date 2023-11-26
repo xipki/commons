@@ -1,7 +1,10 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
 
-package org.xipki.password;
+package org.xipki.password.demo;
+
+import org.xipki.password.PasswordCallback;
+import org.xipki.password.PasswordResolverException;
 
 /**
  * A demo PasswordCallback which just pass-through the password.
@@ -22,7 +25,10 @@ public class PassThroughPasswordCallback implements PasswordCallback {
 
   @Override
   public void init(String conf) throws PasswordResolverException {
-    this.password = Args.notBlank(conf, "conf").toCharArray();
+    if (conf == null || conf.isEmpty()) {
+      throw new IllegalArgumentException("conf may no be null or empty");
+    }
+    this.password = conf.toCharArray();
   }
 
   @Override

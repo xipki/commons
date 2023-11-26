@@ -5,7 +5,6 @@ package org.xipki.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.Args;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.ConcurrentBag;
@@ -148,7 +147,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
   }
 
   @Override
-  public void initialize(String conf, PasswordResolver passwordResolver) throws XiSecurityException {
+  public void initialize(String conf) throws XiSecurityException {
   }
 
   @Override

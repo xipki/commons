@@ -16,7 +16,6 @@ package org.xipki.datasource;
  * some ide warnings.
  */
 
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.ConfigurableProperties;
 import org.xipki.util.IoUtil;
 
@@ -58,16 +57,14 @@ public class ScriptRunner {
   private String delimiter = DEFAULT_DELIMITER;
   private boolean fullLineDelimiter = false;
 
-  public static void runScript(String dbConfFile, String scriptFile, PasswordResolver passwordResolver)
-      throws Exception {
+  public static void runScript(String dbConfFile, String scriptFile) throws Exception {
     ConfigurableProperties props = new ConfigurableProperties();
     try (InputStream inStream = Files.newInputStream(Paths.get(IoUtil.expandFilepath(dbConfFile)))) {
       props.load(inStream);
     }
     // only one connection is needed.
     props.setProperty("minimumIdle", "1");
-    try (DataSourceWrapper dataSource =
-             new DataSourceFactory().createDataSource("default", props, passwordResolver)) {
+    try (DataSourceWrapper dataSource = new DataSourceFactory().createDataSource("default", props)) {
       runScript(dataSource, scriptFile);
     }
   }

@@ -1,14 +1,17 @@
 // Copyright (c) 2013-2023 xipki. All rights reserved.
 // License Apache License 2.0
 
-package org.xipki.password;
+package org.xipki.password.demo;
+
+import org.xipki.password.PasswordResolver;
+import org.xipki.password.PasswordResolverException;
 
 /**
  * A demo SinglePasswordResolver which just pass-through the password.
  *
  * @author Lijun Liao (xipki)
  */
-public class PassThroughSinglePasswordResolver implements SinglePasswordResolver {
+public class PassThroughSinglePasswordResolver implements PasswordResolver {
 
   private static final String protocol = "THRU";
 
@@ -20,8 +23,12 @@ public class PassThroughSinglePasswordResolver implements SinglePasswordResolver
   }
 
   @Override
+  public void init(String conf) {
+  }
+
+  @Override
   public boolean canResolveProtocol(String protocol) {
-    return protocol.equals(protocol);
+    return this.protocol.equalsIgnoreCase(protocol);
   }
 
   @Override

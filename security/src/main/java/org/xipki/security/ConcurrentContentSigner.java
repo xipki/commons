@@ -4,7 +4,6 @@
 package org.xipki.security;
 
 import org.bouncycastle.operator.ContentSigner;
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.ConcurrentBag.BagEntry;
 
 import java.io.Closeable;
@@ -64,13 +63,10 @@ public interface ConcurrentContentSigner extends Closeable {
    * Initializes me.
    * @param conf
    *          Configuration. Could be {@code null}.
-   * @param passwordResolver
-   *          Password resolver. Could be {@code null}.
    * @throws XiSecurityException
    *         if error during the initialization occurs.
    */
-  void initialize(String conf, PasswordResolver passwordResolver)
-      throws XiSecurityException;
+  void initialize(String conf) throws XiSecurityException;
 
   /**
    * Sign the data.

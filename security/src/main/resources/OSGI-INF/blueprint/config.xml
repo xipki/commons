@@ -11,8 +11,6 @@
     </cm:default-properties>
   </cm:property-placeholder>
 
-  <reference id="passwordResolver" interface="org.xipki.password.PasswordResolver"/>
-
   <bean id="providers" class="org.xipki.security.Providers"
       init-method="init" destroy-method="close"/>
 
@@ -31,7 +29,6 @@
     <property name="strongRandom4KeyEnabled" value="${key.strongrandom.enabled}"/>
     <property name="strongRandom4SignEnabled" value="${sign.strongrandom.enabled}"/>
     <property name="defaultSignerParallelism" value="${defaultSignerParallelism}"/>
-    <property name="passwordResolver" ref="passwordResolver"/>
     <property name="signerFactoryRegister" ref="signerFactoryRegister"/>
   </bean>
   <service ref="securityFactory" interface="org.xipki.security.SecurityFactory"/>
@@ -65,7 +62,6 @@
       destroy-method="close">
     <argument ref="p11ModuleFactoryRegister"/>
     <property name="pkcs11ConfFile" value="${pkcs11.confFile}"/>
-    <property name="passwordResolver" ref="passwordResolver"/>
   </bean>
 
   <service ref="p11CryptServiceFactory"

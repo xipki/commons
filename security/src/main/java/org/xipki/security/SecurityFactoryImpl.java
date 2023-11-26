@@ -11,7 +11,6 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.security.util.SignerUtil;
 import org.xipki.util.Args;
@@ -34,8 +33,6 @@ public class SecurityFactoryImpl extends AbstractSecurityFactory {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityFactoryImpl.class);
 
   private int defaultSignerParallelism = 32;
-
-  private PasswordResolver passwordResolver;
 
   private SignerFactoryRegister signerFactoryRegister;
 
@@ -141,15 +138,6 @@ public class SecurityFactoryImpl extends AbstractSecurityFactory {
 
   public void setSignerFactoryRegister(SignerFactoryRegister signerFactoryRegister) {
     this.signerFactoryRegister = signerFactoryRegister;
-  }
-
-  public void setPasswordResolver(PasswordResolver passwordResolver) {
-    this.passwordResolver = passwordResolver;
-  }
-
-  @Override
-  public PasswordResolver getPasswordResolver() {
-    return passwordResolver;
   }
 
   @Override

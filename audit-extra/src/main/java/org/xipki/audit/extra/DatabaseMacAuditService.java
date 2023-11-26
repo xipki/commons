@@ -10,9 +10,8 @@ import org.xipki.audit.services.MacAuditService;
 import org.xipki.datasource.DataAccessException;
 import org.xipki.datasource.DataSourceFactory;
 import org.xipki.datasource.DataSourceWrapper;
-import org.xipki.password.PasswordResolver;
-import org.xipki.password.PasswordResolverException;
 import org.xipki.util.*;
+import org.xipki.util.exception.InvalidConfException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -104,8 +103,7 @@ public class DatabaseMacAuditService extends MacAuditService {
   }
 
   @Override
-  protected void doExtraInit(ConfPairs confPairs, PasswordResolver passwordResolver)
-          throws PasswordResolverException {
+  protected void doExtraInit(ConfPairs confPairs) throws InvalidConfException {
     String dataSourceFile = confPairs.value(KEY_DATASOURCE);
     if (StringUtil.isBlank(dataSourceFile)) {
       throw new IllegalArgumentException("property " + KEY_DATASOURCE + " not defined");
@@ -114,7 +112,7 @@ public class DatabaseMacAuditService extends MacAuditService {
     Connection conn = null;
     try {
       try (InputStream is = Files.newInputStream(Paths.get(IoUtil.expandFilepath(dataSourceFile, true)))) {
-        datasource = new DataSourceFactory().createDataSource("audit", is, passwordResolver);
+        datasource = new DataSourceFactory().createDataSource("audit", is);
       }
 
       conn = datasource.getConnection();

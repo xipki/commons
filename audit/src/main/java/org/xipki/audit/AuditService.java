@@ -3,8 +3,6 @@
 
 package org.xipki.audit;
 
-import org.xipki.password.PasswordResolver;
-import org.xipki.password.PasswordResolverException;
 import org.xipki.util.exception.InvalidConfException;
 
 /**
@@ -21,8 +19,6 @@ public interface AuditService {
   int PCI_AUDIT_EVENT = 2;
 
   void init(String conf) throws InvalidConfException;
-
-  void init(String conf, PasswordResolver passwordResolver) throws PasswordResolverException, InvalidConfException;
 
   /**
    * Log audit event.

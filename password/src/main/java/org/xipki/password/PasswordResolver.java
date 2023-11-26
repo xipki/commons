@@ -12,16 +12,12 @@ package org.xipki.password;
 
 public interface PasswordResolver {
 
-  /**
-   * Resolve the password.
-   * @param passwordHint
-   *          Hint of the password. Must not be {@code null}.
-   * @return the resolved password
-   * @throws PasswordResolverException
-   *         If cannot resolve the password
-   */
+  void init(String conf) throws PasswordResolverException;
+
+  boolean canResolveProtocol(String protocol);
+
   char[] resolvePassword(String passwordHint) throws PasswordResolverException;
 
-  String protectPassword(String protocol, char[] password) throws PasswordResolverException;
+  String protectPassword(char[] password) throws PasswordResolverException;
 
 }

@@ -3,7 +3,6 @@
 
 package org.xipki.util.http;
 
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.FileOrBinary;
 
 import javax.net.ssl.SSLContext;
@@ -19,8 +18,6 @@ import java.util.StringTokenizer;
 public class SslContextConfWrapper {
 
   private boolean useSslConf = true;
-
-  private PasswordResolver passwordResolver;
 
   private String sslStoreType;
 
@@ -40,10 +37,8 @@ public class SslContextConfWrapper {
     if (!useSslConf) {
       return null;
     }
-    SslContextConf ret = new SslContextConf(sslStoreType, sslKeystore, sslKeystorePassword,
+    return new SslContextConf(sslStoreType, sslKeystore, sslKeystorePassword,
         sslTrustanchors, sslHostnameVerifier);
-    ret.setPasswordResolver(passwordResolver);
-    return ret;
   }
 
   public boolean isUseSslConf() {
@@ -52,10 +47,6 @@ public class SslContextConfWrapper {
 
   public void setUseSslConf(boolean useSslConf) {
     this.useSslConf = useSslConf;
-  }
-
-  public void setPasswordResolver(PasswordResolver passwordResolver) {
-    this.passwordResolver = passwordResolver;
   }
 
   public void setSslStoreType(String sslStoreType) {

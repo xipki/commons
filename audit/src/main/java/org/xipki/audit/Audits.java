@@ -6,7 +6,6 @@ package org.xipki.audit;
 import org.xipki.audit.services.EmbedAuditService;
 import org.xipki.audit.services.FileMacAuditService;
 import org.xipki.audit.services.NoopAuditService;
-import org.xipki.password.PasswordResolver;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -68,7 +67,7 @@ public class Audits {
     }
   } // method getAuditService
 
-  public static void init(String auditType, String auditConf, PasswordResolver passwordResolver) {
+  public static void init(String auditType, String auditConf) {
     try {
       AuditService service;
       if ("embed".equalsIgnoreCase(auditType)) {
@@ -93,15 +92,14 @@ public class Audits {
         try {
           Class<?> clazz = Class.forName(className);
           service = (AuditService) clazz.getDeclaredConstructor().newInstance();
-        } catch (ClassCastException | ClassNotFoundException | NoSuchMethodException
-                | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+        } catch (ReflectiveOperationException ex) {
           throw new AuditServiceRuntimeException(
                   "error caught while initializing AuditService " + auditType
                           + ": " + ex.getClass().getName() + ": " + ex.getMessage(), ex);
         }
       }
 
-      service.init(auditConf, passwordResolver);
+      service.init(auditConf);
       auditService = service;
     } catch (AuditServiceRuntimeException ex) {
       initializationException = ex;

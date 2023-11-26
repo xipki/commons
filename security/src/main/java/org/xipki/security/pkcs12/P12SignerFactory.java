@@ -5,8 +5,8 @@ package org.xipki.security.pkcs12;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
+import org.xipki.password.Passwords;
 import org.xipki.security.*;
 import org.xipki.util.Base64;
 import org.xipki.util.IoUtil;
@@ -154,16 +154,13 @@ public class P12SignerFactory implements SignerFactory {
     char[] password;
     if (passwordHint == null) {
       password = null;
+    } else if (!passwordHint.contains(":")) {
+      password = passwordHint.toCharArray();
     } else {
-      PasswordResolver passwordResolver = securityFactory.getPasswordResolver();
-      if (passwordResolver == null) {
-        password = passwordHint.toCharArray();
-      } else {
-        try {
-          password = passwordResolver.resolvePassword(passwordHint);
-        } catch (PasswordResolverException ex) {
-          throw new ObjectCreationException("could not resolve password. Message: " + ex.getMessage());
-        }
+      try {
+        password = Passwords.resolvePassword(passwordHint);
+      } catch (PasswordResolverException ex) {
+        throw new ObjectCreationException("could not resolve password. Message: " + ex.getMessage());
       }
     }
     return password;

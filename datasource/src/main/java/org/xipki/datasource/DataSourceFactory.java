@@ -3,12 +3,13 @@
 
 package org.xipki.datasource;
 
-import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
+import org.xipki.password.Passwords;
 import org.xipki.util.Args;
 import org.xipki.util.ConfigurableProperties;
 import org.xipki.util.FileOrValue;
 import org.xipki.util.IoUtil;
+import org.xipki.util.exception.InvalidConfException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,15 +28,14 @@ import java.util.Optional;
 
 public class DataSourceFactory {
 
-  public DataSourceWrapper createDataSource(String name, FileOrValue conf, PasswordResolver passwordResolver)
-      throws PasswordResolverException, IOException {
+  public DataSourceWrapper createDataSource(String name, FileOrValue conf) throws IOException, InvalidConfException {
     ConfigurableProperties props;
     try (Reader reader = new StringReader(Args.notNull(conf, "conf").readContent())) {
       props = new ConfigurableProperties();
       props.load(reader);
     }
 
-    return createDataSource(name, props, passwordResolver);
+    return createDataSource(name, props);
   } // method createDataSource
 
   /**
@@ -43,20 +43,16 @@ public class DataSourceFactory {
    * The specified stream remains open after this method returns.
    * @param name the datasource name
    * @param conf the configuration
-   * @param passwordResolver the password resolver.
    * @return the created datasource wrapper.
-   * @throws PasswordResolverException if error occurs while resolving password.
    * @throws IOException if IO error occurs while reading the input sstream.
    */
-  public DataSourceWrapper createDataSource(String name, InputStream conf, PasswordResolver passwordResolver)
-      throws PasswordResolverException, IOException {
+  public DataSourceWrapper createDataSource(String name, InputStream conf) throws IOException, InvalidConfException {
     ConfigurableProperties config = new ConfigurableProperties();
     config.load(Args.notNull(conf, "conf"));
-    return createDataSource(name, config, passwordResolver);
+    return createDataSource(name, config);
   } // method createDataSource
 
-  public DataSourceWrapper createDataSource(String name, ConfigurableProperties conf, PasswordResolver passwordResolver)
-      throws PasswordResolverException {
+  public DataSourceWrapper createDataSource(String name, ConfigurableProperties conf) throws InvalidConfException {
     DatabaseType databaseType;
     String className = Args.notNull(conf, "conf").getProperty("dataSourceClassName");
     if (className != null) {
@@ -74,20 +70,20 @@ public class DataSourceFactory {
       }
     }
 
-    String password = conf.getProperty("password");
-    if (password != null) {
-      if (passwordResolver != null) {
-        password = new String(passwordResolver.resolvePassword(password));
+    try {
+      String password = conf.getProperty("password");
+      if (password != null) {
+        password = new String(Passwords.resolvePassword(password));
+        conf.setProperty("password", password);
       }
-      conf.setProperty("password", password);
-    }
 
-    password = conf.getProperty("dataSource.password");
-    if (password != null) {
-      if (passwordResolver != null) {
-        password = new String(passwordResolver.resolvePassword(password));
+      password = conf.getProperty("dataSource.password");
+      if (password != null) {
+        password = new String(Passwords.resolvePassword(password));
+        conf.setProperty("dataSource.password", password);
       }
-      conf.setProperty("dataSource.password", password);
+    } catch (PasswordResolverException ex) {
+      throw new InvalidConfException("error resolving password");
     }
 
     /*
@@ -133,11 +129,11 @@ public class DataSourceFactory {
     return DataSourceWrapper.createDataSource(name, conf, databaseType);
   } // method createDataSource
 
-  public DataSourceWrapper createDataSourceForFile(String name, String confFile, PasswordResolver passwordResolver)
-      throws PasswordResolverException, IOException {
+  public DataSourceWrapper createDataSourceForFile(String name, String confFile)
+      throws IOException, InvalidConfException {
     String path = IoUtil.expandFilepath(Args.notBlank(confFile, "confFile"));
     try (InputStream fileIn = Files.newInputStream(Paths.get(path))) {
-      return createDataSource(name, fileIn, passwordResolver);
+      return createDataSource(name, fileIn);
     }
   }
 

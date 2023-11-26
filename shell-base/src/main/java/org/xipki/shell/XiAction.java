@@ -8,8 +8,8 @@ import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.console.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.password.PasswordResolverException;
+import org.xipki.password.Passwords;
 import org.xipki.password.SecurePasswordInputPanel;
 import org.xipki.util.*;
 import org.xipki.util.PemEncoder.PemLabel;
@@ -38,11 +38,8 @@ public abstract class XiAction implements Action {
   @Reference
   protected Session session;
 
-  @Reference
-  protected PasswordResolver passwordResolver;
-
   protected char[] resolvePassword(String passwordHint) throws PasswordResolverException {
-    return passwordResolver.resolvePassword(passwordHint);
+    return Passwords.resolvePassword(passwordHint);
   }
 
   protected abstract Object execute0() throws Exception;
@@ -235,7 +232,7 @@ public abstract class XiAction implements Action {
     if (pwd == null || pwd.length == 0) {
       return pwd;
     } else {
-      return passwordResolver.resolvePassword(new String(pwd));
+      return Passwords.resolvePassword(new String(pwd));
     }
   }
 

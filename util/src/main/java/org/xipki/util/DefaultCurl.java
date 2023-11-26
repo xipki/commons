@@ -5,7 +5,6 @@ package org.xipki.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.exception.InvalidConfException;
 import org.xipki.util.exception.ObjectCreationException;
 import org.xipki.util.http.SslConf;
@@ -170,8 +169,6 @@ public class DefaultCurl implements Curl {
 
   private SslContextConf sslContextConf;
 
-  private PasswordResolver passwordResolver;
-
   private Map<UrlPattern, SslContextConf> sslContextConfs = new HashMap<>();
 
   private UrlPattern[] urlPatterns;
@@ -193,10 +190,6 @@ public class DefaultCurl implements Curl {
     this.sslContextConf = sslContextConf;
   }
 
-  public void setPasswordResolver(PasswordResolver passwordResolver) {
-    this.passwordResolver = passwordResolver;
-  }
-
   private synchronized void initIfNotDone() throws ObjectCreationException {
     if (initialized) {
       return;
@@ -206,7 +199,6 @@ public class DefaultCurl implements Curl {
       if (useSslConf) {
         if (sslContextConf != null) {
           UrlPattern urlPattern = new UrlPattern("*:*/*");
-          sslContextConf.setPasswordResolver(passwordResolver);
           try {
             sslContextConf.init();
             sslContextConfs.put(urlPattern, sslContextConf);
@@ -220,7 +212,6 @@ public class DefaultCurl implements Curl {
 
           for (HostConf m : conf.hostConfs) {
             SslContextConf sslContextConf = SslContextConf.ofSslConf(m.sslContext);
-            sslContextConf.setPasswordResolver(passwordResolver);
 
             try {
               sslContextConf.init();

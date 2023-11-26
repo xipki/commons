@@ -9,7 +9,6 @@ import org.xipki.audit.AuditEvent;
 import org.xipki.audit.AuditLevel;
 import org.xipki.audit.AuditService;
 import org.xipki.audit.PciAuditEvent;
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.*;
 import org.xipki.util.exception.InvalidConfException;
 
@@ -67,16 +66,7 @@ public class EmbedAuditService implements AuditService {
   }
 
   @Override
-  public void init(String conf) {
-    try {
-      init(conf, null);
-    } catch (InvalidConfException ex) {
-      throw new IllegalStateException(ex);
-    }
-  }
-
-  @Override
-  public void init(String conf, PasswordResolver passwordResolver) throws InvalidConfException {
+  public void init(String conf) throws InvalidConfException {
     ConfPairs confPairs = new ConfPairs(conf);
     String str = confPairs.value(KEY_SIZE);
 

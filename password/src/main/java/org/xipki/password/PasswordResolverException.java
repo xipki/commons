@@ -3,6 +3,8 @@
 
 package org.xipki.password;
 
+import java.security.GeneralSecurityException;
+
 /**
  * Password resolver exception.
  *
@@ -10,7 +12,7 @@ package org.xipki.password;
  * @since 2.0.0
  */
 
-public class PasswordResolverException extends Exception {
+public class PasswordResolverException extends GeneralSecurityException {
 
   public PasswordResolverException() {
   }

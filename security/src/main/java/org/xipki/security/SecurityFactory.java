@@ -7,7 +7,6 @@ import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.exception.ObjectCreationException;
 
 import java.security.InvalidKeyException;
@@ -25,8 +24,6 @@ import java.util.Set;
  */
 
 public interface SecurityFactory {
-
-  PasswordResolver getPasswordResolver();
 
   /**
    * Retrieves the types of supported signers.

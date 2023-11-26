@@ -3,7 +3,7 @@
 
 package org.xipki.util.http;
 
-import org.xipki.password.PasswordResolver;
+import org.xipki.password.Passwords;
 import org.xipki.util.Base64;
 import org.xipki.util.CompareUtil;
 import org.xipki.util.FileOrBinary;
@@ -38,8 +38,6 @@ public class SslContextConf {
   private final FileOrBinary[] sslTrustanchors;
 
   private final String sslHostnameVerifier;
-
-  private PasswordResolver passwordResolver;
 
   private SSLContext sslContext;
 
@@ -81,13 +79,7 @@ public class SslContextConf {
       }
 
       if (sslKeystore != null) {
-        char[] password;
-        if (sslKeystorePassword == null) {
-          password = null;
-        } else {
-          password = (passwordResolver == null) ? sslKeystorePassword.toCharArray()
-              : passwordResolver.resolvePassword(sslKeystorePassword);
-        }
+        char[] password = Passwords.resolvePassword(sslKeystorePassword);
         try (InputStream is = new ByteArrayInputStream(sslKeystore.readContent())) {
           builder.loadKeyMaterial(is, password, password);
         }
@@ -143,14 +135,6 @@ public class SslContextConf {
     try (InputStream certIs = new ByteArrayInputStream(certBytes)) {
       return fact.generateCertificate(certIs);
     }
-  }
-
-  public PasswordResolver getPasswordResolver() {
-    return passwordResolver;
-  }
-
-  public void setPasswordResolver(PasswordResolver passwordResolver) {
-    this.passwordResolver = passwordResolver;
   }
 
   public String getSslStoreType() {

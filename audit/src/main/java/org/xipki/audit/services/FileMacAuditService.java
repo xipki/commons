@@ -5,7 +5,6 @@ package org.xipki.audit.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.password.PasswordResolver;
 import org.xipki.util.*;
 import org.xipki.util.exception.InvalidConfException;
 
@@ -85,8 +84,7 @@ public class FileMacAuditService extends MacAuditService {
   }
 
   @Override
-  protected void doExtraInit(ConfPairs confPairs, PasswordResolver passwordResolver)
-      throws InvalidConfException {
+  protected void doExtraInit(ConfPairs confPairs) throws InvalidConfException {
     String filePath = confPairs.value(KEY_FILE);
     if (StringUtil.isBlank(filePath)) {
       throw new IllegalArgumentException("property " + KEY_FILE + " not defined");

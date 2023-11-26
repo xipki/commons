@@ -10,6 +10,7 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.apache.karaf.shell.support.completers.FileCompleter;
 import org.xipki.password.OBFPasswordService;
 import org.xipki.password.PBEPasswordService;
+import org.xipki.password.Passwords;
 import org.xipki.security.shell.Actions.SecurityAction;
 import org.xipki.shell.IllegalCmdParamException;
 import org.xipki.util.Args;
@@ -133,7 +134,7 @@ public class PasswordActions {
         throw new IllegalCmdParamException("encrypted password '" + passwordHint + "' does not start with PBE:");
       }
 
-      char[] password = passwordResolver.resolvePassword(passwordHint);
+      char[] password = Passwords.resolvePassword(passwordHint);
 
       if (outFile != null) {
         saveVerbose("saved the password to file", outFile, StringUtil.toUtf8Bytes(new String(password)));
@@ -171,7 +172,7 @@ public class PasswordActions {
         password = StringUtil.merge(parts);
       }
 
-      String passwordHint = passwordResolver.protectPassword(PBEPasswordService.PROTOCOL_PBE, password);
+      String passwordHint = Passwords.protectPassword(PBEPasswordService.PROTOCOL_PBE, password);
       if (outFile != null) {
         saveVerbose("saved the encrypted password to file", outFile, StringUtil.toUtf8Bytes(passwordHint));
       } else {

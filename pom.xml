@@ -80,13 +80,13 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
- </repositories>
+  </repositories>
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.7.0</version>
+        <version>3.11.0</version>
         <configuration>
           <optimize>true</optimize>
           <source>11</source>
@@ -96,7 +96,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.3.0</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -145,7 +145,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.5.0</version>
       </plugin>
     </plugins>
     <pluginManagement>
@@ -241,7 +241,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -269,7 +269,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.0.0</version>
             <configuration>
               <source>8</source>
               <failOnError>true</failOnError>
