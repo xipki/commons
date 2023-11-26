@@ -57,15 +57,6 @@ public class JceSigner implements XiContentSigner {
                 throw new IOException(e);
             }
         }
-
-        @Override
-        public void flush() throws IOException {
-        }
-
-        @Override
-        public void close() throws IOException {
-        }
-
     } // class SignerOutputStream
 
     public JceSigner(PrivateKey signKey, SignAlgo signAlgo, String providerName, Provider provider)

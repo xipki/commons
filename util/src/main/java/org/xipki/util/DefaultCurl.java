@@ -125,7 +125,7 @@ public class DefaultCurl implements Curl {
       }
 
       if (port != null) {
-        int tPort = url.getPort();;
+        int tPort = url.getPort();
         if (tPort == -1) {
           tPort = 443;
         }

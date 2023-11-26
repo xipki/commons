@@ -3,6 +3,7 @@
 
 package org.xipki.util.http;
 
+import org.xipki.util.ReflectiveUtil;
 import org.xipki.util.StringUtil;
 import org.xipki.util.exception.ObjectCreationException;
 
@@ -48,13 +49,7 @@ public class HostnameVerifiers {
       return NO_OP;
     } else if (hostnameVerifierType.startsWith("java:")) {
       String className = hostnameVerifierType.substring("java:".length());
-      try {
-        Class<?> clazz = Class.forName(className, true, HostnameVerifiers.class.getClassLoader());
-        return (HostnameVerifier) clazz.getDeclaredConstructor().newInstance();
-      } catch (Exception ex) {
-        throw new ObjectCreationException("create not create HostnameVerifier from "
-            + className + ": " + ex.getMessage(), ex);
-      }
+      return ReflectiveUtil.newInstance(className, HostnameVerifiers.class.getClassLoader());
     } else {
       throw new IllegalArgumentException("invalid hostnameVerifierType " + hostnameVerifierType);
     }

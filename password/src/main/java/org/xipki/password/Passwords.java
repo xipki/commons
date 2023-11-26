@@ -6,7 +6,6 @@ package org.xipki.password;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,15 +67,16 @@ public class Passwords {
               String resolverClassName = (idx == -1) ? value : value.substring(0, idx);
               String resolverConf = (idx == -1) ? null : value.substring(idx + 1);
 
+              PasswordResolver resolver;
               try {
-                Class<?> clazz = Class.forName(resolverClassName);
-                PasswordResolver resolver = (PasswordResolver) clazz.getDeclaredConstructor().newInstance();
-                resolver.init(resolverConf);
-                resolvers.add(resolver);
+                resolver = (PasswordResolver) Class.forName(resolverClassName).getDeclaredConstructor().newInstance();
               } catch (ReflectiveOperationException ex) {
                 throw new PasswordResolverException("error caught while initializing PasswordResolver "
                     + resolverClassName + ": " + ex.getClass().getName() + ": " + ex.getMessage(), ex);
               }
+
+              resolver.init(resolverConf);
+              resolvers.add(resolver);
             }
           }
 

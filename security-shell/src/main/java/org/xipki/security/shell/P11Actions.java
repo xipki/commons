@@ -93,7 +93,7 @@ public class P11Actions {
       ConfPairs conf = new ConfPairs();
       conf.putPair("parallelism", Integer.toString(parallelism));
 
-      if (pkcs11ModuleName != null && pkcs11ModuleName.length() > 0) {
+      if (pkcs11ModuleName != null && !pkcs11ModuleName.isEmpty()) {
         conf.putPair("module", pkcs11ModuleName);
       }
 

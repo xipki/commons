@@ -6,6 +6,8 @@ See also <https://github.com/xipki/commons/releases>
 - Release date: 2023/11/19
   - Feature: add new binary of HSM proxy.
   - Move (repackage) JSON.java from module security to util.
+  - Deleted non-common classes (moved to github:xipki/xipki).
+  - Feature: Simplified password configuration. 
   - Feature: add code to generate a set of hierarchic certificates.
   - Feature: add karaf command xi:exec to execute terminal command.
   - Bugfix: Fixed "MariaDB JDBC driver does not work with old hikaricp (datasource) configuration".

@@ -11,11 +11,9 @@ import org.xipki.security.pkcs11.*;
 import org.xipki.security.pkcs11.emulator.EmulatorP11ModuleFactory;
 import org.xipki.security.pkcs11.hsmproxy.HsmProxyP11ModuleFactory;
 import org.xipki.security.pkcs12.P12SignerFactory;
-import org.xipki.util.CollectionUtil;
-import org.xipki.util.FileOrValue;
-import org.xipki.util.JSON;
-import org.xipki.util.ValidableConf;
+import org.xipki.util.*;
 import org.xipki.util.exception.InvalidConfException;
+import org.xipki.util.exception.ObjectCreationException;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -215,14 +213,13 @@ public class Securities implements Closeable {
     // register additional SignerFactories
     if (CollectionUtil.isNotEmpty(conf.getSignerFactories())) {
       for (String className : conf.getSignerFactories()) {
+        SignerFactory factory;
         try {
-          Class<?> clazz = Class.forName(className);
-          SignerFactory factory = (SignerFactory) clazz.getDeclaredConstructor().newInstance();
-          signerFactoryRegister.registFactory(factory);
-        } catch (Exception ex) {
-          throw new InvalidConfException("error caught while initializing SignerFactory "
-              + className + ": " + ex.getClass().getName() + ": " + ex.getMessage(), ex);
+          factory = ReflectiveUtil.newInstance(className);
+        } catch (ObjectCreationException ex) {
+          throw new InvalidConfException(ex.getMessage(), ex);
         }
+        signerFactoryRegister.registFactory(factory);
       }
     }
   } // method initSecurityFactory

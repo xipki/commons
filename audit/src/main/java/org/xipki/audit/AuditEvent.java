@@ -196,7 +196,7 @@ public class AuditEvent {
       sb.append("\tduration: ").append(duration.toMillis());
     }
 
-    if ((eventDataArray != null) && (eventDataArray.size() > 0)) {
+    if ((eventDataArray != null) && (!eventDataArray.isEmpty())) {
       for (AuditEventData m : eventDataArray) {
         if ("duration".equalsIgnoreCase(m.getName())) {
           continue;

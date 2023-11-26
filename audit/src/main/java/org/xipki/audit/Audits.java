@@ -6,8 +6,7 @@ package org.xipki.audit;
 import org.xipki.audit.services.EmbedAuditService;
 import org.xipki.audit.services.FileMacAuditService;
 import org.xipki.audit.services.NoopAuditService;
-
-import java.lang.reflect.InvocationTargetException;
+import org.xipki.util.ReflectiveUtil;
 
 /**
  * Helper class to configure and initialize the Audit.
@@ -89,14 +88,7 @@ public class Audits {
                   + AuditService.class.getName() + ">");
         }
 
-        try {
-          Class<?> clazz = Class.forName(className);
-          service = (AuditService) clazz.getDeclaredConstructor().newInstance();
-        } catch (ReflectiveOperationException ex) {
-          throw new AuditServiceRuntimeException(
-                  "error caught while initializing AuditService " + auditType
-                          + ": " + ex.getClass().getName() + ": " + ex.getMessage(), ex);
-        }
+        service = ReflectiveUtil.newInstance(className);
       }
 
       service.init(auditConf);

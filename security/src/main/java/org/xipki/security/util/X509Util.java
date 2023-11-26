@@ -745,7 +745,7 @@ public class X509Util {
     }
 
     switch (tag) {
-      case GeneralName.otherName:
+      case GeneralName.otherName: {
         int idxSep = value.indexOf("=");
         if (idxSep == -1 || idxSep == 0 || idxSep == value.length() - 1) {
           throw new BadInputException("invalid otherName " + value);
@@ -768,6 +768,7 @@ public class X509Util {
         vector.add(new DERTaggedObject(true, 0, asn1Value));
         DERSequence seq = new DERSequence(vector);
         return new GeneralName(tag, seq);
+      }
       case GeneralName.rfc822Name:
       case GeneralName.uniformResourceIdentifier:
       case GeneralName.iPAddress:
@@ -775,22 +776,21 @@ public class X509Util {
       case GeneralName.dNSName:
         return new GeneralName(tag, value);
       case GeneralName.directoryName:
-        X500Name x500Name = reverse(new X500Name(value));
-        return new GeneralName(tag, x500Name);
-      case GeneralName.ediPartyName:
-        idxSep = value.indexOf("=");
+        return new GeneralName(tag, reverse(new X500Name(value)));
+      case GeneralName.ediPartyName: {
+        int idxSep = value.indexOf("=");
         if (idxSep == -1 || idxSep == value.length() - 1) {
           throw new BadInputException("invalid ediPartyName " + value);
         }
         String nameAssigner = (idxSep == 0) ? null : value.substring(0, idxSep);
         String partyName = value.substring(idxSep + 1);
-        vector = new ASN1EncodableVector();
+        ASN1EncodableVector vector = new ASN1EncodableVector();
         if (nameAssigner != null) {
           vector.add(new DERTaggedObject(false, 0, new DirectoryString(nameAssigner)));
         }
         vector.add(new DERTaggedObject(false, 1, new DirectoryString(partyName)));
-        seq = new DERSequence(vector);
-        return new GeneralName(tag, seq);
+        return new GeneralName(tag, new DERSequence(vector));
+      }
       default:
         throw new IllegalStateException("unsupported tag " + tag);
     } // end switch (tag)
