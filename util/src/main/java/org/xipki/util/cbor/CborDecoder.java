@@ -247,7 +247,7 @@ public class CborDecoder implements AutoCloseable {
 
     /**
      * Reads a signed or unsigned 16-bit integer value in CBOR format.
-     * <p/>
+     * <p>
      * read the small integer value, values from [-65536..65535] are supported.
      * @return the read 16-bit integerr.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
@@ -264,7 +264,7 @@ public class CborDecoder implements AutoCloseable {
 
     /**
      * Reads a signed or unsigned 32-bit integer value in CBOR format.
-     * <p/>
+     * <p>
      * read the small integer value, values in the range [-4294967296..4294967295] are supported.
      * @return the read 32-bit integer.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
@@ -281,7 +281,7 @@ public class CborDecoder implements AutoCloseable {
 
     /**
      * Reads a signed or unsigned 64-bit integer value in CBOR format.
-     * <p/>
+     * <p>
      * read the small integer value, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.
      * @return the read 64-bit integer (long).
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
@@ -298,7 +298,7 @@ public class CborDecoder implements AutoCloseable {
 
     /**
      * Reads a signed or unsigned 8-bit integer value in CBOR format.
-     * <p/>
+     * <p>
      * read the small integer value, values in the range [-256..255] are supported.
      * @return the read 8-bit integer.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
@@ -348,7 +348,7 @@ public class CborDecoder implements AutoCloseable {
 
     /**
      * Reads a signed or unsigned small (&lt;= 23) integer value in CBOR format.
-     * <p/>
+     * <p>
      * read the small integer value, values in the range [-24..23] are supported.
      * @return the read small int.
      * @throws IOException in case of I/O problems reading the CBOR-encoded value from the underlying output stream.
