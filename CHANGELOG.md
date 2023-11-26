@@ -2,8 +2,11 @@
 
 See also <https://github.com/xipki/commons/releases>
 
+## 6.3.3
+- Release date: 202y/mm/dd
+
 ## 6.3.2
-- Release date: 2023/11/19
+- Release date: 2023/11/26
   - Feature: add new binary of HSM proxy.
   - Move (repackage) JSON.java from module security to util.
   - Deleted non-common classes (moved to github:xipki/xipki).
