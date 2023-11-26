@@ -462,7 +462,7 @@ public class Passwords {
 
   }
 
-  private static PasswordCallback getPasswordCallback(String passwordCallback) {
+  private static PasswordCallback getPasswordCallback(String passwordCallback) throws PasswordResolverException {
     String type;
     String conf = null;
 
@@ -492,11 +492,16 @@ public class Passwords {
         }
         break;
       default:
-        try {
-          pwdCallback = (PasswordCallback) PasswordCallback.class.getClassLoader()
-              .loadClass(type).getConstructor().newInstance();
-        } catch (Exception e) {
-          throw new IllegalStateException("unknown PasswordCallback type '" + type + "'");
+        if (type.startsWith("java:")) {
+          String className = type.substring(5);
+          try {
+            pwdCallback = (PasswordCallback) Passwords.class.getClassLoader()
+                .loadClass(className).getConstructor().newInstance();
+          } catch (Exception e) {
+            throw new PasswordResolverException("error creating PasswordCallback of type '" + type + "'");
+          }
+        } else {
+          throw new PasswordResolverException("invalid callback type " + type);
         }
     }
 
