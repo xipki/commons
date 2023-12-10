@@ -13,6 +13,7 @@ import org.apache.karaf.shell.support.completers.FileCompleter;
 import org.xipki.util.Base64;
 import org.xipki.util.*;
 import org.xipki.util.Curl.CurlResult;
+import org.xipki.util.http.HttpStatusCode;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -301,30 +302,33 @@ public class Actions {
 
       if (result.getContent() == null && result.getErrorContent() == null) {
         println("NO response content");
-        return null;
-      }
-
-      if (outFile != null) {
-        if (result.getContent() != null) {
-          saveVerbose("saved response to file", outFile, result.getContent());
-        } else {
-          saveVerbose("saved (error) response to file", "error-" + outFile, result.getErrorContent());
-        }
       } else {
-        String ct = result.getContentType();
-        String charset = getCharset(ct);
-        if (charset == null) {
-          charset = "UTF-8";
-        }
-
-        if (result.getContent() != null) {
-          println(new String(result.getContent(), charset));
+        if (outFile != null) {
+          if (result.getContent() != null) {
+            saveVerbose("saved response to file", outFile, result.getContent());
+          } else {
+            saveVerbose("saved (error) response to file", "error-" + outFile, result.getErrorContent());
+          }
         } else {
-          println("ERROR: ");
-          println(new String(result.getContent(), charset));
+          String ct = result.getContentType();
+          String charset = getCharset(ct);
+          if (charset == null) {
+            charset = "UTF-8";
+          }
+
+          if (result.getContent() != null) {
+            println(new String(result.getContent(), charset));
+          } else {
+            println("ERROR: ");
+            println(new String(result.getContent(), charset));
+          }
         }
       }
 
+      int sc = result.getStatusCode();
+      if (sc != HttpStatusCode.SC_OK) {
+        throw new RuntimeException("Received status code other than OK: " + sc);
+      }
       return null;
     } // method execute0
 
