@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ValueNode;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
@@ -141,6 +142,39 @@ public class JSON {
 
   public static <T> T parseObject(File jsonFile, Class<T> classOfT) throws IOException {
     return mapper.readValue(jsonFile, classOfT);
+  }
+
+  public static <T> T parseConf(byte[] json, Class<T> classOfT) {
+    return parseConf(new String(json), classOfT);
+  }
+
+  public static <T> T parseConf(String json, Class<T> classOfT) {
+    try {
+      StringBuilder conf = new StringBuilder();
+      try (BufferedReader reader = new BufferedReader(new StringReader(json))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          String line2 = StringUtil.resolveVariables(line);
+          conf.append(line2).append("\n");
+        }
+      }
+
+      return mapper.readValue(conf.toString(), classOfT);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T parseConf(File jsonFile, Class<T> classOfT) throws IOException {
+    return parseConf(new String(Files.readAllBytes(jsonFile.toPath())), classOfT);
+  }
+
+  public static <T> T parseConf(Path jsonFilePath, Class<T> classOfT) throws IOException {
+    return parseConf(new String(Files.readAllBytes(jsonFilePath)), classOfT);
+  }
+
+  public static <T> T parseConf(InputStream jsonInputStream, Class<T> classOfT) throws IOException {
+    return parseConf(IoUtil.readAllBytes(jsonInputStream), classOfT);
   }
 
   /**

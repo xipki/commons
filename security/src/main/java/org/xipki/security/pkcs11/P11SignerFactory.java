@@ -7,6 +7,7 @@ import org.xipki.pkcs11.wrapper.PKCS11Constants;
 import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.security.*;
 import org.xipki.util.Hex;
+import org.xipki.util.LogUtil;
 import org.xipki.util.exception.ObjectCreationException;
 
 import java.security.NoSuchAlgorithmException;
@@ -118,7 +119,7 @@ public class P11SignerFactory implements SignerFactory {
     try {
       key = slot.getKey(keyId, keyLabel);
     } catch (TokenException e) {
-      throw new ObjectCreationException("error finding identity with " + str2 + ": " + e.getMessage());
+      throw new ObjectCreationException("error finding identity with " + str2 + ": " + e.getMessage(), e);
     }
 
     if (key == null) {

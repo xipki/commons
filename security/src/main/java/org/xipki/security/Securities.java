@@ -236,7 +236,7 @@ public class Securities implements Closeable {
 
     Pkcs11conf pkcs11ConfObj;
     try {
-      pkcs11ConfObj = JSON.parseObject(pkcs11Conf.readContent(), Pkcs11conf.class);
+      pkcs11ConfObj = JSON.parseConf(pkcs11Conf.readContent(), Pkcs11conf.class);
     } catch (IOException ex) {
       throw new InvalidConfException("could not create P11Conf: " + ex.getMessage(), ex);
     }
