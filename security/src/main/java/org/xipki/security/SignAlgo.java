@@ -17,6 +17,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.xipki.pkcs11.wrapper.PKCS11Constants;
 import org.xipki.security.ObjectIdentifiers.Xipki;
 import org.xipki.security.pkcs11.P11Key;
+import org.xipki.security.util.KeyUtil;
 import org.xipki.util.Args;
 
 import java.security.Key;
@@ -388,8 +389,9 @@ public enum SignAlgo {
   }
 
   public static SignAlgo getInstance(P11Key p11Key, SignerConf signerConf) throws NoSuchAlgorithmException {
-    if (Args.notNull(signerConf, "signerConf").getHashAlgo() == null) {
-      return getInstance(signerConf.getConfValue("algo"));
+    String algo = Args.notNull(signerConf, "signerConf").getConfValue("algo");
+    if (algo != null) {
+      return getInstance(algo);
     }
 
     SignatureAlgoControl algoControl = signerConf.getSignatureAlgoControl();
@@ -397,13 +399,25 @@ public enum SignAlgo {
 
     long keyType = p11Key.getKeyType();
     if (keyType == PKCS11Constants.CKK_RSA) {
+      if (hashAlgo == null) {
+        hashAlgo = getDefaultHashAlgo(keyType, p11Key.getRsaModulus().bitLength());
+      }
       boolean rsaPss = algoControl != null && algoControl.isRsaPss();
       return getRSAInstance(hashAlgo, rsaPss);
     } else if (keyType == PKCS11Constants.CKK_EC || keyType == PKCS11Constants.CKK_VENDOR_SM2) {
+      if (hashAlgo == null) {
+        // correct the key type of some HSMs
+        if (keyType == PKCS11Constants.CKK_EC && GMObjectIdentifiers.sm2p256v1.equals(p11Key.getEcParams())) {
+          keyType = PKCS11Constants.CKK_VENDOR_SM2;
+        }
+        hashAlgo = getDefaultHashAlgo(keyType, p11Key.getEcOrderBitSize());
+      }
       boolean dsaPlain = algoControl != null && algoControl.isDsaPlain();
-      boolean gm = algoControl != null && algoControl.isGm();
-      return getECSigAlgo(hashAlgo, dsaPlain, gm);
+      return getECSigAlgo(hashAlgo, dsaPlain);
     } else if (keyType == PKCS11Constants.CKK_DSA) {
+      if (hashAlgo == null) {
+        hashAlgo = getDefaultHashAlgo(keyType, p11Key.getDsaP().bitLength());
+      }
       return getDSASigAlgo(hashAlgo);
     } else if (keyType == PKCS11Constants.CKK_EC_EDWARDS) {
       String keyAlgo = EdECConstants.getName(p11Key.getEcParams());
@@ -420,49 +434,44 @@ public enum SignAlgo {
   } // method getInstance
 
   public static SignAlgo getInstance(Key key, SignerConf signerConf) throws NoSuchAlgorithmException {
-    if (Args.notNull(signerConf, "signerConf").getHashAlgo() == null) {
-      return getInstance(signerConf.getConfValue("algo"));
+    String algo = Args.notNull(signerConf, "signerConf").getConfValue("algo");
+    if (algo != null) {
+      return getInstance(algo);
     }
-
-    SignatureAlgoControl algoControl = signerConf.getSignatureAlgoControl();
-    HashAlgo hashAlgo = signerConf.getHashAlgo();
-
-    if (key instanceof RSAPublicKey || key instanceof RSAPrivateKey) {
-      boolean rsaPss = algoControl != null && algoControl.isRsaPss();
-      return getRSAInstance(hashAlgo, rsaPss);
-    } else if (key instanceof ECPublicKey || key instanceof ECPrivateKey) {
-      boolean dsaPlain = algoControl != null && algoControl.isDsaPlain();
-      boolean gm = algoControl != null && algoControl.isGm();
-      return getECSigAlgo(hashAlgo, dsaPlain, gm);
-    } else if (key instanceof DSAPublicKey || key instanceof DSAPrivateKey) {
-      return getDSASigAlgo(hashAlgo);
-    } else if (key instanceof EdDSAKey) {
-      String keyAlgo = key.getAlgorithm().toUpperCase();
-      if (keyAlgo.equals(EdECConstants.ED25519)) {
-        return ED25519;
-      } else if (keyAlgo.equals(EdECConstants.ED448)) {
-        return ED448;
-      } else {
-        throw new NoSuchAlgorithmException("Unknown Edwards public key " + keyAlgo);
-      }
-    } else {
-      throw new NoSuchAlgorithmException("Unknown key " + key.getClass().getName());
-    }
+    return getInstance(key, signerConf.getHashAlgo(), signerConf.getSignatureAlgoControl());
   } // method getInstance
 
   public static SignAlgo getInstance(Key key, HashAlgo hashAlgo, SignatureAlgoControl algoControl)
       throws NoSuchAlgorithmException {
-    Args.notNull(hashAlgo, "hashAlgo");
     Args.notNull(key, "key");
-
-    if (key instanceof RSAPublicKey || key instanceof RSAPrivateKey) {
+    if (key instanceof RSAKey) {
+      if (hashAlgo == null) {
+        hashAlgo = getDefaultHashAlgo(PKCS11Constants.CKK_RSA, ((RSAKey) key).getModulus().bitLength());
+      }
       boolean rsaPss = algoControl != null && algoControl.isRsaPss();
       return getRSAInstance(hashAlgo, rsaPss);
-    } else if (key instanceof ECPublicKey || key instanceof ECPrivateKey) {
+    } else if (key instanceof ECKey) {
+      if (hashAlgo == null) {
+        long keyType = PKCS11Constants.CKK_EC;
+        try {
+          ASN1ObjectIdentifier curveId = KeyUtil.detectCurveOid(((ECKey) key).getParams());
+          if (GMObjectIdentifiers.sm2p256v1.equals(curveId)) {
+            keyType = PKCS11Constants.CKK_VENDOR_SM2;
+          }
+        } catch (Exception ex) {
+          // ignore
+        }
+
+        int keyOrderSize = ((ECKey) key).getParams().getOrder().bitLength();
+        hashAlgo = getDefaultHashAlgo(keyType, keyOrderSize);
+      }
+
       boolean dsaPlain = algoControl != null && algoControl.isDsaPlain();
-      boolean gm = algoControl != null && algoControl.isGm();
-      return getECSigAlgo(hashAlgo, dsaPlain, gm);
-    } else if (key instanceof DSAPublicKey || key instanceof DSAPrivateKey) {
+      return getECSigAlgo(hashAlgo, dsaPlain);
+    } else if (key instanceof DSAKey) {
+      if (hashAlgo == null) {
+        hashAlgo = getDefaultHashAlgo(PKCS11Constants.CKK_DSA, ((DSAKey) key).getParams().getP().bitLength());
+      }
       return getDSASigAlgo(hashAlgo);
     } else if (key instanceof EdDSAKey) {
       String keyAlgo = key.getAlgorithm().toUpperCase();
@@ -477,6 +486,20 @@ public enum SignAlgo {
       throw new NoSuchAlgorithmException("Unknown key '" + key.getClass().getName());
     }
   } // method getInstance
+
+  private static HashAlgo getDefaultHashAlgo(long keyType, int keySize) {
+    if (keyType == PKCS11Constants.CKK_RSA || keyType == PKCS11Constants.CKK_DSA) {
+      return keySize > 3084 ? SHA512 :
+          keySize > 2048 ? SHA384 : SHA256;
+    } else if (keyType == PKCS11Constants.CKK_VENDOR_SM2) {
+      return SM3;
+    } else if (keyType == PKCS11Constants.CKK_EC) {
+      return keySize > 384 + 8 ? SHA512 : // plus buffer 8
+          keySize > 256 + 8 ? SHA384 : SHA256;
+    } else {
+      throw new IllegalArgumentException("unknown keyType " + PKCS11Constants.ckkCodeToName(keyType));
+    }
+  }
 
   private static SignAlgo getRSAInstance(HashAlgo hashAlgo, boolean rsaPss) throws NoSuchAlgorithmException {
     Args.notNull(hashAlgo, "hashAlgo");
@@ -538,19 +561,18 @@ public enum SignAlgo {
     }
   } // method getDSASigAlgo
 
-  private static SignAlgo getECSigAlgo(HashAlgo hashAlgo, boolean plainSignature, boolean gm)
+  private static SignAlgo getECSigAlgo(HashAlgo hashAlgo, boolean plainSignature)
       throws NoSuchAlgorithmException {
     Args.notNull(hashAlgo, "hashAlgo");
-    if (gm && plainSignature) {
-      throw new IllegalArgumentException("plainSignature and gm cannot be both true");
+    if (hashAlgo == SM3 && plainSignature) {
+      throw new IllegalArgumentException("plainSignature cannot be both true");
     }
 
-    if (gm) {
-      if (hashAlgo == SM3) {
-        return SM2_SM3;
-      }
-      throw new NoSuchAlgorithmException("unsupported hash " + hashAlgo + " for SM2");
-    } else if (plainSignature) {
+    if (hashAlgo == SM3) {
+      return SM2_SM3;
+    }
+
+    if (plainSignature) {
       switch (hashAlgo) {
         case SHA1:
           return PLAINECDSA_SHA1;

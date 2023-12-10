@@ -13,10 +13,7 @@ import org.xipki.security.pkcs11.P11ModuleConf;
 import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.pkcs11.P11SlotId;
 import org.xipki.security.pkcs11.hsmproxy.ProxyMessage.*;
-import org.xipki.util.Args;
-import org.xipki.util.IoUtil;
-import org.xipki.util.LogUtil;
-import org.xipki.util.StringUtil;
+import org.xipki.util.*;
 import org.xipki.util.cbor.ByteArrayCborDecoder;
 import org.xipki.util.cbor.CborConstants;
 import org.xipki.util.cbor.CborDecoder;
@@ -24,7 +21,9 @@ import org.xipki.util.cbor.CborType;
 import org.xipki.util.exception.DecodeException;
 import org.xipki.util.exception.ObjectCreationException;
 import org.xipki.util.http.HostnameVerifiers;
+import org.xipki.util.http.SslConf;
 import org.xipki.util.http.SslContextBuilder;
+import org.xipki.util.http.SslContextConf;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -55,9 +54,7 @@ class HsmProxyP11Module extends P11Module {
 
   private static final String PROP_SSL_KEYSTOREPASSWORD = "ssl.keystorePassword";
 
-  private static final String PROP_SSL_TRUSTSTORE = "ssl.truststore";
-
-  private static final String PROP_SSL_TRUSTOREPASSWORD = "ssl.truststorePassword";
+  private static final String PROP_SSL_TRUSTCERTS = "ssl.trustcerts";
 
   private static final String PROP_SSL_HOStNAMEVERIFIER = "ssl.hostnameVerifier";
 
@@ -89,44 +86,38 @@ class HsmProxyP11Module extends P11Module {
     this.description = StringUtil.concat("PKCS#11 proxy", "\nPath: ", modulePath);
     this.serverUrl = modulePath.endsWith("/") ? modulePath.substring(0, modulePath.length() - 1) : modulePath;
 
+    SslConf sslConf = new SslConf();
+
     String sslStoreType = properties.get(PROP_SSL_STORETYPE);
+    sslConf.setStoreType(sslStoreType);
+
     String sslKeystore = properties.get(PROP_SSL_KEYSTORE);
+    sslConf.setKeystore(FileOrBinary.ofFile(sslKeystore));
+
     String sslKeystorePassword = properties.get(PROP_SSL_KEYSTOREPASSWORD);
-    String sslTruststore = properties.get(PROP_SSL_TRUSTSTORE);
-    String sslTruststorePassword = properties.get(PROP_SSL_TRUSTOREPASSWORD);
+    sslConf.setKeystorePassword(sslKeystorePassword);
+
+    String sslTrustCerts = properties.get(PROP_SSL_TRUSTCERTS);
+    if (sslTrustCerts != null) {
+      StringTokenizer tokens = new StringTokenizer(sslTrustCerts, ",;:");
+      List<FileOrBinary> files = new ArrayList<>(tokens.countTokens());
+      while (tokens.hasMoreTokens()) {
+        String file = tokens.nextToken().trim();
+        files.add(FileOrBinary.ofFile(file));
+      }
+      sslConf.setTrustanchors(files.toArray(new FileOrBinary[0]));
+    }
+
     String sslHostnameVerifier = properties.get(PROP_SSL_HOStNAMEVERIFIER);
-
-    SslContextBuilder builder = new SslContextBuilder();
-    if (sslStoreType != null) {
-      builder.setKeyStoreType(sslStoreType);
+    if (sslHostnameVerifier != null) {
+      sslConf.setHostnameVerifier(sslHostnameVerifier);
     }
 
-    if (sslKeystore != null) {
-      sslKeystore = IoUtil.expandFilepath(sslKeystore, true);
-
-      char[] pwd = sslKeystorePassword == null ? null : sslKeystorePassword.toCharArray();
-      try {
-        builder.loadKeyMaterial(new File(sslKeystore), pwd, pwd);
-      } catch (UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
-          | CertificateException | IOException ex) {
-        throw new TokenException("could not load key material", ex);
-      }
-    }
-
-    if (sslTruststore != null) {
-      sslTruststore = IoUtil.expandFilepath(sslTruststore, true);
-      char[] pwd = sslTruststorePassword == null ? null : sslTruststorePassword.toCharArray();
-      try {
-        builder.loadTrustMaterial(new File(sslTruststore), pwd);
-      } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException
-          | IOException ex) {
-        throw new TokenException("could not load trust material", ex);
-      }
-    }
+    SslContextConf sslContextConf = SslContextConf.ofSslConf(sslConf);
 
     try {
-      this.sslSocketFactory = builder.build().getSocketFactory();
-    } catch (KeyManagementException | NoSuchAlgorithmException ex) {
+      this.sslSocketFactory = sslContextConf.getSslSocketFactory();
+    } catch (ObjectCreationException ex) {
       throw new TokenException("could not build SSLSocketFactroy", ex);
     }
     try {

@@ -207,7 +207,7 @@ public class DefaultCurl implements Curl {
             LogUtil.error(LOG, ex, "error initializing sslContextConf");
           }
         } else if (confFile != null) {
-          CurlConf conf = JSON.parseObject(Path.of(confFile), CurlConf.class);
+          CurlConf conf = JSON.parseConf(Path.of(confFile), CurlConf.class);
           conf.validate();
 
           for (HostConf m : conf.hostConfs) {
@@ -385,7 +385,7 @@ public class DefaultCurl implements Curl {
         errorStream = httpConn.getErrorStream();
       }
 
-      CurlResult result = new CurlResult();
+      CurlResult result = new CurlResult(respCode);
       result.setContentType(httpConn.getHeaderField("Content-Type"));
 
       if (inputStream != null) {

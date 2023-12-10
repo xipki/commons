@@ -16,20 +16,13 @@ public class SignatureAlgoControl {
 
   private final boolean dsaPlain;
 
-  private final boolean gm;
-
   public SignatureAlgoControl() {
-    this(false, false, false);
+    this(false, false);
   }
 
   public SignatureAlgoControl(boolean rsaPss, boolean dsaPlain) {
-    this(rsaPss, dsaPlain, false);
-  }
-
-  public SignatureAlgoControl(boolean rsaPss, boolean dsaPlain, boolean gm) {
     this.rsaPss = rsaPss;
     this.dsaPlain = dsaPlain;
-    this.gm = gm;
   }
 
   public boolean isRsaPss() {
@@ -38,10 +31,6 @@ public class SignatureAlgoControl {
 
   public boolean isDsaPlain() {
     return dsaPlain;
-  }
-
-  public boolean isGm() {
-    return gm;
   }
 
 }

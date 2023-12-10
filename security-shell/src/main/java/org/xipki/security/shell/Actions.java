@@ -335,11 +335,6 @@ public class Actions {
   } // class CrlInfo
 
   public abstract static class CsrGenAction extends BaseCsrGenAction {
-    @Option(name = "--hash", description = "hash algorithm name (will be ignored in some keys, "
-            + "e.g. edwards curve based keys)")
-    @Completion(Completers.HashAlgCompleter.class)
-    protected String hashAlgo = "SHA256";
-
     @Option(name = "--rsa-pss", description = "whether to use the RSAPSS for the POP computation\n"
                     + "(only applied to RSA key)")
     private Boolean rsaPss = Boolean.FALSE;
@@ -347,16 +342,8 @@ public class Actions {
     @Option(name = "--dsa-plain", description = "whether to use the Plain DSA for the POP computation")
     private Boolean dsaPlain = Boolean.FALSE;
 
-    @Option(name = "--gm", description = "whether to use the chinese GM algorithm for the POP computation\n"
-                    + "(only applied to EC key with GM curves)")
-    private Boolean gm = Boolean.FALSE;
-
     protected SignatureAlgoControl getSignatureAlgoControl() {
-      hashAlgo = hashAlgo.trim().toUpperCase();
-      if (hashAlgo.indexOf('-') != -1) {
-        hashAlgo = hashAlgo.replaceAll("-", "");
-      }
-      return new SignatureAlgoControl(rsaPss, dsaPlain, gm);
+      return new SignatureAlgoControl(rsaPss, dsaPlain);
     }
   }
 

@@ -42,7 +42,7 @@ public class CrlTestVectorGenerateMain {
           .putPair("password", "1234")
           .putPair("keystore", "file:src/test/resources/crls/ca.p12");
 
-      SignerConf sconf = new SignerConf(conf.getEncoded(), null, new SignatureAlgoControl());
+      SignerConf sconf = new SignerConf(conf.getEncoded(), new SignatureAlgoControl());
 
       ConcurrentContentSigner csigner = securities.getSecurityFactory().createSigner(
           "PKCS12", sconf, (X509Cert) null);

@@ -240,7 +240,7 @@ public class GenerateCerts {
       }
     }
 
-    Conf conf = JSON.parseObject(Path.of(confFile), Conf.class);
+    Conf conf = JSON.parseConf(Path.of(confFile), Conf.class);
     conf.validate();
 
     Map<String, X509Cert> nameCertMap = new HashMap<>();

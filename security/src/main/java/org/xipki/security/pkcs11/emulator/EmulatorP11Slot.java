@@ -738,7 +738,8 @@ class EmulatorP11Slot extends P11Slot {
           BigInteger g = new BigInteger(props.getProperty(PROP_DSA_BASE), 16); // g
           ret = new EmulatorP11Key(this, keyId, privateKey, maxSessions, random);
           ret.setDsaParameters(p, q, g);
-        } else if (keyType == CKK_EC || keyType == CKK_EC_EDWARDS || keyType == CKK_EC_MONTGOMERY) {
+        } else if (keyType == CKK_EC || keyType == CKK_VENDOR_SM2
+            || keyType == CKK_EC_EDWARDS || keyType == CKK_EC_MONTGOMERY) {
           byte[] ecParams = decodeHex(props.getProperty(PROP_EC_PARAMS));
           ASN1ObjectIdentifier curveId = ASN1ObjectIdentifier.getInstance(ecParams);
           ret = new EmulatorP11Key(this, keyId, privateKey, maxSessions, random);
@@ -1133,7 +1134,12 @@ class EmulatorP11Slot extends P11Slot {
       curveName = curveId.getId();
     }
 
-    return saveKeyPairP11Entity(CKK_EC, keypair, control, curveName);
+    long keyType = CKK_EC;
+    if (GMObjectIdentifiers.sm2p256v1.equals(curveId)) {
+      keyType = CKK_VENDOR_SM2;
+    }
+
+    return saveKeyPairP11Entity(keyType, keypair, control, curveName);
   }
 
   @Override

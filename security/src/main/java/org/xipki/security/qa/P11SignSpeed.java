@@ -307,7 +307,7 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
       conf.putPair("key-id", Hex.encode(keyId));
     }
 
-    return new SignerConf(conf.getEncoded());
+    return new SignerConf(conf);
   } // method getPkcs11SignerConf
 
 }

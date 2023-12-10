@@ -83,7 +83,7 @@ public class JceSignSpeed extends BenchmarkExecutor {
         .putPair("parallelism", Integer.toString(parallelism))
         .putPair("alias", alias)
         .putPair("algo", signAlgo.getJceName());
-    return new SignerConf(conf.getEncoded());
+    return new SignerConf(conf);
   } // method getJceSignerConf
 
 }

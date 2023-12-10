@@ -28,16 +28,24 @@ public class SignerConf {
   private List<X509Cert> peerCertificates;
 
   public SignerConf(String conf) {
+    this(new ConfPairs(conf));
+  }
+
+  public SignerConf(ConfPairs conf) {
     this.hashAlgo = null;
     this.signatureAlgoControl = null;
-    this.confPairs = new ConfPairs(Args.notBlank(conf, "conf"));
+    this.confPairs = Args.notNull(conf, "conf");
     if (getConfValue("algo") == null) {
       throw new IllegalArgumentException("conf must contain the entry 'algo'");
     }
   }
 
+  public SignerConf(String confWithoutAlgo, SignatureAlgoControl signatureAlgoControl) {
+    this(confWithoutAlgo, null, signatureAlgoControl);
+  }
+
   public SignerConf(String confWithoutAlgo, HashAlgo hashAlgo, SignatureAlgoControl signatureAlgoControl) {
-    this.hashAlgo = Args.notNull(hashAlgo, "hashAlgo");
+    this.hashAlgo = hashAlgo;
     this.signatureAlgoControl = signatureAlgoControl;
     this.confPairs = new ConfPairs(Args.notBlank(confWithoutAlgo, "confWithoutAlgo"));
     if (getConfValue("algo") != null) {
@@ -65,8 +73,8 @@ public class SignerConf {
     return confPairs.value(name);
   }
 
-  public String getConf() {
-    return confPairs.getEncoded();
+  public ConfPairs getConf() {
+    return confPairs;
   }
 
   public List<X509Cert> getPeerCertificates() {
@@ -77,24 +85,22 @@ public class SignerConf {
     this.peerCertificates = peerCertificates;
   }
 
-  public ConfPairs getConfPairs() {
-    return confPairs;
-  }
-
   @Override
   public String toString() {
     return toString(true, true);
   }
 
   public String toString(boolean verbose, boolean ignoreSensitiveInfo) {
-    String conf = getConf();
+    String txtConf;
     if (ignoreSensitiveInfo) {
-      conf = eraseSensitiveData(conf);
+      txtConf = eraseSensitiveData(confPairs);
+    } else {
+      txtConf = confPairs.toString();
     }
 
-    StringBuilder sb = new StringBuilder(conf.length() + 50);
+    StringBuilder sb = new StringBuilder(txtConf.length() + 50);
     sb.append("conf: ");
-    sb.append(conf);
+    sb.append(txtConf);
     if (hashAlgo != null) {
       sb.append("\nhash algo: ").append(hashAlgo.getJceName());
     }
@@ -116,6 +122,18 @@ public class SignerConf {
     return sb.toString();
   } // method toString
 
+  public static String eraseSensitiveData(ConfPairs conf) {
+    if (conf == null) {
+      return "";
+    }
+
+    try {
+      return conf.toStringOmitSensitive("password");
+    } catch (Exception ex) {
+      return conf.toString();
+    }
+  } // method eraseSensitiveData
+
   public static String eraseSensitiveData(String conf) {
     if (conf == null || !conf.toLowerCase().contains("password")) {
       return conf;
@@ -126,6 +144,6 @@ public class SignerConf {
     } catch (Exception ex) {
       return conf;
     }
-  } // method eraseSensitiveData
+  }
 
 }

@@ -73,7 +73,6 @@ public class SslContextBuilder {
   }
 
   public SslContextBuilder() {
-    super();
     this.keyManagers = new LinkedHashSet<>();
     this.trustManagers = new LinkedHashSet<>();
   }

@@ -76,7 +76,7 @@ public class P11Actions {
       }
 
       SignerConf conf = getPkcs11SignerConf(moduleName, Integer.parseInt(slotIndex), label,
-          idBytes, 1, HashAlgo.getInstance(hashAlgo), signatureAlgoControl);
+          idBytes, 1, null, signatureAlgoControl);
       return securityFactory.createSigner("PKCS11", conf, (X509Cert[]) null);
     }
 
@@ -84,7 +84,6 @@ public class P11Actions {
         String pkcs11ModuleName, int slotIndex, String keyLabel, byte[] keyId, int parallelism,
         HashAlgo hashAlgo, SignatureAlgoControl signatureAlgoControl) {
       Args.positive(parallelism, "parallelism");
-      Args.notNull(hashAlgo, "hashAlgo");
 
       if (keyId == null && keyLabel == null) {
         throw new IllegalArgumentException("at least one of keyId and keyLabel may not be null");

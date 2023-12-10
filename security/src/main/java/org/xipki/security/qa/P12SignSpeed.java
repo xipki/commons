@@ -274,6 +274,6 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
         .putPair("algo", signatureAlgorithm)
         .putPair("parallelism", Integer.toString(parallelism))
         .putPair("keystore", "base64:" + Base64.encodeToString(keystoreBytes));
-    return new SignerConf(conf.getEncoded());
+    return new SignerConf(conf);
   }
 }

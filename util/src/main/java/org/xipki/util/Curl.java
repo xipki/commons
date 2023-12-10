@@ -16,6 +16,8 @@ public interface Curl {
 
   class CurlResult {
 
+    private final int statusCode;
+
     private String contentType;
 
     /**
@@ -30,6 +32,14 @@ public interface Curl {
     private byte[] content;
 
     private byte[] errorContent;
+
+    public CurlResult(int statusCode) {
+      this.statusCode = statusCode;
+    }
+
+    public int getStatusCode() {
+      return statusCode;
+    }
 
     public String getContentType() {
       return contentType;

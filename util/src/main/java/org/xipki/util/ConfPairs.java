@@ -234,6 +234,10 @@ public class ConfPairs {
     return pairs.isEmpty();
   }
 
+  public static ConfPairs getInstance(String text) {
+    return text == null ? null : new ConfPairs(text);
+  }
+
   public ConfPairs putPair(String name, String value) {
     Args.notNull(value, "value");
 
@@ -251,6 +255,19 @@ public class ConfPairs {
 
   public String value(String name) {
     return pairs.get(Args.notBlank(name, "name"));
+  }
+
+  public boolean hasName(String name) {
+    return pairs.containsKey(name);
+  }
+
+  public String getNameIgnoreCase(String name) {
+    for (String n : pairs.keySet()) {
+      if (n.equalsIgnoreCase(name)) {
+        return n;
+      }
+    }
+    return null;
   }
 
   public String value(String name, String defaultValue) {
@@ -309,6 +326,10 @@ public class ConfPairs {
     return getEncoded().hashCode();
   }
 
+  public ConfPairs copy() {
+    return new ConfPairs(new HashMap<>(pairs));
+  }
+
   public String toStringOmitSensitive(String... nameKeywords) {
     return toStringOmitSensitive(Arrays.asList(nameKeywords), null);
   }
@@ -331,16 +352,16 @@ public class ConfPairs {
       return getEncoded();
     }
 
+    ConfPairs sensitivePairs = new ConfPairs();
     try {
       for (Entry<String, String> entry : pairs.entrySet()) {
         String name = entry.getKey();
-        if (names.contains(name)) {
-          pairs.put(name, "<sensitive>");
-        }
+        String value = names.contains(name) ? "<sensitive>" : entry.getValue();
+        sensitivePairs.putPair(name, value);
       }
-      return new ConfPairs(pairs).getEncoded();
+      return sensitivePairs.getEncoded();
     } catch (Exception ex) {
-      return getEncoded();
+      return "ERROR";
     }
   }
 

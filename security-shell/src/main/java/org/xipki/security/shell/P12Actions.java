@@ -10,8 +10,6 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.apache.karaf.shell.support.completers.FileCompleter;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.gm.GMObjectIdentifiers;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.security.*;
 import org.xipki.security.pkcs12.KeyStoreWrapper;
@@ -209,16 +207,7 @@ public class P12Actions {
           pairs.putPair("password", password);
         }
 
-        HashAlgo hashAlgo = HashAlgo.SHA256;
-        SignatureAlgoControl algoControl = null;
-        AlgorithmIdentifier algId = cert.getSubjectPublicKeyInfo().getAlgorithm();
-        if (X9ObjectIdentifiers.id_ecPublicKey.equals(algId.getAlgorithm())) {
-          if (ASN1ObjectIdentifier.getInstance(algId.getParameters()).equals(GMObjectIdentifiers.sm2p256v1)) {
-            hashAlgo = HashAlgo.SM3;
-            algoControl = new SignatureAlgoControl(false, false, true);
-          }
-        }
-        SignerConf conf = new SignerConf(pairs.getEncoded(), hashAlgo, algoControl);
+        SignerConf conf = new SignerConf(pairs.getEncoded(), null);
         securityFactory.createSigner("PKCS12", conf, cert);
       }
     } // method assertMatch
@@ -256,7 +245,7 @@ public class P12Actions {
     }
 
     @Override
-    protected ConcurrentContentSigner getSigner() throws ObjectCreationException {
+    protected ConcurrentContentSigner getSigner() throws ObjectCreationException, NoSuchAlgorithmException {
       SignatureAlgoControl signatureAlgoControl = getSignatureAlgoControl();
       char[] pwd;
       try {
@@ -269,14 +258,7 @@ public class P12Actions {
           .putPair("parallelism", Integer.toString(1))
           .putPair("keystore", "file:" + p12File);
 
-      HashAlgo ha;
-      try {
-        ha = HashAlgo.getInstance(hashAlgo);
-      } catch (NoSuchAlgorithmException ex) {
-        throw new ObjectCreationException(ex.getMessage());
-      }
-
-      SignerConf signerConf = new SignerConf(conf.getEncoded(), ha, signatureAlgoControl);
+      SignerConf signerConf = new SignerConf(conf.getEncoded(), null, signatureAlgoControl);
       try {
         signerConf.setPeerCertificates(getPeerCertificates());
       } catch (CertificateException | IOException ex) {
