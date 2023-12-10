@@ -66,9 +66,11 @@ public class EmbedAuditService implements AuditService {
   }
 
   @Override
-  public void init(String conf) throws InvalidConfException {
-    ConfPairs confPairs = new ConfPairs(conf);
-    String str = confPairs.value(KEY_SIZE);
+  public void init(ConfPairs conf) throws InvalidConfException {
+    if (conf == null) {
+      conf = new ConfPairs();
+    }
+    String str = conf.value(KEY_SIZE);
 
     final int mb = 1024 * 1024;
 
@@ -92,7 +94,7 @@ public class EmbedAuditService implements AuditService {
       }
     }
 
-    String logFilePath = confPairs.value(KEY_FILE);
+    String logFilePath = conf.value(KEY_FILE);
 
     logFilePath = StringUtil.isBlank(logFilePath)
         ? "logs/audit.log" : StringUtil.resolveVariables(logFilePath);

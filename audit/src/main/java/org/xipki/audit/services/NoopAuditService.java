@@ -6,6 +6,7 @@ package org.xipki.audit.services;
 import org.xipki.audit.AuditEvent;
 import org.xipki.audit.AuditService;
 import org.xipki.audit.PciAuditEvent;
+import org.xipki.util.ConfPairs;
 
 /**
  * The No-Operation audit service. The events will be ignored.
@@ -20,7 +21,7 @@ public class NoopAuditService implements AuditService {
   }
 
   @Override
-  public void init(String conf) {
+  public void init(ConfPairs conf) {
   }
 
   @Override

@@ -3,6 +3,7 @@
 
 package org.xipki.audit;
 
+import org.xipki.util.ConfPairs;
 import org.xipki.util.exception.InvalidConfException;
 
 /**
@@ -18,7 +19,11 @@ public interface AuditService {
 
   int PCI_AUDIT_EVENT = 2;
 
-  void init(String conf) throws InvalidConfException;
+  default void init(String conf) throws InvalidConfException {
+    init(new ConfPairs(conf));
+  }
+
+  void init(ConfPairs conf) throws InvalidConfException;
 
   /**
    * Log audit event.

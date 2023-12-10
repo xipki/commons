@@ -47,12 +47,23 @@ public class AuditEvent {
    * The data array belonging to the event.
    */
   private final List<AuditEventData> eventDatas = new LinkedList<>();
-
+/*
+  @Deprecated
   public AuditEvent() {
-    this(null);
+    this(null, null);
   }
 
+  @Deprecated
   public AuditEvent(Instant timestamp) {
+    this(null, timestamp);
+  }
+*/
+  public AuditEvent(String applicationName) {
+    this(applicationName, null);
+  }
+
+  public AuditEvent(String applicationName, Instant timestamp) {
+    this.applicationName = applicationName == null ? "undefined" : applicationName;
     this.timestamp = (timestamp == null) ? Instant.now() : timestamp;
     this.level = AuditLevel.INFO;
     this.duration = null;
@@ -75,9 +86,10 @@ public class AuditEvent {
     return applicationName;
   }
 
-  public void setApplicationName(String applicationName) {
-    this.applicationName = Args.notNull(applicationName, "applicationName");
-  }
+  //@Deprecated
+  //public void setApplicationName(String applicationName) {
+  //  this.applicationName = applicationName;
+  //}
 
   public Instant getTimestamp() {
     return timestamp;
@@ -175,11 +187,6 @@ public class AuditEvent {
   }
 
   public String toTextMessage() {
-    String applicationName = getApplicationName();
-    if (applicationName == null) {
-      applicationName = "undefined";
-    }
-
     StringBuilder sb = new StringBuilder(150);
 
     sb.append(applicationName);
@@ -207,7 +214,7 @@ public class AuditEvent {
     }
 
     return sb.toString();
-  } // method toTextMessage
+  }
 
   public void log(Logger log) {
     AuditLevel level = getLevel();

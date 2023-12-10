@@ -193,15 +193,17 @@ public abstract class MacAuditService implements AuditService {
   }
 
   @Override
-  public void init(String conf) throws InvalidConfException {
-    ConfPairs confPairs = new ConfPairs(conf);
-    String str = confPairs.value(KEY_SHARD_ID);
+  public void init(ConfPairs conf) throws InvalidConfException {
+    if (conf == null) {
+      conf = new ConfPairs();
+    }
+    String str = conf.value(KEY_SHARD_ID);
     shardId = StringUtil.isBlank(str) ? 0 : Integer.parseInt(str);
 
-    str = confPairs.value(KEY_ENC_INTERVAL);
+    str = conf.value(KEY_ENC_INTERVAL);
     encInterval = (str == null) ? 1 : Integer.parseInt(str);
 
-    String algo = confPairs.value(KEY_ALGO);
+    String algo = conf.value(KEY_ALGO);
     int algoId;
     if (algo == null) {
       algo = "HmacSHA256";
@@ -215,14 +217,14 @@ public abstract class MacAuditService implements AuditService {
       }
     }
 
-    keyId = confPairs.value(KEY_KEYID);
+    keyId = conf.value(KEY_KEYID);
     if (StringUtil.isBlank(keyId)) {
       throw new IllegalArgumentException("property " + KEY_KEYID + " not defined");
     }
 
     this.tagPrefix = VERSION_V1 + INNER_DELIM + algoId + INNER_DELIM + keyId + INNER_DELIM;
     this.tagPrefixBytes = tagPrefix.getBytes(StandardCharsets.UTF_8);
-    String password = confPairs.value(KEY_PASSWORD);
+    String password = conf.value(KEY_PASSWORD);
     if (StringUtil.isBlank(password)) {
       throw new IllegalArgumentException("property " + KEY_PASSWORD + " not defined");
     }
@@ -245,7 +247,7 @@ public abstract class MacAuditService implements AuditService {
     }
 
     this.rnd = new SecureRandom();
-    doExtraInit(new ConfPairs(conf));
+    doExtraInit(conf);
   }
 
   @Override
