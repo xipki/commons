@@ -645,12 +645,37 @@ public class Actions {
     @Option(name = "--ignore-error", description = "whether ignores error")
     private Boolean ignoreError;
 
+    @Option(name = "--env", multiValued = true, description = "Environment variables")
+    @Completion(FileCompleter.class)
+    private String[] envs;
+
+    @Option(name = "--working-dir", aliases ="-w", multiValued = true, description = "Working dir")
+    @Completion(Completers.DirCompleter.class)
+    private String workingDir;
+
     @Override
     protected Object execute0() throws Exception {
       System.out.println("Executing command '" + command + "'");
 
+      if (envs != null) {
+        for (int i = 0; i < envs.length; i++) {
+          if (envs[i].contains("~/")) {
+            StringTokenizer tokenizer = new StringTokenizer(envs[i], "=");
+            String name = tokenizer.nextToken();
+            String value = tokenizer.nextToken();
+            value = IoUtil.expandFilepath(value);
+            envs[i] = name + "=" + value;
+          }
+        }
+      }
+
+      if (workingDir != null && workingDir.startsWith("~/")) {
+        workingDir = IoUtil.expandFilepath(workingDir);
+      }
+
       command = IoUtil.expandFilepath(command, false);
-      Process process = Runtime.getRuntime().exec(command);
+      Process process = Runtime.getRuntime().exec(command, envs,
+          workingDir == null ? null : new File(workingDir));
       int status = process.waitFor();
       System.out.write(IoUtil.readAllBytes(process.getInputStream()));
       if (status != 0) {
