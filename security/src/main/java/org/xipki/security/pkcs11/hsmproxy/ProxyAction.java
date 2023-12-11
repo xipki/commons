@@ -3,6 +3,9 @@
 
 package org.xipki.security.pkcs11.hsmproxy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The HSM proxy action enumeration.
  *
@@ -11,48 +14,69 @@ package org.xipki.security.pkcs11.hsmproxy;
 
 public enum ProxyAction {
 
-  moduleCaps,
-  slotIds,
+  moduleCaps ("mcaps"),
+  slotIds ("sids"),
 
   // mechanism infos
-  mechInfos,
+  mechInfos ("mis"),
 
-  publicKeyByHandle,
+  publicKeyByHandle ("pkbh"),
 
-  keyByKeyId,
-  keyByIdLabel,
-  keyIdByIdLabel,
+  keyByKeyId ("kbi"),
+  keyByIdLabel ("kbil"),
+  keyIdByIdLabel ("kibil"),
 
-  objectExistsByIdLabel,
+  objectExistsByIdLabel ("ebil"),
 
-  destroyAllObjects,
-  destroyObjectsByHandle,
-  destroyObjectsByIdLabel,
+  destroyAllObjects ("dao"),
+  destroyObjectsByHandle ("dobh"),
+  destroyObjectsByIdLabel ("dobil"),
 
-  genSecretKey,
-  importSecretKey,
+  genSecretKey ("gsk"),
+  importSecretKey ("isk"),
 
-  genRSAKeypair,
-  genRSAKeypairOtf,
+  genRSAKeypair ("grsa"),
+  genRSAKeypairOtf ("grsao"),
   // genDSAKeypairByKeysize
-  genDSAKeypair2,
-  genDSAKeypair,
-  genDSAKeypairOtf,
-  genECKeypair,
-  genECKeypairOtf,
-  genSM2Keypair,
-  genSM2KeypairOtf,
-  showDetails,
-  sign,
-  digestSecretKey;
+  genDSAKeypair2 ("gdsa2"),
+  genDSAKeypair ("gdsa"),
+  genDSAKeypairOtf ("gdsao"),
+  genECKeypair ("gec"),
+  genECKeypairOtf ("geco"),
+  genSM2Keypair ("gsm2"),
+  genSM2KeypairOtf ("gsm2o"),
+  showDetails ("d"),
+  sign ("s"),
+  digestSecretKey ("dsk");
+
+  private final String alias;
+
+  private static final Map<String, ProxyAction> namealiasActionMap = new HashMap<>();
+
+  static {
+    for (ProxyAction p : ProxyAction.values()) {
+      namealiasActionMap.put(p.name().toLowerCase(), p);
+    }
+
+    for (ProxyAction p : ProxyAction.values()) {
+      String lc = p.alias.toLowerCase();
+      if (namealiasActionMap.containsKey(lc)) {
+        throw new IllegalStateException("invalid alias " + p.alias);
+      }
+      namealiasActionMap.put(lc, p);
+    }
+  }
+
+  ProxyAction(String alias) {
+    this.alias = alias;
+  }
+
+  public String getAlias() {
+    return alias;
+  }
 
   public static ProxyAction ofNameIgnoreCase(String name) {
-    for (ProxyAction m : ProxyAction.values()) {
-      if (m.name().equalsIgnoreCase(name)) {
-        return m;
-      }
-    }
-    return null;
+    return namealiasActionMap.get(name.toLowerCase());
   }
 
 }

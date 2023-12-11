@@ -219,7 +219,7 @@ class HsmProxyP11Module extends P11Module {
   protected byte[] doSend(ProxyAction action, byte[] request) throws IOException {
     Args.notNull(request, "request");
 
-    String thisUrl = serverUrl + "/" + action.name();
+    String thisUrl = serverUrl + "/" + action.getAlias();
 
     HttpURLConnection httpUrlConnection = IoUtil.openHttpConn(new URL(thisUrl));
 
