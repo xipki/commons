@@ -481,14 +481,20 @@ public class Actions {
     @Completion(FileCompleter.class)
     private List<String> sources;
 
-    @Option(name = "--old", required = true, description = "text to be replaced")
-    private String oldText;
+    @Option(name = "--old", required = true, multiValued = true, description = "text to be replaced")
+    private List<String> oldTexts;
 
-    @Option(name = "--new", required = true, description = "next text")
-    private String newText;
+    @Option(name = "--new", required = true, multiValued = true, description = "new text")
+    private List<String> newTexts;
 
     @Override
     protected Object execute0() throws Exception {
+      Args.notNull(oldTexts, "oldTexts");
+      Args.notNull(newTexts, "newTexts");
+      if (oldTexts.size() != newTexts.size()) {
+        throw new IllegalCmdParamException("old.size != new.size");
+      }
+
       for (String source : sources) {
         File sourceFile = new File(expandFilepath(source));
         if (!sourceFile.exists()) {
@@ -501,13 +507,13 @@ public class Actions {
           continue;
         }
 
-        replaceFile(sourceFile, oldText, newText);
+        replaceFile(sourceFile, oldTexts, newTexts);
       }
 
       return null;
     }
 
-    private void replaceFile(File file, String oldText, String newText) throws Exception {
+    private void replaceFile(File file, List<String> oldTexts, List<String> newTexts) throws Exception {
       boolean changed = false;
       byte[] newBytes = null;
       try (BufferedReader reader = Files.newBufferedReader(file.toPath());
@@ -515,8 +521,11 @@ public class Actions {
         String line;
         while ((line = reader.readLine()) != null) {
           String origLine = line;
-          if (line.contains(oldText)) {
-            line = line.replace(oldText, newText);
+          for (int i = 0; i < oldTexts.size(); i++) {
+            String old = oldTexts.get(i);
+            if (line.contains(old)) {
+              line = line.replace(old, newTexts.get(i));
+            }
           }
 
           writer.write(StringUtil.toUtf8Bytes(line));
