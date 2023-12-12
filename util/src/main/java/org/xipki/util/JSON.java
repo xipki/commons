@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -116,7 +117,11 @@ public class JSON {
 
   public static ObjectMapper newDefaultObjectMapper() {
     return new ObjectMapper().registerModule(XiJsonModule.INSTANCE)
-        .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
+        .enable(JsonParser.Feature.ALLOW_COMMENTS)
+        .enable(JsonParser.Feature.ALLOW_YAML_COMMENTS)
+        .enable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES)
+        .enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES)
+        .enable(JsonParser.Feature.ALLOW_TRAILING_COMMA)
         .setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
