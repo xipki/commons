@@ -477,9 +477,9 @@ public class Actions {
   @Service
   public static class Replace extends XiAction {
 
-    @Argument(index = 0, name = "file", required = true, description = "file")
+    @Argument(name = "files", multiValued = true, required = true, description = "files to be replaced")
     @Completion(FileCompleter.class)
-    private String source;
+    private List<String> sources;
 
     @Option(name = "--old", required = true, description = "text to be replaced")
     private String oldText;
@@ -489,38 +489,42 @@ public class Actions {
 
     @Override
     protected Object execute0() throws Exception {
-      File sourceFile = new File(expandFilepath(source));
-      if (!sourceFile.exists()) {
-        System.err.println(source + " does not exist");
-        return null;
-      }
+      for (String source : sources) {
+        File sourceFile = new File(expandFilepath(source));
+        if (!sourceFile.exists()) {
+          System.err.println(source + " does not exist");
+          continue;
+        }
 
-      if (!sourceFile.isFile()) {
-        System.err.println(source + " is not a file");
-        return null;
-      }
+        if (!sourceFile.isFile()) {
+          System.err.println(source + " is not a file");
+          continue;
+        }
 
-      Args.notBlank(oldText, "oldText");
-      replaceFile(sourceFile, oldText, newText);
+        replaceFile(sourceFile, oldText, newText);
+      }
 
       return null;
     }
 
-    private void replaceFile(File file, String oldText, String newText)
-        throws Exception {
+    private void replaceFile(File file, String oldText, String newText) throws Exception {
       boolean changed = false;
       byte[] newBytes = null;
       try (BufferedReader reader = Files.newBufferedReader(file.toPath());
            ByteArrayOutputStream writer = new ByteArrayOutputStream()) {
         String line;
         while ((line = reader.readLine()) != null) {
+          String origLine = line;
           if (line.contains(oldText)) {
-            changed = true;
-            writer.write(StringUtil.toUtf8Bytes(line.replace(oldText, newText)));
-          } else {
-            writer.write(StringUtil.toUtf8Bytes(line));
+            line = line.replace(oldText, newText);
           }
+
+          writer.write(StringUtil.toUtf8Bytes(line));
           writer.write('\n');
+
+          if (!line.equals(origLine)) {
+            changed = true;
+          }
         }
 
         if (changed) {
@@ -539,9 +543,9 @@ public class Actions {
   @Service
   public static class Rm extends XiAction {
 
-    @Argument(index = 0, name = "file", required = true, description = "file or directory to be deleted")
+    @Argument(name = "file", required = true, multiValued = true, description = "files and directories to be deleted")
     @Completion(FileCompleter.class)
-    private String targetPath;
+    private List<String> targetPaths;
 
     @Option(name = "--recursive", aliases = "-r", description = "remove directories and their contents recursively")
     private Boolean recursive = Boolean.FALSE;
@@ -551,27 +555,33 @@ public class Actions {
 
     @Override
     protected Object execute0() throws Exception {
-      targetPath = expandFilepath(targetPath);
-
-      File target = new File(targetPath);
-      if (!target.exists()) {
-        return null;
+      if (targetPaths == null) {
+        throw new IllegalCmdParamException("targetPath not set");
       }
 
-      if (target.isDirectory()) {
-        if (!recursive) {
-          println("Please use option --recursive to delete directory");
+      for (String targetPath : targetPaths) {
+        targetPath = expandFilepath(targetPath);
+
+        File target = new File(targetPath);
+        if (!target.exists()) {
           return null;
         }
 
-        if (force || confirm("Do you want to remove directory " + targetPath, 3)) {
-          FileUtils.deleteDirectory(target);
-          println("removed directory " + targetPath);
-        }
-      } else {
-        if (force || confirm("Do you want to remove file " + targetPath, 3)) {
-          IoUtil.deleteFile0(target);
-          println("removed file " + targetPath);
+        if (target.isDirectory()) {
+          if (!recursive) {
+            println("Please use option --recursive to delete directory");
+            return null;
+          }
+
+          if (force || confirm("Do you want to remove directory " + targetPath, 3)) {
+            FileUtils.deleteDirectory(target);
+            println("removed directory " + targetPath);
+          }
+        } else {
+          if (force || confirm("Do you want to remove file " + targetPath, 3)) {
+            IoUtil.deleteFile0(target);
+            println("removed file " + targetPath);
+          }
         }
       }
 
@@ -607,13 +617,9 @@ public class Actions {
     @Override
     protected Object execute0() throws Exception {
       String name = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-      if (name.startsWith("windows")) {
-        name = "windows";
-      } else if (name.startsWith("linux")) {
-        name = "linux";
-      } else if (name.startsWith("mac os x")) {
-        name = "macosx";
-      }
+      name = name.startsWith("windows") ? "windows"
+          : name.startsWith("linux") ? "linux"
+          : name.startsWith("mac os x") ? "macosx" : name;
 
       String arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT);
       if (printName == null && printArch == null) {
@@ -622,15 +628,9 @@ public class Actions {
 
       boolean bName = printName != null && printName;
       boolean bArch = printArch != null && printArch;
-      if (bName && bArch) {
-        return name + "/" + arch;
-      } else if (bName) {
-        return name;
-      } else if (bArch) {
-        return arch;
-      } else {
-        return "";
-      }
+      return (bName && bArch) ? name + "/" + arch
+          : bName ? name
+          : bArch ? arch : "";
     }
   }
 
