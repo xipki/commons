@@ -4,6 +4,9 @@ See also <https://github.com/xipki/commons/releases>
 
 ## 6.3.3
 - Release date: 202y/mm/dd
+
+## 6.3.3
+- Release date: 2023/12/13
   - Feature: command xi:curl: throws Exception if received status code != OK
   - Feature: Audit: applicationName is now mandatory, accept also ConfPairs as conf
   - Feature: JSON.java: add methods parseConf() which resolves also the ${sys:*} and ${env:*}.
