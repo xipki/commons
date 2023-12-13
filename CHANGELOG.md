@@ -2,7 +2,7 @@
 
 See also <https://github.com/xipki/commons/releases>
 
-## 6.3.3
+## 6.3.4
 - Release date: 202y/mm/dd
 
 ## 6.3.3
@@ -11,7 +11,7 @@ See also <https://github.com/xipki/commons/releases>
   - Feature: Audit: applicationName is now mandatory, accept also ConfPairs as conf
   - Feature: JSON.java: add methods parseConf() which resolves also the ${sys:*} and ${env:*}.
   - Feature: remove parameters hashAlgo and gm in methods to generate CSRs
-  - Feature: add BatchReplace to replaces texts in filess
+  - Feature: add BatchReplace to replaces texts in files
 
 ## 6.3.2
 - Release date: 2023/11/26
