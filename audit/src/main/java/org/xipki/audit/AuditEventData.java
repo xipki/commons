@@ -20,8 +20,11 @@ public class AuditEventData {
 
   public AuditEventData(String name, Object value) {
     this.name = Args.notBlank(name, "name");
-    Args.notNull(value, "value");
-    this.value = (value instanceof String) ? (String) value : value.toString();
+    if (value == null) {
+      this.value = "null";
+    } else {
+      this.value = (value instanceof String) ? (String) value : value.toString();
+    }
   } // constructor
 
   public void addValue(Object additionalValue) {

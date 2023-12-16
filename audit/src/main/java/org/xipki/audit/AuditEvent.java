@@ -109,7 +109,9 @@ public class AuditEvent {
 
   public void setEventData(String name, Object value) {
     Args.notNull(name, "name");
-    Args.notNull(value, "value");
+    if (value == null) {
+      value = "null";
+    }
 
     int idx = -1;
     for (int i = 0; i < eventDatas.size(); i++) {
