@@ -58,6 +58,9 @@ public class XiHttpClient {
   public HttpRespContent httpPost(
       String url, String requestContentType, byte[] request, String expectedRespContentType) throws IOException {
     HttpRespContent resp = httpPost(url, requestContentType, request);
+    if (!resp.isOK()) {
+      return resp;
+    }
 
     String responseContentType = resp.getContentType();
     boolean isValidContentType = false;
