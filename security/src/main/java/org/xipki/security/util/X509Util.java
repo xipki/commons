@@ -602,7 +602,8 @@ public class X509Util {
         }
         return publicKeyInfo;
       }
-    } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(algOid)) {
+    } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(algOid)
+        || algOid.getId().equals("1.3.132.1.12")) { // id-ECDH
       if (keyParameters == null) {
         throw new InvalidKeySpecException("keyParameters is not an OBJECT IDENTIFIER");
       }
