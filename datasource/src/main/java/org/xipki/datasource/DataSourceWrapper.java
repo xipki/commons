@@ -8,10 +8,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.datasource.DataAccessException.Reason;
-import org.xipki.util.Args;
-import org.xipki.util.ConfigurableProperties;
-import org.xipki.util.LogUtil;
-import org.xipki.util.LruCache;
+import org.xipki.util.*;
 
 import java.io.Closeable;
 import java.io.PrintWriter;
@@ -520,41 +517,46 @@ public abstract class DataSourceWrapper implements Closeable {
 
   public String getFirstStringValue(Connection conn, String table, String column, String criteria)
       throws DataAccessException {
-    final String sql = "SELECT " + column + " FROM " + table + " WHERE " + criteria;
+    return (String) getFirstValue(conn, table, column, criteria, false);
+  } // method getFirstStringValue
+
+  public Integer getFirstIntValue(Connection conn, String table, String column, String criteria)
+          throws DataAccessException {
+    Long lv = getFirstLongValue(conn, table, column, criteria);
+    if (lv == null) {
+      return null;
+    }
+
+    if (lv > Integer.MAX_VALUE || lv < Integer.MIN_VALUE) {
+      throw new DataAccessException("value is out of range");
+    }
+    return lv.intValue();
+  }
+
+  public Long getFirstLongValue(Connection conn, String table, String column, String criteria)
+      throws DataAccessException {
+    return (Long) getFirstValue(conn, table, column, criteria, true);
+  }
+
+  private Object getFirstValue(Connection conn, String table, String column, String criteria, boolean isLong)
+      throws DataAccessException {
+    final String whereSql = StringUtil.isBlank(criteria) ? "" : " WHERE " + criteria;
+    final String sql = buildSelectFirstSql(1, column + " FROM " + table + whereSql);
     Statement stmt = null;
     ResultSet rs = null;
     try {
       stmt = conn == null ? createStatement() : createStatement(conn);
       rs = stmt.executeQuery(sql);
-      return rs.next() ? rs.getString(column) : null;
+      if (!rs.next()) {
+        return null;
+      }
+      return isLong ? rs.getLong(column) : rs.getString(column);
     } catch (SQLException ex) {
       throw translate(sql, ex);
     } finally {
       releaseResources(stmt, rs, conn == null);
     }
   } // method getFirstStringValue
-
-  public Integer getFirstIntValue(Connection conn, String table, String column, String criteria)
-          throws DataAccessException {
-    Long lv = getFirstLongValue(conn, table, column, criteria);
-    return lv == null ? null : lv.intValue();
-  }
-
-  public Long getFirstLongValue(Connection conn, String table, String column, String criteria)
-      throws DataAccessException {
-    final String sql = "SELECT " + column + " FROM " + table + " WHERE " + criteria;
-    Statement stmt = null;
-    ResultSet rs = null;
-    try {
-      stmt = conn == null ? createStatement() : createStatement(conn);
-      rs = stmt.executeQuery(sql);
-      return rs.next() ? rs.getLong(column) : null;
-    } catch (SQLException ex) {
-      throw translate(sql, ex);
-    } finally {
-      releaseResources(stmt, rs, conn == null);
-    }
-  } // method getFirstLongValue
 
   public long getMin(Connection conn, String table, String column) throws DataAccessException {
     return getMin(conn, table, column, null);
@@ -579,9 +581,13 @@ public abstract class DataSourceWrapper implements Closeable {
     }
   } // method getMin
 
-  public int getCount(Connection conn, String table)
-      throws DataAccessException {
-    final String sql = concat("SELECT COUNT(*) FROM ", notBlank(table, "table"));
+  public int getCount(Connection conn, String table) throws DataAccessException {
+    return getCount(conn, table, null);
+  }
+
+  public int getCount(Connection conn, String table, String criteria) throws DataAccessException {
+    final String sql = concat("SELECT COUNT(*) FROM ", notBlank(table, "table"),
+        (StringUtil.isBlank(criteria) ? "" : " WHERE " + criteria));
 
     Statement stmt = null;
     ResultSet rs = null;

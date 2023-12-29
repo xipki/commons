@@ -6,7 +6,7 @@ package org.xipki.datasource;
 /*
  * XiPKI's Change:
  * - Remove the use of user.dir
- * - Add flag '--IGNORE-ERROR'
+ * - Add flag '-- IGNORE-ERROR'
  *
  * Original Text in https://github.com/BenoitDuffez/ScriptRunner/blob/master/ScriptRunner.java
  * Slightly modified version of the com.ibatis.common.jdbc.ScriptRunner class
