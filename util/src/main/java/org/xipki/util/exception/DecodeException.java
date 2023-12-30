@@ -13,7 +13,12 @@ public class DecodeException extends Exception {
     super(message);
   }
 
+  public DecodeException(Throwable cause) {
+    super(cause.getMessage(), cause);
+  }
+
   public DecodeException(String message, Throwable cause) {
     super(message, cause);
   }
+
 }

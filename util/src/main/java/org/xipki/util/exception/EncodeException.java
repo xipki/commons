@@ -13,7 +13,12 @@ public class EncodeException extends Exception {
     super(message);
   }
 
+  public EncodeException(Throwable cause) {
+    super(cause.getMessage(), cause);
+  }
+
   public EncodeException(String message, Throwable cause) {
     super(message, cause);
   }
+
 }

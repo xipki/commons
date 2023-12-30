@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Collection of OBJECT IDENFIFIERS.
+ * Collection of OBJECT IDENTIFIERS.
  *
  * @author Lijun Liao (xipki)
  * @since 2.0.0

@@ -16,6 +16,10 @@ public class InvalidConfException extends Exception {
     super(message);
   }
 
+  public InvalidConfException(Throwable cause) {
+    super(cause.getMessage(), cause);
+  }
+
   public InvalidConfException(String message, Throwable cause) {
     super(message, cause);
   }
