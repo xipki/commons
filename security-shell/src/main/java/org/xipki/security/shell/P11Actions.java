@@ -15,16 +15,31 @@ import org.slf4j.LoggerFactory;
 import org.xipki.password.PasswordResolverException;
 import org.xipki.pkcs11.wrapper.PKCS11KeyId;
 import org.xipki.pkcs11.wrapper.TokenException;
-import org.xipki.security.*;
-import org.xipki.security.pkcs11.*;
+import org.xipki.security.ConcurrentContentSigner;
+import org.xipki.security.EdECConstants;
+import org.xipki.security.HashAlgo;
+import org.xipki.security.SignatureAlgoControl;
+import org.xipki.security.SignerConf;
+import org.xipki.security.X509Cert;
+import org.xipki.security.XiSecurityException;
+import org.xipki.security.pkcs11.P11CryptService;
+import org.xipki.security.pkcs11.P11CryptServiceFactory;
+import org.xipki.security.pkcs11.P11Module;
+import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.pkcs11.P11Slot.P11NewKeyControl;
+import org.xipki.security.pkcs11.P11SlotId;
 import org.xipki.security.shell.Actions.CsrGenAction;
 import org.xipki.security.shell.Actions.SecurityAction;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.shell.Completers;
 import org.xipki.shell.IllegalCmdParamException;
-import org.xipki.util.*;
+import org.xipki.util.Args;
+import org.xipki.util.CollectionUtil;
+import org.xipki.util.ConfPairs;
+import org.xipki.util.Hex;
+import org.xipki.util.IoUtil;
+import org.xipki.util.StringUtil;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -37,7 +52,9 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
-import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_AES;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_DES3;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_GENERIC_SECRET;
 
 /**
  * Actions for PKCS#11 security.

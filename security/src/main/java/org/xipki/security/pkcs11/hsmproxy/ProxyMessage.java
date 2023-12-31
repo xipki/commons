@@ -9,7 +9,11 @@ import org.xipki.pkcs11.wrapper.PKCS11Exception;
 import org.xipki.pkcs11.wrapper.PKCS11KeyId;
 import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.pkcs11.wrapper.params.ExtraParams;
-import org.xipki.security.pkcs11.*;
+import org.xipki.security.pkcs11.P11Key;
+import org.xipki.security.pkcs11.P11ModuleConf;
+import org.xipki.security.pkcs11.P11Params;
+import org.xipki.security.pkcs11.P11Slot;
+import org.xipki.security.pkcs11.P11SlotId;
 import org.xipki.util.Args;
 import org.xipki.util.cbor.CborDecoder;
 import org.xipki.util.cbor.CborEncodable;
@@ -19,7 +23,13 @@ import org.xipki.util.exception.EncodeException;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * The CBOR message.

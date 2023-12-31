@@ -10,7 +10,14 @@ import org.bouncycastle.asn1.gm.GMObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.crypto.ExtendedDigest;
-import org.bouncycastle.crypto.digests.*;
+import org.bouncycastle.crypto.digests.SHA1Digest;
+import org.bouncycastle.crypto.digests.SHA224Digest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.digests.SHA384Digest;
+import org.bouncycastle.crypto.digests.SHA3Digest;
+import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.crypto.digests.SHAKEDigest;
+import org.bouncycastle.crypto.digests.SM3Digest;
 import org.xipki.util.Args;
 
 import java.io.IOException;
@@ -19,7 +26,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.*;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha224;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha256;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha384;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha3_224;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha3_256;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha3_384;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha3_512;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_sha512;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_shake128;
+import static org.bouncycastle.asn1.nist.NISTObjectIdentifiers.id_shake256;
 
 /**
  * Hash algorithm enum.

@@ -18,7 +18,11 @@ import org.xipki.util.StringUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * {@link P11Module} for PKCS#11 emulator.

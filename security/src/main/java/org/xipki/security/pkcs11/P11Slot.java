@@ -7,7 +7,11 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xipki.pkcs11.wrapper.*;
+import org.xipki.pkcs11.wrapper.Functions;
+import org.xipki.pkcs11.wrapper.MechanismInfo;
+import org.xipki.pkcs11.wrapper.PKCS11KeyId;
+import org.xipki.pkcs11.wrapper.PKCS11Module;
+import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.pkcs11.wrapper.params.ExtraParams;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
@@ -26,9 +30,33 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKF_GENERATE_KEY_PAIR;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_DES3;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_DSA;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_EC;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_EC_EDWARDS;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_EC_MONTGOMERY;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_RSA;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_VENDOR_SM2;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKM_DSA_KEY_PAIR_GEN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKM_EC_EDWARDS_KEY_PAIR_GEN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKM_EC_KEY_PAIR_GEN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKM_EC_MONTGOMERY_KEY_PAIR_GEN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKM_RSA_PKCS_KEY_PAIR_GEN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKM_RSA_X9_31_KEY_PAIR_GEN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKM_VENDOR_SM2_KEY_PAIR_GEN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.Category;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.ckkCodeToName;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.ckmCodeToName;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.codeToName;
 
 /**
  * PKCS#11 slot.

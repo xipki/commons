@@ -20,7 +20,15 @@ import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 
-import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKA_EC_POINT;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKA_VALUE;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_DSA;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_EC;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_EC_EDWARDS;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_EC_MONTGOMERY;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_RSA;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_VENDOR_SM2;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.ckkCodeToName;
 
 /**
  * {@link P11Key} based on the ipkcs11wrapper or jpkcs11wrapper.

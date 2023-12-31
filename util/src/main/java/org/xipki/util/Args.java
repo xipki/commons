@@ -3,7 +3,12 @@
 
 package org.xipki.util;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Utility class to validate the parameters.

@@ -11,7 +11,13 @@ import org.xipki.security.XiSecurityException;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.Signature;
+import java.security.SignatureException;
 
 /**
  * JCE signer

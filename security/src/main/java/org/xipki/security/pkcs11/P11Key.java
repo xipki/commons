@@ -16,7 +16,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 
-import static org.xipki.pkcs11.wrapper.PKCS11Constants.*;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKF_DIGEST;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKF_SIGN;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKK_EC_MONTGOMERY;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKO_PUBLIC_KEY;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKO_SECRET_KEY;
+import static org.xipki.pkcs11.wrapper.PKCS11Constants.ckmCodeToName;
 
 /**
  * PKCS#11 key.

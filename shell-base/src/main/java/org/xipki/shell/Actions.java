@@ -10,9 +10,12 @@ import org.apache.karaf.shell.api.action.Option;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.apache.karaf.shell.support.completers.FileCompleter;
+import org.xipki.util.Args;
 import org.xipki.util.Base64;
-import org.xipki.util.*;
 import org.xipki.util.Curl.CurlResult;
+import org.xipki.util.FileUtils;
+import org.xipki.util.IoUtil;
+import org.xipki.util.StringUtil;
 import org.xipki.util.http.HttpStatusCode;
 
 import java.io.BufferedReader;
@@ -22,7 +25,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Basic actions.

@@ -8,16 +8,28 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.datasource.DataAccessException.Reason;
-import org.xipki.util.*;
+import org.xipki.util.Args;
+import org.xipki.util.ConfigurableProperties;
+import org.xipki.util.LogUtil;
+import org.xipki.util.LruCache;
+import org.xipki.util.StringUtil;
 
 import java.io.Closeable;
 import java.io.PrintWriter;
-import java.sql.*;
+import java.sql.BatchUpdateException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.xipki.util.Args.notBlank;
-import static org.xipki.util.StringUtil.*;
+import static org.xipki.util.StringUtil.concat;
+import static org.xipki.util.StringUtil.concatObjectsCap;
+import static org.xipki.util.StringUtil.isBlank;
+import static org.xipki.util.StringUtil.startsWithIgnoreCase;
 
 /**
  * A wrapper of {@link HikariDataSource}.

@@ -14,7 +14,12 @@ import org.xipki.util.Args;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 
 /**
  * {@link ContentVerifierProvider} for the signature algorithm EdDSA (Ed25519 and Ed448).

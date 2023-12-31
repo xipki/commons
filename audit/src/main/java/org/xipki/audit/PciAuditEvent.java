@@ -6,7 +6,11 @@ package org.xipki.audit;
 import org.xipki.util.Args;
 
 import java.io.CharArrayWriter;
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
