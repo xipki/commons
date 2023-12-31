@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2023 xipki. All rights reserved.
+// Copyright (c) 2013-2024 xipki. All rights reserved.
 // License Apache License 2.0
 
 package org.xipki.common.test;
@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,38 +29,14 @@ import java.util.Set;
 public class CanonicalizeCode {
   private static final int MAX_COUNT_IN_LINE = 120;
 
-  private static final List<byte[]> headerLines = new ArrayList<>(20);
-
   private static final Set<String> textFileExtensions = new HashSet<>(
           Arrays.asList("txt", "xml", "xsd", "cfg", "properties", "script", "jxb", "info"));
 
-  private static final Set<String> excludeTextFiles =
-      new HashSet<>(Collections.singletonList("draft-gutmann-scep-00.txt"));
-
-  private static Throwable initializationError;
+  private static final Set<String> excludeTextFiles = new HashSet<>();
 
   private final String baseDir;
 
   private final int baseDirLen;
-
-  static {
-    try {
-      String path = "src/test/resources/HEADER.txt";
-      File file = new File(path);
-      if (!file.exists()) {
-        file = new File("util/" + path);
-      }
-
-      BufferedReader reader = Files.newBufferedReader(file.toPath());
-      String line;
-      while ((line = reader.readLine()) != null) {
-        headerLines.add(StringUtil.toUtf8Bytes(line));
-      }
-      reader.close();
-    } catch (Throwable th) {
-      initializationError = th;
-    }
-  }
 
   private CanonicalizeCode(String baseDir) {
     baseDir = IoUtil.expandFilepath(baseDir);
@@ -71,11 +45,6 @@ public class CanonicalizeCode {
   }
 
   public static void main(String[] args) {
-    if (initializationError != null) {
-      initializationError.printStackTrace();
-      return;
-    }
-
     for (String arg : args) {
       try {
         System.out.println("Canonicalize dir " + arg);
@@ -328,7 +297,7 @@ public class CanonicalizeCode {
    */
   private static String canonicalizeTextLine(String line) {
     return removeTrailingSpaces(line).replaceAll("\t", "  ");
-  } // end canonicalizeTextLine
+  }
 
   private static String removeTrailingSpaces(String line) {
     final int n = line.length();
