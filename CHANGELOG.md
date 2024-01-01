@@ -3,7 +3,7 @@
 See also <https://github.com/xipki/commons/releases>
 
 ## 6.3.4
-- Release date: 202y/mm/dd
+- Release date: 2024/01/01
 - Features:
   - Audit: Allow null event value.
   - Util XiHttpClient: evaluate content type only if SC != OK
