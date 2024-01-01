@@ -4,24 +4,32 @@ See also <https://github.com/xipki/commons/releases>
 
 ## 6.3.4
 - Release date: 202y/mm/dd
+- Features:
+  - Audit: Allow null event value.
+  - Util XiHttpClient: evaluate content type only if SC != OK
+  - DataSource: methods getFirst*Value: allow null criteria.
+  - Util Exceptions: add constructor with single param 'cause'.
+  - Add command xi:export-keycert-pem
 
 ## 6.3.3
 - Release date: 2023/12/13
-  - Feature: command xi:curl: throws Exception if received status code != OK
-  - Feature: Audit: applicationName is now mandatory, accept also ConfPairs as conf
-  - Feature: JSON.java: add methods parseConf() which resolves also the ${sys:*} and ${env:*}.
-  - Feature: remove parameters hashAlgo and gm in methods to generate CSRs
-  - Feature: add BatchReplace to replaces texts in files
+  - Command xi:curl: throws Exception if received status code != OK
+  - Audit: applicationName is now mandatory, accept also ConfPairs as conf
+  - JSON.java: add methods parseConf() which resolves also the ${sys:*} and ${env:*}.
+  - Removed parameters hashAlgo and gm in methods to generate CSRs
+  - Added BatchReplace to replaces texts in files
 
 ## 6.3.2
 - Release date: 2023/11/26
-  - Feature: add new binary of HSM proxy.
-  - Move (repackage) JSON.java from module security to util.
+- Features:
+  - Add new binary of HSM proxy.
+  - Moved (repackage) JSON.java from module security to util.
   - Deleted non-common classes (moved to github:xipki/xipki).
-  - Feature: Simplified password configuration. 
-  - Feature: add code to generate a set of hierarchic certificates.
-  - Feature: add karaf command xi:exec to execute terminal command.
-  - Bugfix: Fixed "MariaDB JDBC driver does not work with old hikaricp (datasource) configuration".
+  - Simplified password configuration. 
+  - Added code to generate a set of hierarchic certificates.
+  - Add karaf command xi:exec to execute terminal command.
+- Bugfix
+  - Fixed "MariaDB JDBC driver does not work with old hikaricp (datasource) configuration".
 - Dependenciees 
   - Bouncycastle: 1.76 -> 1.77
   - ipkcs11wrapper: 1.0.7 -> 1.0.8

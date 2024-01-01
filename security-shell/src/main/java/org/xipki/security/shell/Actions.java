@@ -48,6 +48,7 @@ import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.xipki.security.BadInputException;
 import org.xipki.security.ConcurrentContentSigner;
 import org.xipki.security.DHSigStaticKeyCertPair;
@@ -130,8 +131,11 @@ public class Actions {
     @Completion(FileCompleter.class)
     private String inFile;
 
-    @Option(name = "--hex", aliases = "-h", description = "print hex number")
+    @Option(name = "--hex", aliases = "-h", description = "print (serial) number in hex format")
     private Boolean hex = Boolean.FALSE;
+
+    @Option(name = "--der", description = "print DER-encoded issuer and subject in hex format")
+    private Boolean der = Boolean.FALSE;
 
     @Option(name = "--serial", description = "print serial number")
     private Boolean serial;
@@ -162,9 +166,13 @@ public class Actions {
       if (serial != null && serial) {
         return getNumber(cert.getSerialNumber());
       } else if (subject != null && subject) {
-        return cert.getSubject().toString();
+        return (der != null && der)
+            ? Hex.encode(cert.getSubject().getEncoded())
+            : cert.getSubject().toString();
       } else if (issuer != null && issuer) {
-        return cert.getIssuer().toString();
+        return (der != null && der)
+            ? Hex.encode(cert.getIssuer().getEncoded())
+            : cert.getIssuer().toString();
       } else if (notBefore != null && notBefore) {
         return toUtcTimeyyyyMMddhhmmssZ(cert.getNotBefore());
       } else if (notAfter != null && notAfter) {
@@ -1040,6 +1048,70 @@ public class Actions {
 
   } // class ExportCertP7m
 
+  @Command(scope = "xi", name = "export-keycert-pem",
+      description = "export key and certificate from the PEM file")
+  @Service
+  public static class ExportKeyCertPem extends SecurityAction {
+
+    @Option(name = "--outform", description = "output format of the key and certificate")
+    @Completion(Completers.DerPemCompleter.class)
+    private String outform = "der";
+
+    @Argument(index = 0, name = "PEM-file", required = true,
+        description = "PEM file containing the key and certificate")
+    @Completion(FileCompleter.class)
+    private String pemFile;
+
+    @Argument(index = 1, name = "key-file", required = true, description = "File to save the private key")
+    @Completion(FileCompleter.class)
+    private String keyFile;
+
+    @Argument(index = 2, name = "cert-file", required = true, description = "File to save the certificate")
+    @Completion(FileCompleter.class)
+    private String certFile;
+
+    @Override
+    protected Object execute0() throws Exception {
+      byte[] keyBytes = null;
+      byte[] certBytes = null;
+
+      try (PemReader reader = new PemReader(new FileReader(IoUtil.expandFilepath(pemFile)))) {
+        PemObject pemObject;
+        while ((pemObject = reader.readPemObject()) != null) {
+          String type = pemObject.getType();
+          if ("PRIVATE KEY".equals(type)) {
+            if (keyBytes == null) {
+              keyBytes = pemObject.getContent();
+            }
+          } else if ("CERTIFICATE".equals(type)) {
+            if (certBytes == null) {
+              certBytes = pemObject.getContent();
+            }
+          }
+
+          if (keyBytes != null && certBytes != null) {
+            break;
+          }
+        }
+
+        if (keyBytes == null) {
+          throw new IOException("found no private key block");
+        }
+
+        if (certBytes == null) {
+          throw new IOException("found no certificate block");
+        }
+
+        saveVerbose("private key saved to file", keyFile,
+            derPemEncode(keyBytes, outform, PemEncoder.PemLabel.PRIVATE_KEY));
+
+        saveVerbose("certificate saved to file", certFile, encodeCert(certBytes, outform));
+      }
+      return null;
+    }
+
+  } // class ExportKeyCertPem
+
   @Command(scope = "xi", name = "export-keycert-est",
       description = "export key and certificate from the response of EST's serverkeygen")
   @Service
@@ -1184,7 +1256,6 @@ public class Actions {
     }
 
   } // class ExportKeyCertEst
-
   public abstract static class SecurityAction extends XiAction {
 
     @Reference
