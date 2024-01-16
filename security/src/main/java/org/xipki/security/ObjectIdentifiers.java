@@ -577,7 +577,7 @@ public class ObjectIdentifiers {
     public static final ASN1ObjectIdentifier id_ccc_extn = id_ccc.branch("5");
     public static final ASN1ObjectIdentifier id_ccc_Vehicle_Cert_K = id_ccc_extn.branch("1");
     public static final ASN1ObjectIdentifier id_ccc_External_CA_Cert_F = id_ccc_extn.branch("2");
-    public static final ASN1ObjectIdentifier id_ccc_Internal_CA_Cert_E = id_ccc_extn.branch("3");
+    public static final ASN1ObjectIdentifier id_ccc_Instance_CA_Cert_E = id_ccc_extn.branch("3");
     public static final ASN1ObjectIdentifier id_ccc_Endpoint_Cert_H = id_ccc_extn.branch("4");
     public static final ASN1ObjectIdentifier id_ccc_VehicleOEM_Enc_Cert = id_ccc_extn.branch("5");
     public static final ASN1ObjectIdentifier id_ccc_VehicleOEM_Sig_Cert = id_ccc_extn.branch("6");
@@ -654,7 +654,7 @@ public class ObjectIdentifiers {
       // CCC
       oidNameMap.put(Extn.id_ccc_Vehicle_Cert_K, "CCC Vehicle Certificate [K]");
       oidNameMap.put(Extn.id_ccc_External_CA_Cert_F, "CCC External CA Certificate [F]");
-      oidNameMap.put(Extn.id_ccc_Internal_CA_Cert_E, "CCC External CA Certificate [E]");
+      oidNameMap.put(Extn.id_ccc_Instance_CA_Cert_E, "CCC Instance CA Certificate [E]");
       oidNameMap.put(Extn.id_ccc_Endpoint_Cert_H, "Endpoint Certificate [H]");
       oidNameMap.put(Extn.id_ccc_VehicleOEM_Enc_Cert, "CCC VehicleOEM.Enc.Cert");
       oidNameMap.put(Extn.id_ccc_VehicleOEM_Sig_Cert, "CCC VehicleOEM.Sig.Cert");
