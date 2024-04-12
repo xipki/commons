@@ -36,8 +36,8 @@ public class IssuerHash {
     this.hashAlgo = Args.notNull(hashAlgo, "hashAlgo");
     byte[] encodedName = Args.notNull(issuerCert, "issuerCert").getSubject().getEncoded();
     byte[] encodedKey = issuerCert.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-    this.issuerNameHash = HashCalculator.hash(hashAlgo, encodedName);
-    this.issuerKeyHash = HashCalculator.hash(hashAlgo, encodedKey);
+    this.issuerNameHash = hashAlgo.hash(encodedName);
+    this.issuerKeyHash = hashAlgo.hash(encodedKey);
   }
 
   public HashAlgo getHashAlgo() {

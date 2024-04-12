@@ -74,7 +74,6 @@ import org.xipki.util.Args;
 import org.xipki.util.Base64;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.CompareUtil;
-import org.xipki.util.ConcurrentBag;
 import org.xipki.util.DateUtil;
 import org.xipki.util.Hex;
 import org.xipki.util.IoUtil;
@@ -875,7 +874,7 @@ public class Actions {
         }
       }
 
-      ConcurrentBag.BagEntry<XiContentSigner> signer0;
+      XiContentSigner signer0;
       try {
         signer0 = signer.borrowSigner();
       } catch (NoIdleSignerException ex) {
@@ -883,7 +882,7 @@ public class Actions {
       }
 
       try {
-        return csrBuilder.build(signer0.value());
+        return csrBuilder.build(signer0);
       } finally {
         signer.requiteSigner(signer0);
       }

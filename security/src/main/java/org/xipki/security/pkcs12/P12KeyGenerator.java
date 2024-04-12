@@ -291,7 +291,7 @@ public class P12KeyGenerator {
 
     P12ContentSignerBuilder builder = new P12ContentSignerBuilder(key, publicKey);
     ConcurrentContentSigner csigner = builder.createSigner(algo, 1, null);
-    return csigner.borrowSigner().value();
+    return csigner.borrowSigner();
   } // method getContentSigner
 
 }

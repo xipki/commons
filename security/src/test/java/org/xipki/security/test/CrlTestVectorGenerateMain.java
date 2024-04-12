@@ -14,7 +14,6 @@ import org.xipki.security.SignatureAlgoControl;
 import org.xipki.security.SignerConf;
 import org.xipki.security.X509Cert;
 import org.xipki.security.XiContentSigner;
-import org.xipki.util.ConcurrentBag.BagEntry;
 import org.xipki.util.ConfPairs;
 import org.xipki.util.IoUtil;
 
@@ -53,7 +52,7 @@ public class CrlTestVectorGenerateMain {
           "PKCS12", sconf, (X509Cert) null);
       X509Cert caCert = csigner.getCertificate();
 
-      BagEntry<XiContentSigner> signer = csigner.borrowSigner();
+      XiContentSigner signer = csigner.borrowSigner();
       // no revoked certs
       X509v2CRLBuilder builder = getBuilder(caCert, true, true);
       buildCrl(builder, signer, "no-revoked-certs.crl");
@@ -87,9 +86,9 @@ public class CrlTestVectorGenerateMain {
     }
   }
 
-  private static void buildCrl(X509v2CRLBuilder builder, BagEntry<XiContentSigner> signer, String fn)
+  private static void buildCrl(X509v2CRLBuilder builder, XiContentSigner signer, String fn)
       throws Exception {
-    byte[] encoded = builder.build(signer.value()).getEncoded();
+    byte[] encoded = builder.build(signer).getEncoded();
     IoUtil.save("output/" + fn, encoded);
   }
 

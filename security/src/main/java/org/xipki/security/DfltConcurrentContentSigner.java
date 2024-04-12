@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xipki.util.Args;
 import org.xipki.util.CollectionUtil;
-import org.xipki.util.ConcurrentBag;
-import org.xipki.util.ConcurrentBag.BagEntry;
 import org.xipki.util.LogUtil;
 
 import java.io.IOException;
@@ -20,6 +18,7 @@ import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,7 +37,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
   private static int defaultSignServiceTimeout = 10000; // 10 seconds
 
-  private final ConcurrentBag<XiContentSigner> signers = new ConcurrentBag<>();
+  private final ArrayBlockingQueue<XiContentSigner> signers;
 
   private final String name;
 
@@ -80,10 +79,8 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
     this.mac = mac;
     this.algorithm = SignAlgo.getInstance(signers.get(0).getAlgorithmIdentifier());
-
-    for (XiContentSigner signer : signers) {
-      this.signers.add(new BagEntry<>(signer));
-    }
+    this.signers = new ArrayBlockingQueue<>(signers.size());
+    this.signers.addAll(signers);
 
     this.signingKey = signingKey;
     this.name = "defaultSigner-" + NAME_INDEX.getAndIncrement();
@@ -120,7 +117,7 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
   }
 
   @Override
-  public BagEntry<XiContentSigner> borrowSigner() throws NoIdleSignerException {
+  public XiContentSigner borrowSigner() throws NoIdleSignerException {
     return borrowSigner(defaultSignServiceTimeout);
   }
 
@@ -130,10 +127,10 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
    * @param soTimeout timeout in milliseconds, 0 for infinitely.
    */
   @Override
-  public BagEntry<XiContentSigner> borrowSigner(int soTimeout) throws NoIdleSignerException {
-    BagEntry<XiContentSigner> signer = null;
+  public XiContentSigner borrowSigner(int soTimeout) throws NoIdleSignerException {
+    XiContentSigner signer = null;
     try {
-      signer = signers.borrow(soTimeout, TimeUnit.MILLISECONDS);
+      signer = signers.poll(soTimeout, TimeUnit.MILLISECONDS);
     } catch (InterruptedException ex) {
     }
 
@@ -142,8 +139,8 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
   }
 
   @Override
-  public void requiteSigner(BagEntry<XiContentSigner> signer) {
-    signers.requite(signer);
+  public void requiteSigner(XiContentSigner signer) {
+    signers.add(signer);
   }
 
   @Override
@@ -188,12 +185,12 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
   @Override
   public boolean isHealthy() {
-    BagEntry<XiContentSigner> signer = null;
+    XiContentSigner signer = null;
     try {
       signer = borrowSigner();
-      OutputStream stream = signer.value().getOutputStream();
+      OutputStream stream = signer.getOutputStream();
       stream.write(new byte[]{1, 2, 3, 4});
-      byte[] signature = signer.value().getSignature();
+      byte[] signature = signer.getSignature();
       return signature != null && signature.length > 0;
     } catch (Exception ex) {
       LogUtil.error(LOG, ex);
@@ -211,15 +208,15 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
 
   @Override
   public byte[] sign(byte[] data) throws NoIdleSignerException, SignatureException {
-    BagEntry<XiContentSigner> signer = borrowSigner();
+    XiContentSigner signer = borrowSigner();
     try {
-      OutputStream signatureStream = signer.value().getOutputStream();
+      OutputStream signatureStream = signer.getOutputStream();
       try {
         signatureStream.write(data);
       } catch (IOException ex) {
         throw new SignatureException("could not write data to SignatureStream: " + ex.getMessage(), ex);
       }
-      return signer.value().getSignature();
+      return signer.getSignature();
     } finally {
       requiteSigner(signer);
     }
@@ -228,19 +225,17 @@ public class DfltConcurrentContentSigner implements ConcurrentContentSigner {
   @Override
   public byte[][] sign(byte[][] data) throws NoIdleSignerException, SignatureException {
     byte[][] signatures = new byte[data.length][];
-    BagEntry<XiContentSigner> signer = borrowSigner();
+    XiContentSigner signer = borrowSigner();
 
     try {
-      XiContentSigner xiSigner = signer.value();
-
       for (int i = 0; i < data.length; i++) {
-        OutputStream signatureStream = xiSigner.getOutputStream();
+        OutputStream signatureStream = signer.getOutputStream();
         try {
           signatureStream.write(data[i]);
         } catch (IOException ex) {
           throw new SignatureException("could not write data to SignatureStream: " + ex.getMessage(), ex);
         }
-        signatures[i] = xiSigner.getSignature();
+        signatures[i] = signer.getSignature();
       }
     } finally {
       requiteSigner(signer);

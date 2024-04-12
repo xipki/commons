@@ -28,8 +28,6 @@ import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.util.PKCS1Util;
 import org.xipki.security.util.SignerUtil;
 import org.xipki.util.Args;
-import org.xipki.util.ConcurrentBag;
-import org.xipki.util.ConcurrentBag.BagEntry;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -48,6 +46,8 @@ import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.xipki.pkcs11.wrapper.PKCS11Constants.CKG_MGF1_SHA1;
@@ -159,13 +159,13 @@ class EmulatorP11Key extends P11Key {
 
   private final Key signingKey;
 
-  private final ConcurrentBag<Cipher> rsaCiphers = new ConcurrentBag<>();
+  private final ArrayBlockingQueue<Cipher> rsaCiphers;
 
-  private final ConcurrentBag<Signature> dsaSignatures = new ConcurrentBag<>();
+  private final ArrayBlockingQueue<Signature> dsaSignatures;
 
-  private final ConcurrentBag<Signature> eddsaSignatures = new ConcurrentBag<>();
+  private final ArrayBlockingQueue<Signature> eddsaSignatures;
 
-  private final ConcurrentBag<EmulatorSM2Signer> sm2Signers = new ConcurrentBag<>();
+  private final ArrayBlockingQueue<EmulatorSM2Signer> sm2Signers;
 
   private final SecureRandom random;
 
@@ -264,6 +264,10 @@ class EmulatorP11Key extends P11Key {
     this.signingKey = Args.notNull(signingKey, "signingKey");
     this.random = Args.notNull(random, "random");
     this.maxSessions = maxSessions;
+    this.dsaSignatures = new ArrayBlockingQueue<>(maxSessions);
+    this.eddsaSignatures = new ArrayBlockingQueue<>(maxSessions);
+    this.sm2Signers = new ArrayBlockingQueue<>(maxSessions);
+    this.rsaCiphers = new ArrayBlockingQueue<>(maxSessions);
   } // constructor
 
   public void setEcParams(ASN1ObjectIdentifier ecParams) {
@@ -312,7 +316,7 @@ class EmulatorP11Key extends P11Key {
             }
           }
           rsaCipher.init(Cipher.ENCRYPT_MODE, signingKey);
-          rsaCiphers.add(new BagEntry<>(rsaCipher));
+          rsaCiphers.add(rsaCipher);
         }
       } else {
         String algorithm;
@@ -334,7 +338,7 @@ class EmulatorP11Key extends P11Key {
           for (int i = 0; i < maxSessions; i++) {
             Signature dsaSignature = Signature.getInstance(algorithm, "BC");
             dsaSignature.initSign((PrivateKey) signingKey, random);
-            dsaSignatures.add(new BagEntry<>(dsaSignature));
+            dsaSignatures.add(dsaSignature);
           }
         } else if (keyType == CKK_EC_EDWARDS) {
           algorithm = EdECConstants.getName(getEcParams());
@@ -344,7 +348,7 @@ class EmulatorP11Key extends P11Key {
           for (int i = 0; i < maxSessions; i++) {
             Signature signature = Signature.getInstance(algorithm, "BC");
             signature.initSign((PrivateKey) signingKey);
-            eddsaSignatures.add(new BagEntry<>(signature));
+            eddsaSignatures.add(signature);
           }
         } else if (keyType == CKK_EC_MONTGOMERY) {
           // do nothing. not suitable for sign.
@@ -352,7 +356,7 @@ class EmulatorP11Key extends P11Key {
           for (int i = 0; i < maxSessions; i++) {
             EmulatorSM2Signer sm2signer =
                 new EmulatorSM2Signer(ECUtil.generatePrivateKeyParameter((PrivateKey) signingKey));
-            sm2Signers.add(new BagEntry<>(sm2signer));
+            sm2Signers.add(sm2signer);
           }
         }
       }
@@ -509,38 +513,37 @@ class EmulatorP11Key extends P11Key {
   } // method rsaPkcsSign
 
   private byte[] rsaX509Sign(byte[] dataToSign) throws TokenException {
-    BagEntry<Cipher> cipher;
+    Cipher cipher;
     try {
-      cipher = Optional.ofNullable(rsaCiphers.borrow(5000, TimeUnit.MILLISECONDS)).orElseThrow(
+      cipher = Optional.ofNullable(rsaCiphers.poll(5000, TimeUnit.MILLISECONDS)).orElseThrow(
           () -> new TokenException("no idle RSA cipher available"));
     } catch (InterruptedException ex) {
       throw new TokenException("could not take any idle signer");
     }
 
     try {
-      return cipher.value().doFinal(dataToSign);
+      return cipher.doFinal(dataToSign);
     } catch (BadPaddingException ex) {
       throw new TokenException("BadPaddingException: " + ex.getMessage(), ex);
     } catch (IllegalBlockSizeException ex) {
       throw new TokenException("IllegalBlockSizeException: " + ex.getMessage(), ex);
     } finally {
-      rsaCiphers.requite(cipher);
+      rsaCiphers.add(cipher);
     }
   } // method rsaX509Sign
 
   private byte[] dsaAndEcdsaSign(byte[] dataToSign, HashAlgo hashAlgo) throws TokenException {
     byte[] hash = (hashAlgo == null) ? dataToSign : hashAlgo.hash(dataToSign);
 
-    BagEntry<Signature> sig0;
+    Signature sig;
     try {
-      sig0 = Optional.ofNullable(dsaSignatures.borrow(5000, TimeUnit.MILLISECONDS))
+      sig = Optional.ofNullable(dsaSignatures.poll(5000, TimeUnit.MILLISECONDS))
           .orElseThrow(() -> new TokenException("no idle DSA Signature available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
     }
 
     try {
-      Signature sig = sig0.value();
       sig.update(hash);
       byte[] x962Signature = sig.sign();
       return SignerUtil.dsaSigX962ToPlain(x962Signature, dsaOrderBitLen);
@@ -549,7 +552,7 @@ class EmulatorP11Key extends P11Key {
     } catch (XiSecurityException ex) {
       throw new TokenException("XiSecurityException: " + ex.getMessage(), ex);
     } finally {
-      dsaSignatures.requite(sig0);
+      dsaSignatures.add(sig);
     }
   } // method dsaAndEcdsaSign
 
@@ -558,43 +561,42 @@ class EmulatorP11Key extends P11Key {
       throw new TokenException("given signing key is not suitable for EdDSA sign");
     }
 
-    BagEntry<Signature> sig0;
+    Signature sig;
     try {
-      sig0 = Optional.ofNullable(eddsaSignatures.borrow(5000, TimeUnit.MILLISECONDS))
+      sig = Optional.ofNullable(eddsaSignatures.poll(5000, TimeUnit.MILLISECONDS))
           .orElseThrow(() -> new TokenException("no idle DSA Signature available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
     }
 
     try {
-      Signature sig = sig0.value();
       sig.update(dataToSign);
       return sig.sign();
     } catch (SignatureException ex) {
       throw new TokenException("SignatureException: " + ex.getMessage(), ex);
     } finally {
-      eddsaSignatures.requite(sig0);
+      eddsaSignatures.add(sig);
     }
   } // method eddsaSign
 
   private byte[] sm2SignHash(byte[] hash) throws TokenException {
-    BagEntry<EmulatorSM2Signer> sig;
+    EmulatorSM2Signer sig;
     try {
-      sig = Optional.ofNullable(sm2Signers.borrow(5000, TimeUnit.MILLISECONDS)).orElseThrow(
+      sig = Optional.ofNullable(sm2Signers.poll(5000, TimeUnit.MILLISECONDS)).orElseThrow(
           () -> new TokenException("no idle SM2 Signer available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
     }
 
     try {
-      byte[] x962Signature = sig.value().generateSignatureForHash(hash);
+      byte[] x962Signature = sig.generateSignatureForHash(hash);
       return SignerUtil.dsaSigX962ToPlain(x962Signature, dsaOrderBitLen);
     } catch (CryptoException ex) {
       throw new TokenException("CryptoException: " + ex.getMessage(), ex);
     } catch (XiSecurityException ex) {
       throw new TokenException("XiSecurityException: " + ex.getMessage(), ex);
     } finally {
-      sm2Signers.requite(sig);
+      sm2Signers.add(sig);
     }
   } // method sm2SignHash
 
@@ -610,23 +612,23 @@ class EmulatorP11Key extends P11Key {
       throw new TokenException("params must be instanceof P11ByteArrayParams");
     }
 
-    BagEntry<EmulatorSM2Signer> sig0;
+    EmulatorSM2Signer sig;
     try {
-      sig0 = Optional.ofNullable(sm2Signers.borrow(5000, TimeUnit.MILLISECONDS)).orElseThrow(
+      sig = Optional.ofNullable(sm2Signers.poll(5000, TimeUnit.MILLISECONDS)).orElseThrow(
           () -> new TokenException("no idle SM2 Signer available"));
     } catch (InterruptedException ex) {
       throw new TokenException("InterruptedException occurs while retrieving idle signature");
     }
 
     try {
-      byte[] x962Signature = sig0.value().generateSignatureForMessage(userId, dataToSign);
+      byte[] x962Signature = sig.generateSignatureForMessage(userId, dataToSign);
       return SignerUtil.dsaSigX962ToPlain(x962Signature, dsaOrderBitLen);
     } catch (CryptoException ex) {
       throw new TokenException("CryptoException: " + ex.getMessage(), ex);
     } catch (XiSecurityException ex) {
       throw new TokenException("XiSecurityException: " + ex.getMessage(), ex);
     } finally {
-      sm2Signers.requite(sig0);
+      sm2Signers.add(sig);
     }
   } // method sm2Sign
 

@@ -9,6 +9,7 @@ import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.gm.GMObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.ExtendedDigest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.digests.SHA224Digest;
@@ -19,6 +20,8 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 import org.bouncycastle.crypto.digests.SM3Digest;
 import org.xipki.util.Args;
+import org.xipki.util.Base64;
+import org.xipki.util.Hex;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -226,27 +229,37 @@ public enum HashAlgo {
   }
 
   public String hexHash(byte[]... datas) {
-    return HashCalculator.hexHash(this, datas);
+    return Hex.encode(hash(datas));
   }
 
   public String hexHash(byte[] data, int offset, int len) {
-    return HashCalculator.hexHash(this, data, offset, len);
+    return Hex.encode(hash(data, offset, len));
   }
 
   public String base64Hash(byte[]... datas) {
-    return HashCalculator.base64Hash(this, datas);
+    return Base64.encodeToString(hash(datas));
   }
 
   public String base64Hash(byte[] data, int offset, int len) {
-    return HashCalculator.base64Hash(this, data, offset, len);
+    return Base64.encodeToString(hash(data, offset, len));
   }
 
   public byte[] hash(byte[]... datas) {
-    return HashCalculator.hash(this, datas);
+    Digest digest = createDigest();
+    for (byte[] data : datas) {
+      digest.update(data, 0, data.length);
+    }
+    byte[] rv = new byte[length];
+    digest.doFinal(rv, 0);
+    return rv;
   }
 
   public byte[] hash(byte[] data, int offset, int len) {
-    return HashCalculator.hash(this, data, offset, len);
+    Digest digest = createDigest();
+    digest.update(data, offset, len);
+    byte[] rv = new byte[length];
+    digest.doFinal(rv, 0);
+    return rv;
   }
 
   public int getEncodedLength() {
