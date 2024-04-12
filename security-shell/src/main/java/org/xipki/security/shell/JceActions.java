@@ -23,7 +23,7 @@ public class JceActions {
 
   @Command(scope = "xi", name = "csr-jce", description = "generate CSR request with JCE device")
   @Service
-  public static class CsrJce extends Actions.BaseCsrGenAction {
+  public static class CsrJce extends SecurityActions.BaseCsrGenAction {
 
     @Option(name = "--type", required = true, description = "JCE signer type")
     private String type;

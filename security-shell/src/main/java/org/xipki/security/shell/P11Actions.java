@@ -28,8 +28,8 @@ import org.xipki.security.pkcs11.P11Module;
 import org.xipki.security.pkcs11.P11Slot;
 import org.xipki.security.pkcs11.P11Slot.P11NewKeyControl;
 import org.xipki.security.pkcs11.P11SlotId;
-import org.xipki.security.shell.Actions.CsrGenAction;
-import org.xipki.security.shell.Actions.SecurityAction;
+import org.xipki.security.shell.SecurityActions.CsrGenAction;
+import org.xipki.security.shell.SecurityActions.SecurityAction;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.shell.Completers;
@@ -384,7 +384,7 @@ public class P11Actions {
     private Integer keysize = 2048;
 
     @Option(name = "-e", description = "public exponent")
-    private String publicExponent = Actions.TEXT_F4;
+    private String publicExponent = SecurityActions.TEXT_F4;
 
     @Override
     protected Object execute0() throws Exception {

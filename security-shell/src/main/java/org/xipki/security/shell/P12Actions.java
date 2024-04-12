@@ -21,8 +21,8 @@ import org.xipki.security.pkcs12.KeyStoreWrapper;
 import org.xipki.security.pkcs12.KeypairWithCert;
 import org.xipki.security.pkcs12.KeystoreGenerationParameters;
 import org.xipki.security.pkcs12.P12KeyGenerator;
-import org.xipki.security.shell.Actions.CsrGenAction;
-import org.xipki.security.shell.Actions.SecurityAction;
+import org.xipki.security.shell.SecurityActions.CsrGenAction;
+import org.xipki.security.shell.SecurityActions.SecurityAction;
 import org.xipki.security.util.AlgorithmUtil;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.security.util.X509Util;
@@ -387,7 +387,7 @@ public class P12Actions {
     private Integer keysize = 2048;
 
     @Option(name = "-e", description = "public exponent")
-    private String publicExponent = Actions.TEXT_F4;
+    private String publicExponent = SecurityActions.TEXT_F4;
 
     @Override
     protected Object execute0() throws Exception {

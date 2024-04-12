@@ -11,7 +11,7 @@ import org.apache.karaf.shell.support.completers.FileCompleter;
 import org.xipki.password.OBFPasswordService;
 import org.xipki.password.PBEPasswordService;
 import org.xipki.password.Passwords;
-import org.xipki.security.shell.Actions.SecurityAction;
+import org.xipki.security.shell.SecurityActions.SecurityAction;
 import org.xipki.shell.IllegalCmdParamException;
 import org.xipki.util.Args;
 import org.xipki.util.IoUtil;

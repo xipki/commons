@@ -118,7 +118,7 @@ import java.util.StringTokenizer;
  * @author Lijun Liao (xipki)
  */
 
-public class Actions {
+public class SecurityActions {
 
   public static final String TEXT_F4 = "0x10001";
 

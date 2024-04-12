@@ -545,7 +545,7 @@ public class QaSecurityActions {
     private Integer keysize = 2048;
 
     @Option(name = "--exponent", aliases = "-e", description = "public exponent")
-    private String publicExponent = Actions.TEXT_F4;
+    private String publicExponent = SecurityActions.TEXT_F4;
 
     @Override
     protected BenchmarkExecutor getTester() throws Exception {
@@ -568,7 +568,7 @@ public class QaSecurityActions {
     private Integer keysize = 2048;
 
     @Option(name = "-e", description = "public exponent")
-    private String publicExponent = Actions.TEXT_F4;
+    private String publicExponent = SecurityActions.TEXT_F4;
 
     @Option(name = "--sig-algo", required = true, description = "signature algorithm")
     @Completion(QaCompleters.RSASigAlgCompleter.class)
@@ -892,7 +892,7 @@ public class QaSecurityActions {
     private Integer keysize = 2048;
 
     @Option(name = "-e", description = "public exponent")
-    private String publicExponent = Actions.TEXT_F4;
+    private String publicExponent = SecurityActions.TEXT_F4;
 
     @Override
     protected BenchmarkExecutor getTester() throws Exception {
@@ -910,7 +910,7 @@ public class QaSecurityActions {
     private Integer keysize = 2048;
 
     @Option(name = "-e", description = "public exponent")
-    private String publicExponent = Actions.TEXT_F4;
+    private String publicExponent = SecurityActions.TEXT_F4;
 
     @Option(name = "--sig-algo", required = true, description = "signature algorithm")
     @Completion(QaCompleters.RSASigAlgCompleter.class)
