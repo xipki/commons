@@ -14,7 +14,6 @@ import org.xipki.pkcs11.wrapper.PKCS11Module;
 import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.pkcs11.wrapper.params.ExtraParams;
 import org.xipki.security.EdECConstants;
-import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
 import org.xipki.security.util.DSAParameterCache;
 import org.xipki.util.Args;
@@ -139,8 +138,6 @@ public abstract class P11Slot implements Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(P11Slot.class);
 
-  protected final String moduleName;
-
   protected final P11SlotId slotId;
 
   private final boolean readOnly;
@@ -155,10 +152,9 @@ public abstract class P11Slot implements Closeable {
   protected final P11NewObjectConf newObjectConf;
 
   protected P11Slot(
-      String moduleName, P11SlotId slotId, boolean readOnly,
+      P11SlotId slotId, boolean readOnly,
       List<Long> secretKeyTypes, List<Long> keyPairTypes, P11NewObjectConf newObjectConf) {
     this.newObjectConf = Args.notNull(newObjectConf, "newObjectConf");
-    this.moduleName = Args.notBlank(moduleName, "moduleName");
     this.slotId = Args.notNull(slotId, "slotId");
     this.readOnly = readOnly;
     this.secretKeyTypes = secretKeyTypes;
@@ -381,25 +377,19 @@ public abstract class P11Slot implements Closeable {
   @Override
   public abstract void close();
 
-  protected void initMechanisms(Map<Long, MechanismInfo> supportedMechanisms, P11MechanismFilter mechanismFilter) {
+  protected void initMechanisms(Map<Long, MechanismInfo> supportedMechanisms) {
     mechanisms.clear();
 
-    List<Long> ignoreMechs = new ArrayList<>();
     PKCS11Module pkcs11Module = getPKCS11Module();
 
     for (Map.Entry<Long, MechanismInfo> entry : supportedMechanisms.entrySet()) {
       long mech = entry.getKey();
-      if (mechanismFilter.isMechanismPermitted(slotId, mech, pkcs11Module)) {
-        mechanisms.put(mech, entry.getValue());
-      } else {
-        ignoreMechs.add(mech);
-      }
+      mechanisms.put(mech, entry.getValue());
     }
-    Collections.sort(ignoreMechs);
 
     if (LOG.isInfoEnabled()) {
       StringBuilder sb = new StringBuilder();
-      sb.append("initialized module ").append(moduleName).append(", slot ").append(slotId);
+      sb.append("initialized slot ").append(slotId);
 
       sb.append("\nsupported mechanisms:\n");
       if (mechanisms.isEmpty()) {
@@ -408,14 +398,6 @@ public abstract class P11Slot implements Closeable {
         printMechanisms(sb, mechanisms);
       }
 
-      sb.append("\nsupported by device but ignored mechanisms:\n");
-      if (ignoreMechs.isEmpty()) {
-        sb.append("  NONE\n");
-      } else {
-        for (Long mech : ignoreMechs) {
-          sb.append("\n  ").append(mechanismCodeToName(mech));
-        }
-      }
       LOG.info(sb.toString());
     }
   }
@@ -444,10 +426,6 @@ public abstract class P11Slot implements Closeable {
       throw new TokenException("mechanism " + mechanismCodeToName(mechanism) + " for "
           + codeToName(Category.CKF_MECHANISM, flagBit) + " is not supported by PKCS11 slot " + slotId);
     }
-  }
-
-  public String getModuleName() {
-    return moduleName;
   }
 
   public P11SlotId getSlotId() {

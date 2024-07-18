@@ -3,16 +3,11 @@
 
 package org.xipki.security.shell;
 
-import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.xipki.security.SignAlgo;
-import org.xipki.security.pkcs11.P11CryptServiceFactory;
 import org.xipki.security.pkcs11.P11Slot.P11KeyUsage;
-import org.xipki.shell.DynamicEnumCompleter;
 import org.xipki.shell.EnumCompleter;
-import org.xipki.util.CollectionUtil;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -61,23 +56,6 @@ public class SecurityCompleters {
     }
 
   } // class P11KeyUsageCompleter
-
-  @Service
-  public static class P11ModuleNameCompleter extends DynamicEnumCompleter {
-
-    @Reference (optional = true)
-    private P11CryptServiceFactory p11CryptServiceFactory;
-
-    @Override
-    protected Set<String> getEnums() {
-      Set<String> names = p11CryptServiceFactory.getModuleNames();
-      if (CollectionUtil.isEmpty(names)) {
-        return Collections.emptySet();
-      }
-      return names;
-    }
-
-  } // class P11ModuleNameCompleter
 
   @Service
   public static class SecretKeyTypeCompleter extends EnumCompleter {

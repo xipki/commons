@@ -183,15 +183,8 @@ public class QaSecurityActions {
     @Option(name = "--slot", description = "slot index")
     protected int slotIndex = 0;
 
-    @Option(name = "--module", description = "name of the PKCS#11 module.")
-    @Completion(SecurityCompleters.P11ModuleNameCompleter.class)
-    protected String moduleName = P11CryptServiceFactory.DEFAULT_P11MODULE_NAME;
-
     protected P11Slot getSlot() throws XiSecurityException, TokenException, IllegalCmdParamException {
-      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService(moduleName);
-      if (p11Service == null) {
-        throw new IllegalCmdParamException("undefined module " + moduleName);
-      }
+      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService();
       P11Module module = p11Service.getModule();
       return module.getSlot(module.getSlotIdForIndex(slotIndex));
     }
@@ -358,16 +351,9 @@ public class QaSecurityActions {
     @Option(name = "--slot", description = "slot index")
     protected int slotIndex = 0;
 
-    @Option(name = "--module", description = "Name of the PKCS#11 module.")
-    @Completion(SecurityCompleters.P11ModuleNameCompleter.class)
-    protected String moduleName = P11CryptServiceFactory.DEFAULT_P11MODULE_NAME;
-
     protected P11Slot getSlot()
         throws XiSecurityException, TokenException, IllegalCmdParamException {
-      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService(moduleName);
-      if (p11Service == null) {
-        throw new IllegalCmdParamException("undefined module " + moduleName);
-      }
+      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService();
       P11Module module = p11Service.getModule();
       return module.getSlot(module.getSlotIdForIndex(slotIndex));
     }

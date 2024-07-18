@@ -19,306 +19,175 @@ import java.util.Map;
 
 public class Pkcs11conf extends ValidableConf {
 
-  public static class MechanismFilter extends ValidableConf {
+  private String type;
 
-    /**
-     * name of the mechanismSet.
-     */
-    private String mechanismSet;
+  private List<NativeLibrary> nativeLibraries;
 
-    /**
-     * To which slots the mechanism should be applied.
-     * Absent for all slots.
-     */
-    private List<Slot> slots;
+  private NewObjectConf newObjectConf;
 
-    public String getMechanismSet() {
-      return mechanismSet;
+  /**
+   * Which slots should be considered. Absent for all slots.
+   */
+  private List<Slot> includeSlots;
+
+  /**
+   * Which slots should be considered. Absent for no slot.
+   */
+  private List<Slot> excludeSlots;
+
+  private boolean readonly;
+
+  private List<String> secretKeyTypes;
+
+  private List<String> keyPairTypes;
+
+  private Integer numSessions;
+
+  /**
+   * specify the user type, use either the long value or identifier as
+   * defined in the PKCS#11 standards. In version up to 2.40 the
+   * following users are defined.
+   *   - 0 or 0x0 or CKU_SO
+   *   - 1 or 0x1 or CKU_USER
+   *   - 2 or 0x2 or CKU_CONTEXT_SPECIFIC
+   * For vendor user type, only the long value is allowed.
+   */
+  private String user;
+
+  /**
+   * maximal size of the message sent to the PKCS#11 device.
+   */
+  private Integer maxMessageSize;
+
+  /**
+   * Timeout to borrow a new session.
+   */
+  private Integer newSessionTimeout;
+
+  private List<PasswordSet> passwordSets;
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public List<NativeLibrary> getNativeLibraries() {
+    if (nativeLibraries == null) {
+      nativeLibraries = new LinkedList<>();
     }
+    return nativeLibraries;
+  }
 
-    public void setMechanismSet(String mechanismSet) {
-      this.mechanismSet = mechanismSet;
+  public void setNativeLibraries(List<NativeLibrary> nativeLibraries) {
+    this.nativeLibraries = nativeLibraries;
+  }
+
+  public NewObjectConf getNewObjectConf() {
+    return newObjectConf;
+  }
+
+  public void setNewObjectConf(NewObjectConf newObjectConf) {
+    this.newObjectConf = newObjectConf;
+  }
+
+  public List<Slot> getIncludeSlots() {
+    if (includeSlots == null) {
+      includeSlots = new LinkedList<>();
     }
+    return includeSlots;
+  }
 
-    public List<Slot> getSlots() {
-      if (slots == null) {
-        slots = new LinkedList<>();
-      }
-      return slots;
+  public void setIncludeSlots(List<Slot> includeSlots) {
+    this.includeSlots = includeSlots;
+  }
+
+  public List<Slot> getExcludeSlots() {
+    if (excludeSlots == null) {
+      excludeSlots = new LinkedList<>();
     }
+    return excludeSlots;
+  }
 
-    public void setSlots(List<Slot> slots) {
-      this.slots = slots;
+  public void setExcludeSlots(List<Slot> excludeSlots) {
+    this.excludeSlots = excludeSlots;
+  }
+
+  public boolean isReadonly() {
+    return readonly;
+  }
+
+  public void setReadonly(boolean readonly) {
+    this.readonly = readonly;
+  }
+
+  public List<PasswordSet> getPasswordSets() {
+    if (passwordSets == null) {
+      passwordSets = new LinkedList<>();
     }
-
-    @Override
-    public void validate() throws InvalidConfException {
-      notBlank(mechanismSet, "mechanismSet");
-      validate(slots);
-    }
-
-  } // class MechanismFilter
-
-  public static class MechanismSet extends ValidableConf {
-
-    private String name;
-
-    /**
-     * The mechanism. Set mechanism to ALL to accept all available mechanisms.
-     */
-    private List<String> mechanisms;
-
-    /**
-     * The mechanism to be excluded.
-     */
-    private List<String> excludeMechanisms;
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public List<String> getMechanisms() {
-      if (mechanisms == null) {
-        mechanisms = new LinkedList<>();
-      }
-      return mechanisms;
-    }
-
-    public void setMechanisms(List<String> mechanisms) {
-      this.mechanisms = mechanisms;
-    }
-
-    public List<String> getExcludeMechanisms() {
-      if (excludeMechanisms == null) {
-        excludeMechanisms = new LinkedList<>();
-      }
-      return excludeMechanisms;
-    }
-
-    public void setExcludeMechanisms(List<String> excludeMechanisms) {
-      this.excludeMechanisms = excludeMechanisms;
-    }
-
-    @Override
-    public void validate() throws InvalidConfException {
-      notBlank(name, "name");
-      notEmpty(mechanisms, "mechanisms");
-    }
-
-  } // class MechanismSet
-
-  public static class Module extends ValidableConf {
-
-    private String name;
-
-    private String type;
-
-    private List<NativeLibrary> nativeLibraries;
-
-    private NewObjectConf newObjectConf;
-
-    /**
-     * Which slots should be considered. Absent for all slots.
-     */
-    private List<Slot> includeSlots;
-
-    /**
-     * Which slots should be considered. Absent for no slot.
-     */
-    private List<Slot> excludeSlots;
-
-    private boolean readonly;
-
-    private List<String> secretKeyTypes;
-
-    private List<String> keyPairTypes;
-
-    private Integer numSessions;
-
-    /**
-     * specify the user type, use either the long value or identifier as
-     * defined in the PKCS#11 standards. In version up to 2.40 the
-     * following users are defined.
-     *   - 0 or 0x0 or CKU_SO
-     *   - 1 or 0x1 or CKU_USER
-     *   - 2 or 0x2 or CKU_CONTEXT_SPECIFIC
-     * For vendor user type, only the long value is allowed.
-     */
-    private String user;
-
-    private String userName;
-
-    /**
-     * maximal size of the message sent to the PKCS#11 device.
-     */
-    private Integer maxMessageSize;
-
-    /**
-     * Timeout to borrow a new session.
-     */
-    private Integer newSessionTimeout;
-
-    private List<PasswordSet> passwordSets;
-
-    private List<MechanismFilter> mechanismFilters;
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getType() {
-      return type;
-    }
-
-    public void setType(String type) {
-      this.type = type;
-    }
-
-    public List<NativeLibrary> getNativeLibraries() {
-      if (nativeLibraries == null) {
-        nativeLibraries = new LinkedList<>();
-      }
-      return nativeLibraries;
-    }
-
-    public void setNativeLibraries(List<NativeLibrary> nativeLibraries) {
-      this.nativeLibraries = nativeLibraries;
-    }
-
-    public NewObjectConf getNewObjectConf() {
-      return newObjectConf;
-    }
-
-    public void setNewObjectConf(NewObjectConf newObjectConf) {
-      this.newObjectConf = newObjectConf;
-    }
-
-    public List<Slot> getIncludeSlots() {
-      if (includeSlots == null) {
-        includeSlots = new LinkedList<>();
-      }
-      return includeSlots;
-    }
-
-    public void setIncludeSlots(List<Slot> includeSlots) {
-      this.includeSlots = includeSlots;
-    }
-
-    public List<Slot> getExcludeSlots() {
-      if (excludeSlots == null) {
-        excludeSlots = new LinkedList<>();
-      }
-      return excludeSlots;
-    }
-
-    public void setExcludeSlots(List<Slot> excludeSlots) {
-      this.excludeSlots = excludeSlots;
-    }
-
-    public boolean isReadonly() {
-      return readonly;
-    }
-
-    public void setReadonly(boolean readonly) {
-      this.readonly = readonly;
-    }
-
-    public List<PasswordSet> getPasswordSets() {
-      if (passwordSets == null) {
-        passwordSets = new LinkedList<>();
-      }
-      return passwordSets;
-    }
-
-    public void setPasswordSets(List<PasswordSet> passwordSets) {
-      this.passwordSets = passwordSets;
-    }
-
-    public List<MechanismFilter> getMechanismFilters() {
-      if (mechanismFilters == null) {
-        mechanismFilters = new LinkedList<>();
-      }
-      return mechanismFilters;
-    }
-
-    public void setMechanismFilters(List<MechanismFilter> mechanismFilters) {
-      this.mechanismFilters = mechanismFilters;
-    }
-
-    public void setUser(String user) {
-      this.user = user;
-    }
-
-    public void setUserName(String userName) {
-      this.userName = userName;
-    }
-
-    public void setMaxMessageSize(Integer maxMessageSize) {
-      this.maxMessageSize = maxMessageSize;
-    }
-
-    public String getUser() {
-      return user == null ? "CKU_USER" : user;
-    }
-
-    public String getUserName() {
-      return userName;
-    }
-
-    public int getMaxMessageSize() {
-      return maxMessageSize == null ? 16384 : maxMessageSize;
-    }
-
-    public List<String> getSecretKeyTypes() {
-      return secretKeyTypes;
-    }
-
-    public void setSecretKeyTypes(List<String> secretKeyTypes) {
-      this.secretKeyTypes = secretKeyTypes;
-    }
-
-    public List<String> getKeyPairTypes() {
-      return keyPairTypes;
-    }
-
-    public void setKeyPairTypes(List<String> keyPairTypes) {
-      this.keyPairTypes = keyPairTypes;
-    }
-
-    public Integer getNumSessions() {
-      return numSessions;
-    }
-
-    public void setNumSessions(Integer numSessions) {
-      this.numSessions = numSessions;
-    }
-
-    public Integer getNewSessionTimeout() {
-      return newSessionTimeout;
-    }
-
-    public void setNewSessionTimeout(Integer newSessionTimeout) {
-      this.newSessionTimeout = newSessionTimeout;
-    }
-
-    @Override
-    public void validate() throws InvalidConfException {
-      notBlank(name, "name");
-      notBlank(type, "type");
-      notEmpty(nativeLibraries, "nativeLibraries");
-
-      validate(nativeLibraries, includeSlots, excludeSlots, passwordSets, mechanismFilters);
-    }
-
-  } // class Module
+    return passwordSets;
+  }
+
+  public void setPasswordSets(List<PasswordSet> passwordSets) {
+    this.passwordSets = passwordSets;
+  }
+
+  public void setUser(String user) {
+    this.user = user;
+  }
+
+  public void setMaxMessageSize(Integer maxMessageSize) {
+    this.maxMessageSize = maxMessageSize;
+  }
+
+  public String getUser() {
+    return user == null ? "CKU_USER" : user;
+  }
+
+  public int getMaxMessageSize() {
+    return maxMessageSize == null ? 16384 : maxMessageSize;
+  }
+
+  public List<String> getSecretKeyTypes() {
+    return secretKeyTypes;
+  }
+
+  public void setSecretKeyTypes(List<String> secretKeyTypes) {
+    this.secretKeyTypes = secretKeyTypes;
+  }
+
+  public List<String> getKeyPairTypes() {
+    return keyPairTypes;
+  }
+
+  public void setKeyPairTypes(List<String> keyPairTypes) {
+    this.keyPairTypes = keyPairTypes;
+  }
+
+  public Integer getNumSessions() {
+    return numSessions;
+  }
+
+  public void setNumSessions(Integer numSessions) {
+    this.numSessions = numSessions;
+  }
+
+  public Integer getNewSessionTimeout() {
+    return newSessionTimeout;
+  }
+
+  public void setNewSessionTimeout(Integer newSessionTimeout) {
+    this.newSessionTimeout = newSessionTimeout;
+  }
+
+  @Override
+  public void validate() throws InvalidConfException {
+    notBlank(type, "type");
+    notEmpty(nativeLibraries, "nativeLibraries");
+    validate(nativeLibraries, includeSlots, excludeSlots, passwordSets);
+  }
 
   public static class NativeLibrary extends ValidableConf {
 
@@ -397,7 +266,7 @@ public class Pkcs11conf extends ValidableConf {
 
     private List<Slot> slots;
 
-    private List<String> passwords;
+    private String password;
 
     public List<Slot> getSlots() {
       if (slots == null) {
@@ -410,20 +279,16 @@ public class Pkcs11conf extends ValidableConf {
       this.slots = slots;
     }
 
-    public List<String> getPasswords() {
-      if (passwords == null) {
-        passwords = new LinkedList<>();
-      }
-      return passwords;
+    public String getPassword() {
+      return password;
     }
 
-    public void setPasswords(List<String> passwords) {
-      this.passwords = passwords;
+    public void setPassword(String password) {
+      this.password = password;
     }
 
     @Override
     public void validate() throws InvalidConfException {
-      notEmpty(passwords, "passwords");
     }
 
   } // class PasswordSet
@@ -458,48 +323,5 @@ public class Pkcs11conf extends ValidableConf {
     }
 
   } // class Slot
-
-  /**
-   * exactly one module must have the name 'default'.
-   */
-  private List<Module> modules;
-
-  private List<MechanismSet> mechanismSets;
-
-  public List<Module> getModules() {
-    return modules;
-  }
-
-  public void setModules(List<Module> modules) {
-    if (modules == null) {
-      modules = new LinkedList<>();
-    }
-    this.modules = modules;
-  }
-
-  public List<MechanismSet> getMechanismSets() {
-    if (mechanismSets == null) {
-      mechanismSets = new LinkedList<>();
-    }
-    return mechanismSets;
-  }
-
-  public void setMechanismSets(List<MechanismSet> mechanismSets) {
-    this.mechanismSets = mechanismSets;
-  }
-
-  public void addModule(Module module) {
-    getModules().add(module);
-  }
-
-  public void addMechanismSet(MechanismSet mechanismSet) {
-    getMechanismSets().add(mechanismSet);
-  }
-
-  @Override
-  public void validate() throws InvalidConfException {
-    notEmpty(modules, "modules");
-    validate(modules, mechanismSets);
-  }
 
 }

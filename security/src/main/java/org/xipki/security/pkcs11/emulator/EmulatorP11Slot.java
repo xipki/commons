@@ -32,7 +32,6 @@ import org.xipki.pkcs11.wrapper.params.ExtraParams;
 import org.xipki.security.EdECConstants;
 import org.xipki.security.HashAlgo;
 import org.xipki.security.pkcs11.P11Key;
-import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
 import org.xipki.security.pkcs11.P11Params;
 import org.xipki.security.pkcs11.P11Slot;
@@ -222,11 +221,11 @@ class EmulatorP11Slot extends P11Slot {
   }
 
   EmulatorP11Slot(
-      String moduleName, File slotDir, P11SlotId slotId, boolean readOnly,
-      EmulatorKeyCryptor keyCryptor, P11MechanismFilter mechanismFilter, P11NewObjectConf newObjectConf,
+      File slotDir, P11SlotId slotId, boolean readOnly,
+      EmulatorKeyCryptor keyCryptor, P11NewObjectConf newObjectConf,
       Integer numSessions, List<Long> secretKeyTypes, List<Long> keypairTypes)
       throws TokenException {
-    super(moduleName, slotId, readOnly, secretKeyTypes, keypairTypes, newObjectConf);
+    super(slotId, readOnly, secretKeyTypes, keypairTypes, newObjectConf);
 
     this.keyCryptor = Args.notNull(keyCryptor, "keyCryptor");
     this.maxSessions = numSessions == null ? 20 : Args.positive(numSessions, "numSessions");
@@ -250,7 +249,7 @@ class EmulatorP11Slot extends P11Slot {
       this.namedCurveSupported = true;
     }
 
-    initMechanisms(supportedMechs, mechanismFilter);
+    initMechanisms(supportedMechs);
   } // constructor
 
   private List<File> getFilesForLabel(File dir, String label) throws TokenException {

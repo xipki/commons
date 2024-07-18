@@ -79,10 +79,6 @@ public class P11Actions {
             + "either keyId or keyLabel must be specified")
     private String label;
 
-    @Option(name = "--module", description = "name of the PKCS#11 module")
-    @Completion(SecurityCompleters.P11ModuleNameCompleter.class)
-    private String moduleName = "default";
-
     @Override
     protected ConcurrentContentSigner getSigner() throws Exception {
       SignatureAlgoControl signatureAlgoControl = getSignatureAlgoControl();
@@ -92,13 +88,13 @@ public class P11Actions {
         idBytes = Hex.decode(id);
       }
 
-      SignerConf conf = getPkcs11SignerConf(moduleName, Integer.parseInt(slotIndex), label,
+      SignerConf conf = getPkcs11SignerConf(Integer.parseInt(slotIndex), label,
           idBytes, 1, null, signatureAlgoControl);
       return securityFactory.createSigner("PKCS11", conf, (X509Cert[]) null);
     }
 
     public static SignerConf getPkcs11SignerConf(
-        String pkcs11ModuleName, int slotIndex, String keyLabel, byte[] keyId, int parallelism,
+        int slotIndex, String keyLabel, byte[] keyId, int parallelism,
         HashAlgo hashAlgo, SignatureAlgoControl signatureAlgoControl) {
       Args.positive(parallelism, "parallelism");
 
@@ -108,10 +104,6 @@ public class P11Actions {
 
       ConfPairs conf = new ConfPairs();
       conf.putPair("parallelism", Integer.toString(parallelism));
-
-      if (pkcs11ModuleName != null && !pkcs11ModuleName.isEmpty()) {
-        conf.putPair("module", pkcs11ModuleName);
-      }
 
       conf.putPair("slot", Integer.toString(slotIndex));
 
@@ -564,30 +556,21 @@ public class P11Actions {
 
   public abstract static class P11SecurityAction extends SecurityAction {
 
-    protected static final String DEFAULT_P11MODULE_NAME = P11CryptServiceFactory.DEFAULT_P11MODULE_NAME;
-
     @Option(name = "--slot", description = "slot index")
     protected String slotIndex = "0"; // use String instead int so that the default value 0 will be shown in the help.
-
-    @Option(name = "--module", description = "name of the PKCS#11 module")
-    @Completion(SecurityCompleters.P11ModuleNameCompleter.class)
-    protected String moduleName = DEFAULT_P11MODULE_NAME;
 
     @Reference (optional = true)
     protected P11CryptServiceFactory p11CryptServiceFactory;
 
     protected P11Slot getSlot() throws XiSecurityException, TokenException, IllegalCmdParamException {
-      P11Module module = getP11Module(moduleName);
+      P11Module module = getP11Module();
       P11SlotId slotId = module.getSlotIdForIndex(Integer.parseInt(slotIndex));
       return module.getSlot(slotId);
     }
 
-    protected P11Module getP11Module(String moduleName)
-        throws XiSecurityException, TokenException, IllegalCmdParamException {
-      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService(moduleName);
-      if (p11Service == null) {
-        throw new IllegalCmdParamException("undefined module " + moduleName);
-      }
+    protected P11Module getP11Module()
+        throws XiSecurityException, TokenException {
+      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService();
       return p11Service.getModule();
     }
 
@@ -620,10 +603,6 @@ public class P11Actions {
     @Option(name = "--verbose", aliases = "-v", description = "show object information verbosely")
     private Boolean verbose = Boolean.FALSE;
 
-    @Option(name = "--module", description = "name of the PKCS#11 module.")
-    @Completion(SecurityCompleters.P11ModuleNameCompleter.class)
-    private String moduleName = P11SecurityAction.DEFAULT_P11MODULE_NAME;
-
     @Option(name = "--slot", description = "slot index")
     private Integer slotIndex;
 
@@ -635,13 +614,8 @@ public class P11Actions {
 
     @Override
     protected Object execute0() throws Exception {
-      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService(moduleName);
-      if (p11Service == null) {
-        throw new IllegalCmdParamException("undefined module " + moduleName);
-      }
-
+      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService();
       P11Module module = p11Service.getModule();
-      println("module: " + moduleName);
       println(module.getDescription());
 
       List<P11SlotId> slots = module.getSlotIds();

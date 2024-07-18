@@ -22,6 +22,8 @@ import org.xipki.util.LogUtil;
 import org.xipki.util.StringUtil;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -71,7 +73,7 @@ class NativeP11Module extends P11Module {
     try {
       slotList = module.getSlotList(false);
     } catch (Throwable th) {
-      final String msg = "could not getSlotList of module " + moduleConf.getName();
+      final String msg = "could not getSlotList of module";
       LogUtil.error(LOG, th, msg);
       throw new TokenException(msg);
     }
@@ -129,7 +131,7 @@ class NativeP11Module extends P11Module {
         }
       }
 
-      List<char[]> pwd;
+      char[] pwd;
       try {
         pwd = moduleConf.getPasswordRetriever().getPassword(slotId);
       } catch (PasswordResolverException ex) {
@@ -140,15 +142,15 @@ class NativeP11Module extends P11Module {
           slot.getModule().nameToCode(PKCS11Constants.Category.CKU, getConf().getUserType())).orElseThrow(
           () -> new TokenException("Unknown user type " + getConf().getUserType()));
 
-      PKCS11Token token = new PKCS11Token(slot.getToken(), moduleConf.isReadOnly(), userType,
-          moduleConf.getUserName(), pwd, moduleConf.getNumSessions());
+      PKCS11Token token = new PKCS11Token(slot.getToken(), moduleConf.isReadOnly(), userType, null,
+          pwd == null ? null : Collections.singletonList(pwd), moduleConf.getNumSessions());
       token.setMaxMessageSize(moduleConf.getMaxMessageSize());
       if (moduleConf.getNewSessionTimeout() != null) {
         token.setTimeOutWaitNewSession(moduleConf.getNewSessionTimeout());
       }
 
-      P11Slot p11Slot = new NativeP11Slot(moduleConf.getName(), slotId, token , moduleConf.getP11MechanismFilter(),
-          moduleConf.getP11NewObjectConf(), moduleConf.getSecretKeyTypes(), moduleConf.getKeyPairTypes());
+      P11Slot p11Slot = new NativeP11Slot(slotId, token, moduleConf.getP11NewObjectConf(),
+          moduleConf.getSecretKeyTypes(), moduleConf.getKeyPairTypes());
 
       slots.add(p11Slot);
     }
@@ -177,7 +179,7 @@ class NativeP11Module extends P11Module {
     try {
       module = PKCS11Module.getInstance(path);
     } catch (IOException ex) {
-      final String msg = "could not load the PKCS#11 module " + moduleConf.getName() + ": " + path;
+      final String msg = "could not load the PKCS#11 module: " + path;
       LogUtil.error(LOG, ex, msg);
       throw new TokenException(msg, ex);
     }
@@ -187,7 +189,7 @@ class NativeP11Module extends P11Module {
     } catch (PKCS11Exception ex) {
       if (ex.getErrorCode() != PKCS11Constants.CKR_CRYPTOKI_ALREADY_INITIALIZED) {
         LogUtil.error(LOG, ex);
-        close(moduleConf.getName(), module);
+        closeModule(moduleConf.getNativeLibrary(), module);
         throw ex;
       } else {
         LOG.info("PKCS#11 module already initialized");
@@ -199,7 +201,7 @@ class NativeP11Module extends P11Module {
       }
     } catch (Throwable th) {
       LOG.error("unexpected Exception", th);
-      close(moduleConf.getName(), module);
+      closeModule(moduleConf.getNativeLibrary(), module);
       throw new TokenException(th.getMessage());
     }
 
@@ -221,19 +223,19 @@ class NativeP11Module extends P11Module {
       }
     }
 
-    close(conf.getNativeLibrary(), module);
+    closeModule(conf.getNativeLibrary(), module);
   }
 
-  private static void close(String modulePath, PKCS11Module module) {
+  private static void closeModule(String path, PKCS11Module module) {
     if (module == null) {
       return;
     }
 
-    LOG.info("close PKCS#11 module: {}", modulePath);
+    LOG.info("close PKCS#11 module {}", path);
     try {
       module.finalize(null);
     } catch (Throwable th) {
-      LogUtil.error(LOG, th, "could not close module " + modulePath);
+      LogUtil.error(LOG, th, "could not close module " + path);
     }
   }
 }

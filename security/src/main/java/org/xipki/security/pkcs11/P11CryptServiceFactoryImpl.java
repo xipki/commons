@@ -32,11 +32,9 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(P11CryptServiceFactoryImpl.class);
 
-  private static final Map<String, P11CryptService> services = new HashMap<>();
+  private P11CryptService service;
 
-  private Map<String, P11ModuleConf> moduleConfs;
-
-  private Set<String> moduleNames;
+  private P11ModuleConf moduleConf;
 
   private String pkcs11ConfFile;
 
@@ -49,7 +47,7 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
   }
 
   public synchronized void init() throws InvalidConfException {
-    if (moduleConfs != null) {
+    if (moduleConf != null) {
       return;
     }
 
@@ -67,61 +65,30 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
       }
     }
 
-    try {
-      Map<String, P11ModuleConf> confs = geModuleConfs();
-      this.moduleConfs = Collections.unmodifiableMap(confs);
-      this.moduleNames = Set.copyOf(confs.keySet());
-    } catch (RuntimeException ex) {
-      throw new InvalidConfException("could not create P11Conf: " + ex.getMessage(), ex);
-    }
+    this.moduleConf = new P11ModuleConf(pkcs11Conf);
   } // method init
 
-  private Map<String, P11ModuleConf> geModuleConfs() throws InvalidConfException {
-    List<Pkcs11conf.Module> moduleTypes = pkcs11Conf.getModules();
-    List<Pkcs11conf.MechanismSet> mechanismSets = pkcs11Conf.getMechanismSets();
-
-    Map<String, P11ModuleConf> confs = new HashMap<>();
-    for (Pkcs11conf.Module moduleType : moduleTypes) {
-      P11ModuleConf conf = new P11ModuleConf(moduleType, mechanismSets);
-      confs.put(conf.getName(), conf);
-    }
-
-    if (!confs.containsKey(P11CryptServiceFactory.DEFAULT_P11MODULE_NAME)) {
-      throw new InvalidConfException("module '" + P11CryptServiceFactory.DEFAULT_P11MODULE_NAME + "' is not defined");
-    }
-    return confs;
-  }
-
-  public synchronized P11CryptService getP11CryptService(String moduleName)
-      throws XiSecurityException, TokenException {
+  @Override
+  public synchronized P11CryptService getP11CryptService()
+      throws TokenException {
     try {
       init();
     } catch (InvalidConfException ex) {
       throw new IllegalStateException("could not initialize P11CryptServiceFactory: " + ex.getMessage(), ex);
     }
 
-    if (moduleConfs == null) {
+    if (moduleConf == null) {
       throw new IllegalStateException("please set pkcs11ConfFile and then call init() first");
     }
 
-    final String name = getModuleName(moduleName);
-    P11ModuleConf conf = Optional.ofNullable(moduleConfs.get(name)).orElseThrow(() ->
-        new XiSecurityException("PKCS#11 module " + name + " is not defined"));
-
-    P11CryptService instance = services.get(name);
-    if (instance == null) {
-      P11Module p11Module = p11ModuleFactoryRegister.getP11Module(conf);
-      instance = new P11CryptService(p11Module);
-      LOG.info("added PKCS#11 module {}\n{}", name, instance.getModule().getDescription());
-      services.put(name, instance);
+    if (service == null) {
+      P11Module p11Module = p11ModuleFactoryRegister.getP11Module(moduleConf);
+      service = new P11CryptService(p11Module);
+      LOG.info("initialized PKCS#11 module \n{}", service.getModule().getDescription());
     }
 
-    return instance;
+    return service;
   } // method getP11CryptService
-
-  private String getModuleName(String moduleName) {
-    return (moduleName == null) ? DEFAULT_P11MODULE_NAME : moduleName;
-  }
 
   public void setPkcs11ConfFile(String confFile) {
     this.pkcs11ConfFile = StringUtil.isBlank(confFile) ? null : IoUtil.expandFilepath(confFile);
@@ -138,17 +105,6 @@ public class P11CryptServiceFactoryImpl implements P11CryptServiceFactory {
 
   @Override
   public void close() {
-    services.clear();
-  }
-
-  @Override
-  public Set<String> getModuleNames() {
-    try {
-      init();
-    } catch (InvalidConfException ex) {
-      throw new IllegalStateException("could not initialize P11CryptServiceFactory: " + ex.getMessage(), ex);
-    }
-    return moduleNames;
   }
 
 }

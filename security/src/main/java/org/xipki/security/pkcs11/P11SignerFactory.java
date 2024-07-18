@@ -88,7 +88,6 @@ public class P11SignerFactory implements SignerFactory {
       }
     }
 
-    String moduleName = conf.getConfValue("module");
     str = conf.getConfValue("slot");
     Integer slotIndex = (str == null) ? null : Integer.parseInt(str);
 
@@ -112,7 +111,7 @@ public class P11SignerFactory implements SignerFactory {
 
     P11Slot slot;
     try {
-      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService(moduleName);
+      P11CryptService p11Service = p11CryptServiceFactory.getP11CryptService();
       P11Module module = p11Service.getModule();
       P11SlotId p11SlotId = (slotId != null) ? module.getSlotIdForId(slotId)
           : module.getSlotIdForIndex(slotIndex);

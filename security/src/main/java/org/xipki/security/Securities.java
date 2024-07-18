@@ -15,7 +15,6 @@ import org.xipki.security.pkcs11.P11ModuleFactoryRegisterImpl;
 import org.xipki.security.pkcs11.P11SignerFactory;
 import org.xipki.security.pkcs11.Pkcs11conf;
 import org.xipki.security.pkcs11.emulator.EmulatorP11ModuleFactory;
-import org.xipki.security.pkcs11.hsmproxy.HsmProxyP11ModuleFactory;
 import org.xipki.security.pkcs12.P12SignerFactory;
 import org.xipki.util.CollectionUtil;
 import org.xipki.util.FileOrValue;
@@ -142,7 +141,6 @@ public class Securities implements Closeable {
     List<P11ModuleFactory> factories = new ArrayList<>(3);
     factories.add(new NativeP11ModuleFactory());
     factories.add(new EmulatorP11ModuleFactory());
-    factories.add(new HsmProxyP11ModuleFactory());
     return factories;
   }
 
