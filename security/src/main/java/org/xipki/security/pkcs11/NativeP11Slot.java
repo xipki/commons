@@ -37,6 +37,7 @@ import org.xipki.pkcs11.wrapper.TokenException;
 import org.xipki.pkcs11.wrapper.TokenInfo;
 import org.xipki.pkcs11.wrapper.params.ExtraParams;
 import org.xipki.security.EdECConstants;
+import org.xipki.security.pkcs11.P11ModuleConf.P11MechanismFilter;
 import org.xipki.security.pkcs11.P11ModuleConf.P11NewObjectConf;
 import org.xipki.security.util.KeyUtil;
 import org.xipki.util.Args;
@@ -155,10 +156,10 @@ class NativeP11Slot extends P11Slot {
 
   private String libDesc;
 
-  NativeP11Slot(P11SlotId slotId, PKCS11Token token,
+  NativeP11Slot(String moduleName, P11SlotId slotId, PKCS11Token token, P11MechanismFilter mechanismFilter,
                 P11NewObjectConf newObjectConf, List<Long> secretKeyTypes, List<Long> keyPairTypes)
       throws TokenException {
-    super(slotId, token.isReadOnly(), secretKeyTypes, keyPairTypes, newObjectConf);
+    super(moduleName, slotId, token.isReadOnly(), secretKeyTypes, keyPairTypes, newObjectConf);
     if (slotId.getId() != token.getTokenId()) {
       throw new IllegalArgumentException("slotId != token.getTokenId");
     }
@@ -171,7 +172,7 @@ class NativeP11Slot extends P11Slot {
       libDesc = "";
     }
 
-    initMechanisms(getSupportedMechanisms());
+    initMechanisms(getSupportedMechanisms(), mechanismFilter);
     rsaKeyPairGenMech = supportsMechanism(CKM_RSA_X9_31_KEY_PAIR_GEN, CKF_GENERATE_KEY_PAIR)
         ? CKM_RSA_X9_31_KEY_PAIR_GEN : CKM_RSA_PKCS_KEY_PAIR_GEN;
 

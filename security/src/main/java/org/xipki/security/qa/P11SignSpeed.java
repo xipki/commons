@@ -252,7 +252,7 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
     this.deleteKeyAfterTest = deleteKeyAfterTest;
 
     P11SlotId slotId = slot.getSlotId();
-    SignerConf signerConf = getPkcs11SignerConf(
+    SignerConf signerConf = getPkcs11SignerConf(slot.getModuleName(),
         slotId.getId(), keyId.getId(),
         Args.notBlank(signatureAlgorithm, "signatureAlgorithm"),
         threads + Math.max(2, threads * 5 / 4));
@@ -297,9 +297,13 @@ public abstract class P11SignSpeed extends BenchmarkExecutor {
   }
 
   private static SignerConf getPkcs11SignerConf(
-      Long slotId, byte[] keyId, String signatureAlgorithm, int parallelism) {
+      String pkcs11ModuleName, Long slotId, byte[] keyId, String signatureAlgorithm, int parallelism) {
     ConfPairs conf = new ConfPairs("algo", signatureAlgorithm)
                       .putPair("parallelism", Integer.toString(parallelism));
+
+    if (pkcs11ModuleName != null && !pkcs11ModuleName.isEmpty()) {
+      conf.putPair("module", pkcs11ModuleName);
+    }
 
     if (slotId != null) {
       conf.putPair("slot-id", slotId.toString());

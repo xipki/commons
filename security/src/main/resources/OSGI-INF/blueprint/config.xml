@@ -92,4 +92,12 @@
   <service ref="emulatorP11ModuleFactory"
       interface="org.xipki.security.pkcs11.P11ModuleFactory"/>
 
+  <!-- PKCS#11 HSM Proxy -->
+  <bean id="hsmProxyP11ModuleFactory"
+        class="org.xipki.security.pkcs11.hsmproxy.HsmProxyP11ModuleFactory">
+  </bean>
+
+  <service ref="hsmProxyP11ModuleFactory"
+           interface="org.xipki.security.pkcs11.P11ModuleFactory"/>
+
 </blueprint>

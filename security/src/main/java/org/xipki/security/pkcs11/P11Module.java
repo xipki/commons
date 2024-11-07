@@ -36,6 +36,10 @@ public abstract class P11Module {
 
   public abstract String getDescription();
 
+  public String getName() {
+    return conf.getName();
+  }
+
   public boolean isReadOnly() {
     return conf.isReadOnly();
   }

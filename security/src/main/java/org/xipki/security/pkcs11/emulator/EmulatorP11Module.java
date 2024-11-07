@@ -141,7 +141,7 @@ class EmulatorP11Module extends P11Module {
 
     Set<P11Slot> slots = new HashSet<>();
     for (P11SlotId slotId : slotIds) {
-      char[] pwd;
+      List<char[]> pwd;
       try {
         pwd = moduleConf.getPasswordRetriever().getPassword(slotId);
       } catch (PasswordResolverException ex) {
@@ -154,8 +154,14 @@ class EmulatorP11Module extends P11Module {
         throw new TokenException("no password is configured");
       }
 
-      slots.add(new EmulatorP11Slot(slotDir, slotId,
-          moduleConf.isReadOnly(), new EmulatorKeyCryptor(pwd),
+      if (pwd.size() != 1) {
+        throw new TokenException(pwd.size() + " passwords are configured, but 1 is permitted");
+      }
+
+      char[] firstPwd = pwd.get(0);
+
+      slots.add(new EmulatorP11Slot(moduleConf.getName(), slotDir, slotId,
+          moduleConf.isReadOnly(), new EmulatorKeyCryptor(firstPwd), moduleConf.getP11MechanismFilter(),
           moduleConf.getP11NewObjectConf(), moduleConf.getNumSessions(),
           moduleConf.getSecretKeyTypes(), moduleConf.getKeyPairTypes()));
     }
@@ -174,7 +180,7 @@ class EmulatorP11Module extends P11Module {
 
   @Override
   public void close() {
-    LOG.info("close PKCS#11 module");
+    LOG.info("close PKCS#11 module: {}", getName());
   }
 
   private void createExampleRepository(File dir) throws IOException {
