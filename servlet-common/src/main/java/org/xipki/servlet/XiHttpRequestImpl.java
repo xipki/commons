@@ -1,20 +1,17 @@
 // Copyright (c) 2013-2024 xipki. All rights reserved.
 // License Apache License 2.0
-package org.xipki.servlet3;
+package org.xipki.servlet;
 
-import org.xipki.util.Args;
+import jakarta.servlet.http.HttpServletRequest;
 import org.xipki.util.http.XiHttpRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
 
 /**
  * HTTP request wrapper.
- *
- * @author Lijun Liao (xipki)
- * @since 3.0.1
+ * @author Lijun Liao
  */
 
 public class XiHttpRequestImpl implements XiHttpRequest {
@@ -22,7 +19,7 @@ public class XiHttpRequestImpl implements XiHttpRequest {
   private final HttpServletRequest req;
 
   public XiHttpRequestImpl(HttpServletRequest req) {
-    this.req = Args.notNull(req, "req");
+    this.req = req;
   }
 
   @Override
@@ -56,18 +53,18 @@ public class XiHttpRequestImpl implements XiHttpRequest {
   }
 
   @Override
-  public String getRequestURI() {
-    return req.getRequestURI();
-  }
-
-  @Override
   public String getContextPath() {
     return req.getContextPath();
   }
 
   @Override
   public X509Certificate[] getCertificateChain() {
-    return (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
+    return (X509Certificate[]) req.getAttribute("jakarta.servlet.request.X509Certificate");
+  }
+
+  @Override
+  public String getRequestURI() {
+    return req.getRequestURI();
   }
 
   @Override

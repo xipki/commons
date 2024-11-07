@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2024 xipki. All rights reserved.
 // License Apache License 2.0
 
-package org.xipki.servlet5;
+package org.xipki.servlet;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;

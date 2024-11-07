@@ -8,7 +8,7 @@
     <artifactId>xipki-commons-parent</artifactId>
     <version>6.3.5-SNAPSHOT</version>
   </parent>
-  <artifactId>servlet5-common</artifactId>
+  <artifactId>servlet-common</artifactId>
   <name>XiPKI :: ${project.artifactId}</name>
   <packaging>bundle</packaging>
   <dependencies>

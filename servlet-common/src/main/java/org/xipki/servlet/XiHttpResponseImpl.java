@@ -1,11 +1,11 @@
 // Copyright (c) 2013-2024 xipki. All rights reserved.
 // License Apache License 2.0
-package org.xipki.servlet3;
+package org.xipki.servlet;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.xipki.util.Args;
 import org.xipki.util.http.XiHttpResponse;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 

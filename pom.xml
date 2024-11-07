@@ -49,8 +49,7 @@
     <module>shell-base</module>
     <module>security-shell</module>
     <module>xipki-tomcat-password</module>
-    <module>servlet3-common</module>
-    <module>servlet5-common</module>
+    <module>servlet-common</module>
   </modules>
   <scm>
     <connection>scm:git:git@github.com:xipki/commons.git</connection>
