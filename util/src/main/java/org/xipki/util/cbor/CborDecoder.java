@@ -10,6 +10,7 @@ import org.xipki.util.Args;
 import org.xipki.util.DateUtil;
 import org.xipki.util.exception.DecodeException;
 
+import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +27,17 @@ import java.util.List;
  */
 public class CborDecoder implements AutoCloseable {
     protected final PushbackInputStream m_is;
+
+
+    public CborDecoder(byte[] bytes) {
+        this(bytes, 0, bytes.length);
+    }
+
+    public CborDecoder(byte[] bytes, int offset, int length) {
+        this(new ByteArrayInputStream(bytes,
+            Args.min(offset, "offset", 0),
+            Args.min(length, "length", 0)));
+    }
 
     /**
      * Creates a new {@link CborDecoder} instance.
@@ -533,7 +545,7 @@ public class CborDecoder implements AutoCloseable {
      */
     protected long readUInt32() throws IOException {
         byte[] buf = readFully(new byte[4]);
-        return ((buf[0] & 0xFF) << 24 | (buf[1] & 0xFF) << 16 | (buf[2] & 0xFF) << 8 | (buf[3] & 0xFF)) & 0xffffffffL;
+        return ((buf[0] & 0xFFL) << 24 | (buf[1] & 0xFF) << 16 | (buf[2] & 0xFF) << 8 | (buf[3] & 0xFF)) & 0xffffffffL;
     }
 
     /**
@@ -619,7 +631,7 @@ public class CborDecoder implements AutoCloseable {
         }
     }
 
-    public Integer readNullOrArrayLength(Class clazz) throws DecodeException {
+    public Integer readNullOrArrayLength(Class<?> clazz) throws DecodeException {
         try {
             return readNullOrArrayLength();
         } catch (IOException ex) {
@@ -777,7 +789,7 @@ public class CborDecoder implements AutoCloseable {
         }
 
         BigInteger[] ret = new BigInteger[arrayLen];
-        for (int i = 0; i < arrayLen.intValue(); i++) {
+        for (int i = 0; i < arrayLen; i++) {
             ret[i] = readBigInt();
         }
 
