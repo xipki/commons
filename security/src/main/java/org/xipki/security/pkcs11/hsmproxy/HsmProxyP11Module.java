@@ -27,7 +27,6 @@ import org.xipki.util.FileOrBinary;
 import org.xipki.util.IoUtil;
 import org.xipki.util.LogUtil;
 import org.xipki.util.StringUtil;
-import org.xipki.util.cbor.ByteArrayCborDecoder;
 import org.xipki.util.cbor.CborConstants;
 import org.xipki.util.cbor.CborDecoder;
 import org.xipki.util.cbor.CborType;
@@ -336,7 +335,7 @@ class HsmProxyP11Module extends P11Module {
       throw new TokenException(ex.getMessage(), ex);
     }
 
-    CborDecoder decoder = new ByteArrayCborDecoder(respBytes);
+    CborDecoder decoder = new CborDecoder(respBytes);
     ErrorResponse errorResp = null;
 
     try {

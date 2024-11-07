@@ -46,7 +46,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
 
     private static byte[] generateKeystore(String signatureAlgorithm) throws Exception {
       int keysize = getKeysize(signatureAlgorithm);
-      KeyStoreWrapper identity = new P12KeyGenerator().generateSecretKey(
+      KeyStoreWrapper identity = P12KeyGenerator.generateSecretKey(
           "AES", keysize, new KeystoreGenerationParameters(PASSWORD.toCharArray()));
       return identity.keystore();
     }
@@ -86,7 +86,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
       if (keystoreBytes == null) {
         KeystoreGenerationParameters params = new KeystoreGenerationParameters(PASSWORD.toCharArray());
         params.setRandom(new SecureRandom());
-        KeyStoreWrapper identity = new P12KeyGenerator().generateDSAKeypair(plength, qlength, params, null);
+        KeyStoreWrapper identity = P12KeyGenerator.generateDSAKeypair(plength, qlength, params, null);
         keystoreBytes = identity.keystore();
       }
       return keystoreBytes;
@@ -108,8 +108,8 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
         KeystoreGenerationParameters params = new KeystoreGenerationParameters(PASSWORD.toCharArray());
         params.setRandom(new SecureRandom());
         KeyStoreWrapper identity = EdECConstants.isEdwardsOrMontgomeryCurve(curveOid)
-            ? new P12KeyGenerator().generateEdECKeypair(curveOid, params, null)
-            : new P12KeyGenerator().generateECKeypair(curveOid, params, null);
+            ? P12KeyGenerator.generateEdECKeypair(curveOid, params, null)
+            : P12KeyGenerator.generateECKeypair(curveOid, params, null);
 
         keystoreBytes = identity.keystore();
       }
@@ -127,7 +127,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
 
     private static byte[] generateKeystore(String signatureAlgorithm) throws Exception {
       int keysize = getKeysize(signatureAlgorithm);
-      KeyStoreWrapper identity = new P12KeyGenerator().generateSecretKey(
+      KeyStoreWrapper identity = P12KeyGenerator.generateSecretKey(
           "GENERIC", keysize, new KeystoreGenerationParameters(PASSWORD.toCharArray()));
       return identity.keystore();
     }
@@ -177,7 +177,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
       if (keystoreBytes == null) {
         KeystoreGenerationParameters params = new KeystoreGenerationParameters(PASSWORD.toCharArray());
         params.setRandom(new SecureRandom());
-        KeyStoreWrapper identity = new P12KeyGenerator().generateRSAKeypair(keysize, publicExponent, params, null);
+        KeyStoreWrapper identity = P12KeyGenerator.generateRSAKeypair(keysize, publicExponent, params, null);
         keystoreBytes = identity.keystore();
       }
       return keystoreBytes;
@@ -197,7 +197,7 @@ public abstract class P12SignSpeed extends BenchmarkExecutor {
       if (keystoreBytes == null) {
         KeystoreGenerationParameters params = new KeystoreGenerationParameters(PASSWORD.toCharArray());
         params.setRandom(new SecureRandom());
-        KeyStoreWrapper identity = new P12KeyGenerator().generateECKeypair(curveNOid, params, null);
+        KeyStoreWrapper identity = P12KeyGenerator.generateECKeypair(curveNOid, params, null);
         keystoreBytes = identity.keystore();
       }
       return keystoreBytes;

@@ -142,7 +142,7 @@ public class PKCS1Util {
             block[i] ^= dbMask[i];
         }
 
-        block[0] &= (0xff >> ((block.length * 8) - emBits));
+        block[0] &= (byte) (0xff >> ((block.length * 8) - emBits));
 
         System.arraycopy(hv, 0, block, block.length - hLen - 1, hLen);
 
@@ -211,7 +211,7 @@ public class PKCS1Util {
             DB[i] = (byte)(DB[i] ^ dbMask[i]);
         }
         // 9. Set the leftmost 8.emLen ? emBits bits of DB to zero.
-        DB[0] &= (0xFF >>> (8*emLen - emBits));
+        DB[0] &= (byte) (0xFF >>> (8*emLen - emBits));
         // 10. If the emLen - hLen -sLen -2 leftmost octets of DB are not zero or
         //     if the octet at position emLen -hLen -sLen -1 is not equal to 0x01,
         //     output 'inconsistent' and stop.
